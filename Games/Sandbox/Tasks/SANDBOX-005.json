@@ -14,14 +14,15 @@
     "Games/Sandbox/Docs/tech/"
   ],
   "notes": [
-    "C-004 rewritten to shipped API (ScoreCounterController/ScoreView), display format, IMGUI choice, creation hooks; CODING_CONVENTION UI section with IMGUI exception -> DECISIONS.md; ARCHITECTURE dependency table fixed (UI -> Gameplay) and external dependency table (legacy Input CI-verified per Reports/build/SANDBOX-004.md, user playtest per DECISIONS.md). Docs only."
+    "C-004 rewritten to shipped API (ScoreCounterController/ScoreView), display format, IMGUI choice, creation hooks; CODING_CONVENTION UI section with IMGUI exception -> DECISIONS.md; ARCHITECTURE dependency table fixed (UI -> Gameplay) and external dependency table (legacy Input CI-verified per Reports/build/SANDBOX-004.md, user playtest per DECISIONS.md). Docs only.",
+    "QA PASS: AC-1/AC-2 met, 0 bugs, 2 Low doc observations (Reports/qa/SANDBOX-005.md)"
   ],
   "priority": "low",
   "result": {
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "SANDBOX-005",
   "title": "C-004/코딩 규칙 문서 갱신",
   "verification": [

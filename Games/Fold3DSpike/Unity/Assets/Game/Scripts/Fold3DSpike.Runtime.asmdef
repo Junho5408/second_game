@@ -1,0 +1,14 @@
+{
+    "name": "Fold3DSpike.Runtime",
+    "rootNamespace": "Fold3DSpike.Runtime",
+    "references": ["Fold3DSpike.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

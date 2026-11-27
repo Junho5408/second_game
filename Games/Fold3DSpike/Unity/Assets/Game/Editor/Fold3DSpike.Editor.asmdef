@@ -1,0 +1,14 @@
+{
+    "name": "Fold3DSpike.Editor",
+    "rootNamespace": "",
+    "references": ["Fold3DSpike.Runtime", "Fold3DSpike.Core"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,29 @@
+{
+  "acceptance_criteria": [
+    "3D 정사각형 종이를 마우스로 모서리/변을 잡아 끌어 놓으면 접는 선이 생기고 접히는 애니메이션",
+    "종이비행기 3단계 안내(목표 위치 표시)와 각 접기 정확도 점수",
+    "마우스로 시점 회전, 되돌리기·처음부터 버튼",
+    "Windows 빌드에서 실행"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [],
+  "description": "",
+  "file_scope": [
+    "Games/Fold3DSpike/"
+  ],
+  "notes": [
+    "SPIKE: throwaway prototype; review/QA skipped by Orchestrator decision; judged by user playtest"
+  ],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "FOLD3DSPIKE-001",
+  "title": "3D 종이 접기 시험판 (종이비행기)",
+  "verification": [
+    "unity-compile",
+    "unity-build"
+  ]
+}

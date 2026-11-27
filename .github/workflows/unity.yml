@@ -83,6 +83,8 @@ jobs:
     needs: detect
     if: needs.detect.outputs.has_license == 'true' && needs.detect.outputs.games != '[]'
     runs-on: ubuntu-latest
+    # A failing license activation retries for ~9 min; cap the job to protect Actions minutes.
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -110,6 +112,7 @@ jobs:
         # Pinned to v4.3.2: v4.4.0+ (game-ci CLI path) rejects Personal .ulf files with
         # "Code 400 TimeStamp validation failed" (game-ci/unity-test-runner#336).
         uses: game-ci/unity-test-runner@v4.3.2
+        timeout-minutes: 25
         with:
           projectPath: ${{ env.PROJECT_PATH }}
           testMode: all

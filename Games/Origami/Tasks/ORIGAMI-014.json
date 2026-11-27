@@ -46,14 +46,16 @@
     "리뷰 ORIGAMI-009 I-1: ModelCatalog.Recognition 첫 접근 ~0.35s — 로드 시 한 번 미리 접근(첫 완성 멈춤 방지)",
     "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남아 있는 거절 토스트를 지울 것",
     "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남은 거절 토스트를 지울 것",
-    "Core/Room + Runtime workshop integration + v1 deletion (§10). verify_core 728/728; Workshop PlayMode tests (33) also run against a scratch UnityEngine stub harness (64/64 incl. FoldTable) — Unity CI still required. OnGUI smoke test is Inconclusive if CI never calls OnGUI (QA: check result XML)."
+    "Core/Room + Runtime workshop integration + v1 deletion (§10). verify_core 728/728; Workshop PlayMode tests (33) also run against a scratch UnityEngine stub harness (64/64 incl. FoldTable) — Unity CI still required. OnGUI smoke test is Inconclusive if CI never calls OnGUI (QA: check result XML).",
+    "review APPROVED_WITH_WARNINGS: W-1 OnGUI book test Inconclusive in CI run 46041182289 (batchmode, no Repaint) -> user playtest item; W-2 per-frame GUI allocations; W-3 C-180 doc: 600 s cap / NaN->0"
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-014",
   "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
   "verification": [

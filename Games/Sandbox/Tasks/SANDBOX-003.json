@@ -15,7 +15,8 @@
   ],
   "notes": [
     "ScoreCounter + MultiplierForCombo implemented; 48 new Core tests (AC-01..AC-22 + N-3), 64/64 total pass",
-    "review: APPROVED_WITH_WARNINGS (W-1 float boundary informational)"
+    "review: APPROVED_WITH_WARNINGS (W-1 float boundary informational)",
+    "qa: PASS, 0 bugs; +23 QA tests (ScoreCounterQaTests), 87/87 pass"
   ],
   "priority": "high",
   "result": {
@@ -23,7 +24,7 @@
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "SANDBOX-003",
   "title": "점수 카운터 Core 구현",
   "verification": [

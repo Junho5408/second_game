@@ -28,10 +28,11 @@
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-009",
   "title": "v2 Core 접기 엔진·자석·판정·카탈로그",
   "verification": [

@@ -6,7 +6,7 @@
     "verify_core.sh Origami 통과, check_meta OK"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "d515e61b9200c328378ffc8eb16a08b210af0c91",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-010"
@@ -24,7 +24,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-011",
   "title": "v2 Core 책 도해·문구·화면 흐름",
   "verification": [

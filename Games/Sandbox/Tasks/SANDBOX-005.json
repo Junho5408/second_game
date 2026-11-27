@@ -4,7 +4,7 @@
     "CODING_CONVENTION에 IMGUI 예외(DECISIONS.md 참조) 기록"
   ],
   "agent": "architect",
-  "base_commit": null,
+  "base_commit": "25758b7ed355e2fdf539764195d1a7e2d8a2c114",
   "deliverables": [],
   "dependencies": [
     "SANDBOX-004"
@@ -17,7 +17,7 @@
   "priority": "low",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "SANDBOX-005",
   "title": "C-004/코딩 규칙 문서 갱신",
   "verification": [

@@ -89,3 +89,126 @@ Room layout was checked: the gaps between interaction points are at least 1.5 m,
 
 ## Status
 `task.py set Origami ORIGAMI-007 --status QA --result review=pass`
+
+## Re-review (fix pass 1)
+
+- Reviewer: code-reviewer · Date: 2026-11-27 · Commits reviewed: `eff5423` (docs + balance_check.py), `da1e491` (task file). Orchestrator commits `a119870` and `247852c` (DECISIONS) were read for context only.
+- Result: **CHANGES_REQUESTED**
+
+The user's choice (phase 1 adds layer-selective folds and crease marks) is now specified precisely and consistently, and all earlier findings are addressed.
+R-007's moving-set rule, hinge closure and layer order match `balance_check.py`, and every new AC number I recomputed is correct except F-005 AC-11.
+But the main goal of this fix pass is not met. The goal was that the paid models really need the new techniques and have no fewer-fold shortcut.
+- The cicada's only "top 1 layer" step does not change the outline. Skipping it still gives cicada ★3 in 8 folds.
+- An exhaustive skip-a-step check, which takes 4 seconds, finds shortcuts the beam search misses. They contradict CONTENT §1 and §4.2 for dog, cicada and plane.
+
+These are small design and doc fixes. The architect can read R-007, R-021, F-005 and F-009 as they are.
+
+### Verification run
+
+| Command | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Origami ORIGAMI-007` | `OK` |
+| `python3 Games/Origami/Docs/design/balance_check.py` (full) | 7m34s, exit 0. `경제 검증 OK` (967/562/242/437, tulip-only ★1 197, 44 pages, play time 38/61/90 min). `판정 검증 OK` (J-01..J-16 all OK, invariance 1.000, max off-diagonal 0.611, magnet lines unchanged for all 5). errors table identical to CONTENT §4.1. `지름길 검증 OK` (glider self-check 0.857) |
+| `bash studio/scripts/verify_core.sh Origami` | PASS (283 tests, Core unchanged) |
+| `python3 studio/scripts/check_meta.py Games/Origami/Unity` | `OK` |
+| Reviewer scripts (scratchpad, import balance_check) | `ac.py`: F-005 AC-01/03/04/10..16 recomputed. `layers.py`: technique-necessity variants. `subsets.py`: every subsequence of each book's folds. `nocrease.py`: error sim without crease steps. `deep.py`: all-layer beam to depth 6 for tulip/cicada |
+
+### Earlier findings
+
+| ID | Status | Evidence |
+|---|---|---|
+| W-1 glider shortcut | Resolved for the glider; partly recurs (R-1, R-2) | Glider replaced by cicada. The beam search finds the old glider shortcut (0.857), so it is a valid detector. Its range is too narrow, though: see R-2 |
+| W-2 complexity / user confirmation | Resolved | User decision recorded in DECISIONS. The old "complex techniques = guided actions" row is retired, and CONTENT §7 agrees |
+| W-3 ★3 accuracy | Resolved | Magnets (R-021), creases, a seeded error sim (§4.1, reproduced exactly), thresholds 97/93/85, and playtest AC F-007 AC-07 |
+| W-4 play time | Resolved | 40–90 min, computed in `econ` (38/61/90) |
+| N-1 | Resolved | `tulip_only_one_star()` = 197; error sim seeded `origami-<id>-<σ>` |
+| N-2 | Resolved | J-13 (all 5) and invariance in `recog` |
+| N-3 | Resolved | R-010 even-page spreads; `TurnPage` clamp + even; F-007 AC-04 values agree with page map |
+| N-4 | Resolved | Spawn (−1.6, 0): bed 2.04 m, bookshelf 2.48 m; AC-04 on z = 0 (no furniture); AC-04b checks bed (x = −2.2) and bookshelf (z = 2.25) |
+| N-5 | Resolved | F-009 `Recognize(state, owned, catalogue)`, injected catalogue, raw state |
+
+### Requested consistency checks
+
+- **R-007 moving set, hinge closure, layer order**: precise. The script `plan`/`fold` implements it word for word: seed = top n facets that contain grab; closure via a shared paper edge ≥ HINGE_MIN not on the fold line, or a higher overlapping grab-side part; non-members stay unsplit. Recomputed:
+  - AC-12: diamond 6 facets, areas 1/1/0.5×4; top 2 moves 0.70 → 8 facets, outline 1.244; all layers 3.143 → 12 facets, 0.786.
+  - AC-13: 1.804, identical facets.
+  - AC-14: identical.
+  - AC-15: layers 0,1 bottom / 2,3 other flap / 4,5 moved / 6,7 remainder.
+  - Mountain + partial ("tucked under the lowest moving layer") is physically sensible for thin paper.
+- **Crease vs Undo vs Unfold**: consistent across R-007, R-008, R-009 (crease-only → NoFolds), F-005 AC-05/AC-10, F-006 AC-07, GAME_DESIGN assumption 10 and F-013 HUD. One wording ambiguity: N-6.
+- **R-021 magnets**: order P → L → M, constants in GAME_RULES and the script are the same, and the AC-16 values are reproduced exactly. The `recog` magnet line confirms that exact inputs keep the same fold line.
+- **Recognition outline-only**: stated the same way in R-011, F-009 and GAME_DESIGN assumption 4.
+- **Tutorial 6 steps**: R-008 (a < 6, Fold + Crease, Flip excluded), F-006 AC-01..03/07, CONTENT §2 plane, page map.
+- **Cicada replaces glider**: complete. The only remaining "glider" mentions are change history and the detector self-check. E-03 list, F-012 AC-06/07 and R-015 example are updated.
+- **Grades 97/93/85**: same in GAME_RULES, R-012, F-009 AC-04, GAME_DESIGN, script; J-04..06 / `Var` values and F-011 AC-03 updated.
+- **Book**: 2 + 8 + 7 + 7 + 8 + 12 = 44. Cover pages are 2/10/17/24/32. F-007 AC-01..04 page indices match this, including plane page 6 = step 4 and tulip page 21 = step 4 (top 2 layers).
+
+### Do the models really need the claimed techniques?
+
+| Model | Claim | Finding |
+|---|---|---|
+| tulip | top-2-layer petals required | **Yes for ★2/★3.** J-14 (same steps, all layers) 0.696. "Top 1" also works (hinge pulls the partner layer), which R-007 allows. My all-layer beam to depth 6 reaches **0.848** at 6 folds. With finer drop points than the 0.25 grid, an all-layer ★1 tulip is likely (see R-3) |
+| cicada | top 2 (wings), top 1 (head), mountain | Wings: **yes** (J-15 0.508). Head top 1 (step 7): **no**, see R-1. Mountain (9–10): valley gives 1.000 too. That follows from R-011 (mountain and valley are ignored), so mountain is shown in the book but is not a requirement |
+| plane, house, dog, cicada | creases | Not needed for recognition, by design (R-011, J-16). Removing crease steps lowers ★3 % (seeded sim, σ 1 / 2 mm, with → without): plane 65→42 / 38→14, house 100→100 / 87→77, dog 97→95 / 54→42, cicada 69→46 / 22→10. Creases are a real accuracy aid, but house and dog barely depend on them |
+
+### New findings
+
+#### R-1 (High, design vs claim) — Cicada step 7 (the only top-1-layer fold) does not affect the outline; 8 folds give cicada ★3
+- Location: `CONTENT_SPECS.md` §1 row cicada (technique "위 1겹(머리)", known shortest "4접기 0.812"), §2 cicada steps 7–8, §4.2 pass rule; `GAME_DESIGN.md` 진행 ("매미(전부 + 위 1겹 + 산접기)"); DECISIONS row "글라이더→매미(지름길 제거)".
+- Problem: if the player skips step 7 and does step 8 with all layers, the result is cicada **1.000 ★3** in 8 folds. The book needs 9.
+  - Step 7 folds the top layer's tip inward, to (−0.4, −0.4). Step 8 then trims the remaining layer at x + y = −1.7, and that trim alone sets the outline.
+  - Skipping step 8 instead gives 0.923 (★1, 0.007 below the ★2 boundary).
+  - Reproduce: `apply(REF["cicada"][:6] + REF["cicada"][7:])` → judge 1.000.
+- Impact: the only "top 1 layer" use in the game is cosmetic. One of the two phase-1 techniques the user chose is weaker than the docs say. §1, §4.2 and GAME_DESIGN also contain a claim that is false. The economic gain (one fold saved) is negligible.
+- Recommendation: game-designer redesigns the head so the top-1-layer fold changes the outline. For example, fold the top layer's tip outward past the body edge, or make step 8 not cover step 7. Otherwise remove "위 1겹" from the claims. Either way, add a J-case: "cicada without step 7" must be < 0.85, or recorded on purpose.
+
+#### R-2 (Medium) — The shortcut guard misses trivial skip-step shortcuts; §1 / §4.2 numbers are wrong
+- Location: `balance_check.py shortcut` (beam: grab on vertices or edge midpoints, drops on a 0.25 grid, depth ≤ 4); `CONTENT_SPECS.md` §1 "알려진 최단" column, §4.2 table and pass rule; GAME_DESIGN "지름길 방지".
+- Problem: an exhaustive check over every subsequence of each book sequence (reviewer `subsets.py`, 4 s) finds:
+  - **dog** without step 1 (no diagonal fold): 3 folds **0.867 → dog ★1** (paid, 50). §1 says "3접기 0.827 (인정 안 됨)".
+  - **cicada** without steps 2 and 6: 7 folds **0.919 → ★1**. Without step 7: 8 folds 1.000 (R-1).
+  - **plane** without step 2: 4 folds **1.000 → ★3**. §1 says "4접기로 0.903(★1)". Plane is free, so this is allowed, but the number is wrong.
+  - Tulip and house: no skip-step shortcut (best 0.700 and 0.788).
+- Impact: two of the three paid models break the rule "유료 작품은 책보다 적은 접기로 0.85 미만" (§4.2, GAME_DESIGN). The script still prints `지름길 검증 OK` because the beam never tries the book's own drop points with one step left out. Economic impact is small (★1 only), but the guard gives false confidence and the docs contain wrong data.
+- Recommendation: add the exhaustive skip-step search to `shortcut` mode and enforce it. Correct §1 and §4.2. Then choose: (a) change dog or cicada so the skipped versions fall below 0.85, or (b) explicitly allow "★1 with fewer folds" for paid models and reword the rule, e.g. "책보다 적은 접기로 ★2 이상 불가".
+
+#### R-3 (Low-Medium) — Results within 0.01 of the 0.85 boundary are not guarded
+- Location: CONTENT §4 (J-case margin rule 0.015 applies only to listed J-cases); R-011 tolerance ±0.01.
+- Problem:
+  - Dog without the chin (skip step 6) = **0.849**, 0.001 below MATCH_MIN. An implementation that meets the allowed ±0.01 can turn it into dog ★1.
+  - The tulip all-layer beam reaches **0.848** (depth 6, coarse drop grid), so the claim "위 2겹 필수" (§4.2, R-011) holds safely only for ★2 and above.
+- Recommendation: apply the 0.015 margin rule to the skip-step results from R-2 as well. Either widen the margins by adjusting the models, or reword "필수" as "★2 이상에 필수". If dog without the chin must not be recognised, add it as a J-case with a margin.
+
+#### R-4 (Low, AC error) — F-005 AC-11 facet count is wrong
+- Location: `FEATURE_SPECS.md` F-005 AC-11 "… 조각 수 1·접은 횟수 1 그대로".
+- Problem: after `Fold((−1,1),(−1,−1))` there are **2** facets (reviewer `ac.py`: 2 facets, 1 fold, marks (0,−1)–(0,0) and (0,1)–(0,0)). A test copied from this AC would fail.
+- Recommendation: "조각 수 2·접은 횟수 1 그대로".
+
+#### N-6 (Low) — `Unfold` rejection condition has two wordings
+- Location: R-007 exceptions: "되돌릴 기록이 없으면 거부 … (`Unfold`는 조각 1·자국 0인 처음 상태에서 거부)".
+- Problem: after a single `Flip`, the history is not empty, but the sheet has 1 facet and 0 marks. The two wordings give different answers.
+- Recommendation: use one condition, e.g. "되돌리기 기록이 비어 있으면 거부". Note that a flip-only sheet can be unfolded.
+
+#### N-7 (Low, cosmetic) — GAME_RULES 기본 수치 table is split
+- Location: `GAME_RULES.md` 기본 수치. A blank line before `| MIN_DRAG |` leaves rows MIN_DRAG…LINE_PAIR_MIN without a header, so Markdown does not render them as a table.
+- Recommendation: remove the blank line.
+
+#### N-8 (Info, architect) — L-magnet tie-break
+- R-021 L picks "the pair with the smallest distance sum". Ties are possible, for example with symmetric landmarks, and the order of the landmark list is not specified.
+- Recommendation: architect fixes a deterministic order, e.g. by (sum, then lexicographic points), in the Core function.
+
+### Checklist (delta)
+
+1. Spec/AC: all four task ACs are still met. The user decision is fully specified, except that the "models need the techniques" claims are overstated (R-1..R-3).
+2–3. Conventions/boundaries: docs and design script only, in scope.
+4. Edge cases: R-007 rejections are complete (layers < 0, no paper at grab, short drag, line off paper).
+5. Performance: full script 7.5 min (4 processes); `shortcut` is most of it. The skip-step check adds about 4 s.
+6. Duplication: none.
+7. Regression: v1 Core untouched (verify_core PASS).
+8. Tests/verification: the script checks every J-case and invariant cited, but its shortcut guard is not exhaustive for the easiest class of shortcuts (R-2).
+
+### Required for approval
+R-1, R-2 (guard + corrected numbers + policy decision), R-4. R-3 and N-6/N-7 are recommended in the same pass.
+
+### Status
+`task.py set Origami ORIGAMI-007 --status FIX_REQUIRED --result review=fail`

@@ -7,7 +7,7 @@
     "verify_core.sh Origami 통과(기존 v1 테스트 포함), check_meta OK"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "aeca340ddbe85792bb0074dab7c5f3aa658d9850",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-008"
@@ -28,7 +28,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-009",
   "title": "v2 Core 접기 엔진·자석·판정·카탈로그",
   "verification": [

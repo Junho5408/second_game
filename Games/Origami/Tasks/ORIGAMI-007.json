@@ -20,15 +20,17 @@
     "Re-review fix 1: CHANGES_REQUESTED — R-1 cicada step7 (top-1-layer) outline-invisible (8 folds ★3), R-2 skip-step shortcuts dog 3f 0.867/cicada 7f 0.919/plane 4f 1.000 missed by beam guard, R-3 0.849/0.848 near boundary, R-4 F-005 AC-11 facet count 2",
     "fix pass 2 (last retry for game-designer): R-1, R-2 per DECISIONS shortcut policy, R-3 margins, R-4, N-6, N-7",
     "Fix pass 2: R-1 cicada redesign (no top-1 head; J-15/17/18), R-2 exhaustive subsequence check + policy <0.91 for paid (dog 0.867, cicada 0.892 star-1 allowed), R-3 margins 0.02, R-4 AC-11, N-6/N-7/N-8; full balance_check.py OK (8m57s)",
-    "Re-review fix 2: APPROVED_WITH_WARNINGS — R-1..R-4, N-6..N-8 resolved; full balance_check OK (9m32s), independent judge + layer-varied subsequence check agree; W-5 cicada top-N evidence wording, W-6 dog-no-chin 0.849 not to be tested"
+    "Re-review fix 2: APPROVED_WITH_WARNINGS — R-1..R-4, N-6..N-8 resolved; full balance_check OK (9m32s), independent judge + layer-varied subsequence check agree; W-5 cicada top-N evidence wording, W-6 dog-no-chin 0.849 not to be tested",
+    "QA PASS: 4/4 AC met; AC numbers spot-checked with balance_check engine; verify_core PASS 283, check_meta OK; non-blocking O-1..O-4 + W-5/W-6"
   ],
   "priority": "critical",
   "result": {
     "design": "v2-phase1",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 2,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-007",
   "title": "v2 재기획: 3D 공간·캐릭터·책·자유 접기",
   "verification": [

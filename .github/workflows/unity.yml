@@ -16,6 +16,12 @@ permissions:
   contents: read
   checks: write
 
+env:
+  # Repo-wide fixed Unity version (see studio/templates/game/Unity/ProjectSettings/ProjectVersion.txt).
+  # GameCI image generation 4 is the one published for Unity 6.3.
+  UNITY_VERSION: 6000.3.29f1
+  GAMECI_IMAGE_GEN: "4"
+
 concurrency:
   group: unity-${{ github.ref }}
   cancel-in-progress: false
@@ -105,6 +111,8 @@ jobs:
         with:
           projectPath: ${{ env.PROJECT_PATH }}
           testMode: all
+          unityVersion: ${{ env.UNITY_VERSION }}
+          customImage: unityci/editor:ubuntu-${{ env.UNITY_VERSION }}-linux-il2cpp-${{ env.GAMECI_IMAGE_GEN }}
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.game }} Unity Test Results
@@ -120,6 +128,8 @@ jobs:
         with:
           projectPath: ${{ env.PROJECT_PATH }}
           targetPlatform: StandaloneWindows64
+          unityVersion: ${{ env.UNITY_VERSION }}
+          customImage: unityci/editor:ubuntu-${{ env.UNITY_VERSION }}-windows-mono-${{ env.GAMECI_IMAGE_GEN }}
           buildMethod: StudioBuild.Build
           buildName: ${{ matrix.game }}
           versioning: None

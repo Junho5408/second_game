@@ -55,3 +55,52 @@
 
 ## Verdict
 The spec is complete, numerically correct, internally consistent and testable enough to start SANDBOX-002. The warnings are clarifications that should be folded in (ideally before SANDBOX-003 writes tests) but do not block design work.
+
+## Re-review (fix pass 1)
+
+- Reviewer: code-reviewer
+- Reviewed commits: 89fc5aa (docs fix), a917843 (status); orchestrator commit ed8060f (task notes/retry) not part of the task's change
+- Inputs: previous findings W-1..W-3 above, `Reports/qa/SANDBOX-001.md` (BUG-SANDBOX-001-1..4)
+- **Result: APPROVED_WITH_WARNINGS** (one cosmetic nit, nothing blocking)
+
+### Commands run
+| Command | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Sandbox SANDBOX-001` | OK |
+| `bash studio/scripts/verify_core.sh Sandbox` | PASS (1/1; regression only, no code changed) |
+| `python3 studio/scripts/check_meta.py Games/Sandbox/Unity` | OK |
+| `git show 89fc5aa` | touches only `Docs/design/{CONTENT_SPECS,FEATURE_SPECS,GAME_RULES}.md` (+17/-8) |
+| `python3 -I m.py` (scratch reference model of R-001..R-006, not committed) | AC-19, AC-20 (NaN/+Inf/-Inf + fresh counter), AC-21 (both parts), AC-22 (NaN and +Inf) all PASS |
+
+### Resolution of previous findings
+| Finding | Status | Evidence |
+|---|---|---|
+| W-2 / BUG-SANDBOX-001-1 reset time argument | **Resolved** | FEATURE_SPECS.md:19 drops "리셋" and adds "리셋은 시각을 받지 않는다(R-005)"; :28 "리셋(시각 인자 없음)"; GAME_RULES.md:26 (R-001) and :51 (R-005) state the same, and R-005 explicitly rules out invalid/backward-time reset. All three locations agree; `Reset()` signature is now unambiguous for SANDBOX-002. |
+| W-3 / BUG-SANDBOX-001-2 NaN/±Inf query result | **Resolved** | GAME_RULES.md:28-30 splits input vs query: query reports state as of last valid input, no expiry (including `+Inf`), no exception; no-input case returns 0/0/x1. FEATURE_SPECS.md:34 says the same; AC-20 tests NaN, +Inf, -Inf and the fresh-counter case. Arithmetic (score 6, combo 5, x2) verified. The rule is equivalent to the existing R-004 `now < t_prev` exception, so the two exception paths give one consistent result. |
+| W-1 / BUG-SANDBOX-001-3 implicit AC query time | **Resolved** | FEATURE_SPECS.md:41 convention "별도 명시가 없으면 now = t_prev"; no-input states are query-time independent (consistent with R-004 "직전 입력이 있고" and R-001). Checked every AC against the convention: AC-11, AC-19, AC-20, AC-21 state their `now` explicitly; all others hold at `now = t_prev` (including AC-12, where `t_prev` stays 2.0/2.5 after the ignored backward input). |
+| W-3 / BUG-SANDBOX-001-4 rules without AC | **Resolved** | (a) `now < t_prev` query -> AC-19; (b) negative finite time -> AC-21; (c) `t_prev` unchanged after NaN/+Inf input -> AC-22. AC-22's +Inf case is discriminating: an implementation that only rejects NaN would accept +Inf as `t_prev`, then ignore t=0.5 as backward, yielding combo 1 instead of 2. |
+| N-1 CONTENT_SPECS note placement | Resolved | "해당 없음" note now below the "담당" line. (SANDBOX-004 part was addressed by orchestrator commit 7f7bb35.) |
+
+### New-inconsistency check (GAME_RULES <-> FEATURE_SPECS <-> GAME_DESIGN)
+- Reset: GAME_RULES R-001/R-005, FEATURE_SPECS 요구사항/기대 동작 5 agree (no time arg). GAME_DESIGN.md:20/28 mention reset without any time, consistent.
+- Invalid-time input: GAME_RULES R-001 (score, combo, `t_prev` unchanged) == FEATURE_SPECS edge case :33 == AC-14/AC-22.
+- Invalid-time query: GAME_RULES R-001 == FEATURE_SPECS edge case :34 == AC-20; consistent with R-004 and GAME_RULES:21 (combo 0 -> x1).
+- `now < t_prev` query: GAME_RULES R-004 == FEATURE_SPECS edge case :35 == AC-19.
+- Negative finite time: FEATURE_SPECS edge case :39 == AC-21; R-001/R-003 do not forbid it. No contradiction found.
+
+### New findings
+
+#### N-2 (nit) Typo in new edge case
+- Location: Games/Sandbox/Docs/design/FEATURE_SPECS.md:35, "조회 시각이 마지막 입력보다 이름(`now < t_prev`)"
+- Problem: "이름" should be "이른" (earlier). Meaning is still clear from the formula.
+- Impact: cosmetic only.
+- Recommendation: fix on the next edit of the file; does not block.
+
+#### N-3 (nit / informational) -Inf input on a fresh counter has no explicit AC
+- Location: FEATURE_SPECS.md AC-14, AC-22
+- Problem: AC-22 covers NaN and +Inf after a valid input; -Inf after a valid input is also rejected by the backward-time rule, so it does not discriminate. The only case that proves the finiteness check for -Inf is "-Inf as the first input". AC-14 ("NaN 또는 무한대 시각 입력은 점수·콤보를 바꾸지 않는다") covers it in wording, so a test author following AC-14 should include it.
+- Impact: low; SANDBOX-003 may test only NaN/+Inf.
+- Recommendation: optional - make AC-14 say "NaN, +무한대, −무한대 각각, 새 카운터와 입력 후 상태 모두에서". Not required for approval.
+
+### Verdict
+All three review warnings and all four QA bugs are resolved, and the fix introduces no new inconsistency between GAME_RULES.md, FEATURE_SPECS.md and GAME_DESIGN.md. New ACs AC-19..AC-22 are arithmetically correct (reference model). Remaining items are nits. Ready for QA re-verification.

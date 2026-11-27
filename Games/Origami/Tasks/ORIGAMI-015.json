@@ -6,7 +6,7 @@
     "수치·규칙 변경 없음 (문구·주석만). balance_check.py econ 모드 OK"
   ],
   "agent": "game-designer",
-  "base_commit": null,
+  "base_commit": "7190c812aaacf8fe1d2ab5a0c17cea9e8a3d99af",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-009"
@@ -15,11 +15,18 @@
   "file_scope": [
     "Games/Origami/Docs/design/"
   ],
-  "notes": [],
+  "notes": [
+    "gen_parity.py writes the full PythonParityData.cs (header+wrapper) to stdout or OUT path; cmp vs current file identical"
+  ],
   "priority": "medium",
-  "result": {},
+  "result": {
+    "econ": "OK",
+    "gen_parity": "byte-identical",
+    "qa": "pass",
+    "review": "pass"
+  },
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-015",
   "title": "v2 기획 문서 정리 + 파이썬 대조 데이터 생성기 보관",
   "verification": [

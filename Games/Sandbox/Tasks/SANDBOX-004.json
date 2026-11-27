@@ -1,7 +1,7 @@
 {
   "acceptance_criteria": [
     "스페이스/클릭 입력 시 Core ScoreCounter 호출",
-    "현재 점수와 콤보가 화면 텍스트로 표시",
+    "현재 점수, 콤보, 배율이 화면 텍스트로 표시",
     "PlayMode 테스트로 입력→점수 반영 검증"
   ],
   "agent": "developer",

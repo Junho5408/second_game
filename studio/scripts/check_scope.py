@@ -26,6 +26,10 @@ def _match(path, scope):
 def in_scope(path: str, scope: list, task_file: str) -> bool:
     if path == task_file:
         return True
+    # Pipeline reports (review/QA/build) of the same game are written by other agents during the task.
+    game_root = task_file.split("/Tasks/")[0]
+    if path.startswith(game_root + "/Reports/"):
+        return True
     if _match(path, scope):
         return True
     if path.endswith(".meta"):

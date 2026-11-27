@@ -54,3 +54,10 @@ def test_cli_no_base_exit2(task_cli, studio_repo):
     tid = task_cli("new", "Demo", "--title", "t", "--agent", "developer").stdout.strip()
     r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
     assert r.returncode == 2
+
+
+def test_same_game_reports_allowed_other_game_reports_rejected():
+    # Review/QA agents write Reports/ during the pipeline; they must not count against the implementer.
+    assert in_scope("Games/Demo/Reports/review/DEMO-001.md", [], TF)
+    assert in_scope("Games/Demo/Reports/qa/DEMO-002.md", [], TF)
+    assert not in_scope("Games/Other/Reports/qa/X.md", [], TF)

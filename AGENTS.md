@@ -63,6 +63,8 @@ Every development task defines its allowed paths in `file_scope`. You may modify
 - paths matched by your task's `file_scope` (a trailing `/` means the whole folder) and their `.meta` files;
 - your own task file — and in it **only `status`, `result` and `notes`** (via `task.py set`).
 
+(`check_scope.py` also ignores the game's `Reports/`, which review/QA agents write during your task.)
+
 Shared files require explicit ownership assignment by the Orchestrator.
 `python3 studio/scripts/check_scope.py <G> <ID>` lists any file you changed outside your scope — run it before reporting.
 

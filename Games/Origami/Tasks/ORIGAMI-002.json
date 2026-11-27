@@ -17,14 +17,16 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Contracts/"
   ],
   "notes": [
-    "Docs/tech 4종 + Core 골격(Content/Rules/Run/Flow) + Contracts 테스트 41개. verify_core PASS, check_meta OK."
+    "Docs/tech 4종 + Core 골격(Content/Rules/Run/Flow) + Contracts 테스트 41개. verify_core PASS, check_meta OK.",
+    "review APPROVED_WITH_WARNINGS (W-1..W-6), Reports/review/ORIGAMI-002.md"
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-002",
   "title": "Origami 구조·인터페이스 설계",
   "verification": [

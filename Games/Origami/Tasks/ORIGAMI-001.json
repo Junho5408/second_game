@@ -14,14 +14,16 @@
   ],
   "notes": [
     "design docs written: GAME_DESIGN, GAME_RULES (R-001~R-015), FEATURE_SPECS (F-001~F-007), CONTENT_SPECS",
-    "review: APPROVED_WITH_WARNINGS (W-1 GAME_DESIGN bankruptcy wording, W-2 implicit ending AC inputs, W-3 null/invalid action inputs)"
+    "review: APPROVED_WITH_WARNINGS (W-1 GAME_DESIGN bankruptcy wording, W-2 implicit ending AC inputs, W-3 null/invalid action inputs)",
+    "QA FIX_REQUIRED: BUG-1 High GAME_DESIGN step 4 contradicts R-013 (bankruptcy timing); BUG-2 Medium out-of-domain inputs; BUG-3/4 Low. See Reports/qa/ORIGAMI-001.md"
   ],
   "priority": "high",
   "result": {
+    "qa": "fail",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "FIX_REQUIRED",
   "task_id": "ORIGAMI-001",
   "title": "종이접기 판매 게임 기획",
   "verification": [

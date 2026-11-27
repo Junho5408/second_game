@@ -17,14 +17,16 @@
     "Games/Origami/Docs/tech/"
   ],
   "notes": [
-    "Docs only: C-150, C-170, C-191, C-192, ARCHITECTURE §2, CODING_CONVENTION text rule exception"
+    "Docs only: C-150, C-170, C-191, C-192, ARCHITECTURE §2, CODING_CONVENTION text rule exception",
+    "QA pass: 5/5 criteria; +6 QA tests (ContractDocsV2QaTests) pin C-150 NothingToFold/order; core 978/978"
   ],
   "priority": "low",
   "result": {
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-016",
   "title": "v2 기술 문서 후속 정리(계약 보완)",
   "verification": [

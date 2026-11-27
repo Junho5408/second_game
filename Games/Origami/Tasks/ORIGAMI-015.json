@@ -1,0 +1,28 @@
+{
+  "acceptance_criteria": [
+    "Docs/design/tools/gen_parity.py: 스크래치의 ORIGAMI-009 생성기를 옮기고 경로를 저장소 상대로 바꿈(sys.path는 스크립트 위치 기준), 실행하면 현재 PythonParityData.cs와 같은 내용을 표준출력/지정 파일로 생성(바이트 동일 확인), 사용법을 파일 머리 주석에 기록",
+    "CONTENT §2 집 3단계 선 끝점 순서를 balance_check.py 출력 (1,-0.5)-(-1,-0.5)에 맞추거나 '끝점 순서 무관' 명시 (리뷰 ORIGAMI-009 W-2)",
+    "GAME_DESIGN 매미 겹 기법 근거 문장을 실제 검증 범위에 맞게 수정 (리뷰 ORIGAMI-007 W-5), GAME_DESIGN 규칙 범위 표기 R-021까지 (QA O-2), F-006 AC-04에 'Fold 1회 후 Unfold' 명시 (QA O-1)",
+    "수치·규칙 변경 없음 (문구·주석만). balance_check.py econ 모드 OK"
+  ],
+  "agent": "game-designer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-009"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/design/"
+  ],
+  "notes": [],
+  "priority": "medium",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-015",
+  "title": "v2 기획 문서 정리 + 파이썬 대조 데이터 생성기 보관",
+  "verification": [
+    "review"
+  ]
+}

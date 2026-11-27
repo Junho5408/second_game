@@ -40,7 +40,8 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/CatalogSpecQaTests.cs"
   ],
   "notes": [
-    "v1 Qa 파일 6개 경로는 ARCHITECTURE §10 참고; 해당 파일 삭제는 이 작업에 허용(Orchestrator 배정). 리뷰 실패 2회 시 Core/Room 분리(리뷰 N-5)"
+    "v1 Qa 파일 6개 경로는 ARCHITECTURE §10 참고; 해당 파일 삭제는 이 작업에 허용(Orchestrator 배정). 리뷰 실패 2회 시 Core/Room 분리(리뷰 N-5)",
+    "리뷰 ORIGAMI-009 I-1: ModelCatalog.Recognition 첫 접근 ~0.35s — 로드 시 한 번 미리 접근(첫 완성 멈춤 방지)"
   ],
   "priority": "high",
   "result": {},

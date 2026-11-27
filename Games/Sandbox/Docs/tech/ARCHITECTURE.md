@@ -42,8 +42,8 @@ Core/Scoring은 별도 asmdef를 두지 않고 `Sandbox.Core` 어셈블리에 �
 
 | 의존 | 용도 | 상태 |
 |---|---|---|
-| 레거시 Input Manager (`UnityEngine.Input`) | Space / 마우스 왼쪽 / R 키 다운 판정 (`ScoreCounterController.Update`) | Unity CI PlayMode(Editor, batchmode)에서 예외 없이 동작 확인 — Reports/build/SANDBOX-004.md (리뷰 W-3 해소). 단독 실행 플레이어에서 실제 키·마우스 입력은 CI 미검증(사람이 빌드를 실행해야 확인 가능). `com.unity.inputsystem` 패키지는 없음. `ProjectSettings`의 `activeInputHandler`는 커밋하지 않았고 Unity 기본값으로 동작한다. 바뀌어 예외가 나면 architect 작업으로 Input Manager(또는 Both)를 명시한다. |
-| IMGUI (`OnGUI`, `GUI.Label`) | 점수 표시 (`ScoreView`) | 추가 에셋·패키지 불필요. 플레이어에서의 렌더링은 CI 미검증. |
+| 레거시 Input Manager (`UnityEngine.Input`) | Space / 마우스 왼쪽 / R 키 다운 판정 (`ScoreCounterController.Update`) | Unity CI PlayMode(Editor, batchmode)에서 예외 없이 동작 확인 — Reports/build/SANDBOX-004.md (리뷰 W-3 해소). 단독 실행 플레이어의 실제 키 입력은 CI가 검증할 수 없고, 사용자 플레이테스트(Windows 빌드, run 45928856363)로 수동 확인됨 — DECISIONS.md. `com.unity.inputsystem` 패키지는 없음. `ProjectSettings`의 `activeInputHandler`는 커밋하지 않았고 Unity 기본값으로 동작한다. 바뀌어 예외가 나면 architect 작업으로 Input Manager(또는 Both)를 명시한다. |
+| IMGUI (`OnGUI`, `GUI.Label`) | 점수 표시 (`ScoreView`) | 추가 에셋·패키지 불필요. 플레이어 렌더링은 CI 미검증, 사용자 플레이테스트로 점수 표시 정상 확인됨 — DECISIONS.md. |
 
 ## 이벤트 / 통신 방식
 

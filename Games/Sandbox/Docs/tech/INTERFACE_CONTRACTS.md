@@ -145,7 +145,7 @@ namespace Sandbox.Runtime.Gameplay
 | 입력(press) | `Input.GetMouseButtonDown(0)` | `clickDown` (Space와 같은 프레임이면 2회 → R-002) |
 
 - 입력 백엔드: 레거시 Input Manager. `com.unity.inputsystem` 패키지는 없고 추가하지 않는다. Unity CI PlayMode(Editor, batchmode)에서
-  `Input` 호출이 예외 없이 동작함이 확인됐다(Reports/build/SANDBOX-004.md, 리뷰 W-3 해소). 단독 실행 플레이어에서의 실제 키·마우스 입력은 CI로 검증되지 않았다.
+  `Input` 호출이 예외 없이 동작함이 확인됐다(Reports/build/SANDBOX-004.md, 리뷰 W-3 해소). 단독 실행 플레이어의 실제 입력·표시는 CI가 검증할 수 없으며, 사용자 플레이테스트(Windows 빌드)로 수동 확인됐다(DECISIONS.md).
 - 키 반복(누르고 있기)은 입력이 아니다: `GetKeyDown`/`GetMouseButtonDown`(눌린 프레임만)으로 판정한다.
 
 **시각 원천**: `double t = Time.unscaledTimeAsDouble;`

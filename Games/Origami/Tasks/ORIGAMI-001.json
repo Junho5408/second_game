@@ -1,0 +1,25 @@
+{
+  "acceptance_criteria": [
+    "핵심 루프(접기→판매→돈→엔딩) 정의",
+    "접기 조작, 작품 종류·가격, 판매 규칙, 게임 종료 조건, 엔딩 분기 조건이 수치와 함께 정의",
+    "각 기능에 테스트 가능한 수용 기준과 엣지 케이스"
+  ],
+  "agent": "game-designer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/design/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "ORIGAMI-001",
+  "title": "종이접기 판매 게임 기획",
+  "verification": [
+    "review"
+  ]
+}

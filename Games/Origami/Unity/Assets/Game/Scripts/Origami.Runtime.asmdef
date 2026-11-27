@@ -1,0 +1,14 @@
+{
+    "name": "Origami.Runtime",
+    "rootNamespace": "Origami.Runtime",
+    "references": ["Origami.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

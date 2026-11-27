@@ -1,4 +1,5 @@
 using System;
+using Origami.Core.Content;
 
 namespace Origami.Core.Rules
 {
@@ -14,7 +15,24 @@ namespace Origami.Core.Rules
         /// </summary>
         public static string Evaluate(RunEndReason reason, int finalMoney, CompletionCounts counts)
         {
-            throw new NotImplementedException();
+            if (reason != RunEndReason.Completed && reason != RunEndReason.Bankrupt)
+                throw new ArgumentOutOfRangeException(nameof(reason));
+            if (counts == null) throw new ArgumentNullException(nameof(counts));
+
+            if (reason == RunEndReason.Bankrupt || finalMoney <= RuleConstants.EmptyHandedMoney) return EndingIds.EmptyHanded;
+            if (counts.Total(ModelIds.Crane) >= RuleConstants.CraneCount) return EndingIds.CraneWish;
+            if (finalMoney >= RuleConstants.TycoonMoney) return EndingIds.Tycoon;
+            if (AllModelsHaveStar3(counts)) return EndingIds.Master;
+            return EndingIds.LocalShop;
+        }
+
+        private static bool AllModelsHaveStar3(CompletionCounts counts)
+        {
+            for (int i = 0; i < OrigamiCatalog.Models.Count; i++)
+            {
+                if (counts.Get(OrigamiCatalog.Models[i].Id, Grade.Star3) < 1) return false;
+            }
+            return true;
         }
     }
 }

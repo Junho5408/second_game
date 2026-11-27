@@ -1,4 +1,5 @@
 using System;
+using Origami.Core.Content;
 
 namespace Origami.Core.Rules
 {
@@ -14,7 +15,11 @@ namespace Origami.Core.Rules
         /// </summary>
         public static bool IsUnlocked(string modelId, CompletionCounts counts)
         {
-            throw new NotImplementedException();
+            if (counts == null) throw new ArgumentNullException(nameof(counts));
+            var model = OrigamiCatalog.FindModel(modelId);
+            if (model == null) return false;
+            if (model.IsInitiallyUnlocked) return true;
+            return counts.Total(model.UnlockPrerequisiteId) >= RuleConstants.UnlockCount;
         }
 
         /// <summary>
@@ -24,7 +29,11 @@ namespace Origami.Core.Rules
         /// </summary>
         public static int Progress(string modelId, CompletionCounts counts)
         {
-            throw new NotImplementedException();
+            if (counts == null) throw new ArgumentNullException(nameof(counts));
+            var model = OrigamiCatalog.FindModel(modelId);
+            if (model == null) return 0;
+            if (model.IsInitiallyUnlocked) return RuleConstants.UnlockCount;
+            return Math.Min(counts.Total(model.UnlockPrerequisiteId), RuleConstants.UnlockCount);
         }
     }
 }

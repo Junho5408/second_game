@@ -16,7 +16,11 @@
     "Games/Sandbox/Unity/Assets/Game/Scripts/UI/",
     "Games/Sandbox/Unity/Assets/Game/Tests/PlayMode/Scoring/"
   ],
-  "notes": [],
+  "notes": [
+    "R-1 (QA SANDBOX-002): PlayMode tests must use times based on Time.unscaledTimeAsDouble or assert right after SubmitPress",
+    "R-2: Current starts at ScoreSnapshot.Initial; view reads in LateUpdate",
+    "R-3: if UnityEngine.Input throws in CI, Orchestrator opens architect task to commit ProjectSettings activeInputHandler"
+  ],
   "priority": "medium",
   "result": {},
   "retry_count": 0,

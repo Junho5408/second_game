@@ -81,6 +81,10 @@ what was done, verification evidence, open issues, and how to get the Windows bu
 | Test environment error (CI, license) | separate environment failure from code failure; record evidence |
 | Budget/time pressure | stop, save state in task files and PROGRESS.md |
 
+## Commits
+
+Your own commits (task planning, merges, docs) use the prefix `orchestrator: ...`.
+
 ## Reporting
 
 Every task must have an owner, dependencies, acceptance criteria, and verification results.

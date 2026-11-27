@@ -66,12 +66,15 @@ Every development task defines its allowed paths in `file_scope`. You may modify
 (`check_scope.py` also ignores the game's `Reports/`, which review/QA agents write during your task.)
 
 Shared files require explicit ownership assignment by the Orchestrator.
-`python3 studio/scripts/check_scope.py <G> <ID>` lists any file you changed outside your scope — run it before reporting.
+`python3 studio/scripts/check_scope.py <G> <ID>` lists any file outside your scope touched by the task's `<ID>:` commits
+or by uncommitted changes — run it before reporting.
 
 ## 7. Git Rules
 
 - Work on the branch or worktree the Orchestrator gave you.
-- Do not commit unrelated changes. Keep commits small and task-specific; message starts with the task ID.
+- Do not commit unrelated changes. Keep commits small and task-specific.
+- Commit message prefixes (`check_scope.py` relies on them):
+  implementer `<ID>: ...` · code-reviewer `review(<ID>): ...` · qa-engineer `qa(<ID>): ...` · Orchestrator `orchestrator: ...`.
 - Never force-push. Do not merge unreviewed changes (merging is the Orchestrator's job).
 
 ## 8. Tools

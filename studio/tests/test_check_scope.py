@@ -61,3 +61,31 @@ def test_same_game_reports_allowed_other_game_reports_rejected():
     assert in_scope("Games/Demo/Reports/review/DEMO-001.md", [], TF)
     assert in_scope("Games/Demo/Reports/qa/DEMO-002.md", [], TF)
     assert not in_scope("Games/Other/Reports/qa/X.md", [], TF)
+
+
+def test_cli_ignores_other_commits_on_branch(task_cli, studio_repo):
+    tid = task_cli("new", "Demo", "--title", "t", "--agent", "developer",
+                   "--scope", "Games/Demo/Src/").stdout.strip()
+    for s in ["ASSIGNED", "IN_PROGRESS"]:
+        assert task_cli("set", "Demo", tid, "--status", s).returncode == 0
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", "orchestrator: plan")
+    # Orchestrator (or another task) changes an unrelated file after the task started.
+    (studio_repo / "README.md").write_text("orchestrator edit")
+    git(studio_repo, "commit", "-qam", "orchestrator: unrelated")
+    # The task's own commit, in scope.
+    (studio_repo / "Games/Demo/Src").mkdir(parents=True)
+    (studio_repo / "Games/Demo/Src/ok.cs").write_text("x")
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"{tid}: implement")
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout
+
+
+def test_cli_flags_task_commit_outside_scope(task_cli, studio_repo):
+    tid = task_cli("new", "Demo", "--title", "t", "--agent", "developer",
+                   "--scope", "Games/Demo/Src/").stdout.strip()
+    for s in ["ASSIGNED", "IN_PROGRESS"]:
+        assert task_cli("set", "Demo", tid, "--status", s).returncode == 0
+    (studio_repo / "LICENSE").write_text("x")
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"{tid}: oops")
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 1 and r.stdout.split() == ["LICENSE"]

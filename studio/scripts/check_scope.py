@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Report files changed since a task's base commit that fall outside its file_scope.
+"""Report files changed by a task (its "<ID>:" commits since base_commit + uncommitted changes)
+that fall outside its file_scope.
 
 Usage: check_scope.py <Game> <TaskID> [--base REF]
 Exit 0 = OK, 1 = violations (printed one per line), 2 = no base available.
@@ -37,12 +38,16 @@ def in_scope(path: str, scope: list, task_file: str) -> bool:
     return False
 
 
-def changed_files(base):
+def changed_files(base, task_id):
+    """Files touched by this task: commits since base whose subject starts with "<ID>:",
+    plus uncommitted and untracked changes. Other commits on the branch are ignored."""
     root = repo_root()
     def run(*args):
         return subprocess.run(["git", *args], cwd=root, capture_output=True,
                               text=True, check=True).stdout.splitlines()
-    files = set(run("diff", "--name-only", base))
+    files = set(run("log", "--format=", "--name-only", "--extended-regexp",
+                    f"--grep=^{task_id}:", f"{base}..HEAD"))
+    files |= set(run("diff", "--name-only", "HEAD"))
     files |= set(run("ls-files", "--others", "--exclude-standard"))
     return sorted(f for f in files if f)
 
@@ -58,7 +63,7 @@ def main():
         print("no base: pass --base or move the task to IN_PROGRESS first", file=sys.stderr)
         sys.exit(2)
     task_file = tpath.relative_to(repo_root()).as_posix()
-    bad = [f for f in changed_files(base) if not in_scope(f, task.get("file_scope", []), task_file)]
+    bad = [f for f in changed_files(base, a.task_id) if not in_scope(f, task.get("file_scope", []), task_file)]
     for f in bad:
         print(f)
     if bad:

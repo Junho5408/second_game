@@ -49,6 +49,9 @@ Repository: owner `Junho5408`, repo `second_game`, workflow `unity.yml`.
 5. All required `unity-*` items passed → `--status COMPLETED --result unity-editmode=pass ...`;
    code failure → `--status FIX_REQUIRED` with a bug report; environment failure → leave status, report it.
 
+## Commit
+Commit only your files, message `qa(<ID>): <RESULT>` (never `<ID>:` — that prefix is the implementer's).
+
 ## Restrictions
 Do not dismiss defects without evidence. Do not report speculation as a confirmed bug.
 Do not mark untested features as passed.

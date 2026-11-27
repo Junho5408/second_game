@@ -36,6 +36,9 @@ Every finding includes: file and location, problem description, impact, recommen
 - APPROVED / APPROVED_WITH_WARNINGS → `task.py set <G> <ID> --status QA --result review=pass`
 - CHANGES_REQUESTED / BLOCKED → `task.py set <G> <ID> --status FIX_REQUIRED --result review=fail`
 
+## Commit
+Commit only your report and the task file, message `review(<ID>): <RESULT>`.
+
 ## Restrictions
 Do not modify source code. Do not reject code for personal style preference.
 Prioritize correctness, maintainability and project conventions.

@@ -19,15 +19,20 @@
   "notes": [
     "OS font creation (Font.CreateDynamicFontFromOSFont) must tolerate failure in batchmode CI without logging errors that fail PlayMode tests (review ORIGAMI-002 W-5)",
     "Multi-key frames: only highest-priority key counts even if the screen ignores it — intended (A-4)",
-    "unity-compile/editmode/playmode/build NOT verified (no Unity here); Unity-side code compiled only against hand-written UnityEngine/NUnit stubs (netstandard2.1, C# 9) to catch C# errors. Added public helper OrigamiButtons/OrigamiButton (C-031 extension) so button->Flow wiring is testable without OnGUI."
+    "unity-compile/editmode/playmode/build NOT verified (no Unity here); Unity-side code compiled only against hand-written UnityEngine/NUnit stubs (netstandard2.1, C# 9) to catch C# errors. Added public helper OrigamiButtons/OrigamiButton (C-031 extension) so button->Flow wiring is testable without OnGUI.",
+    "QA: CI run 45948502253 unity (Origami) success: EditMode 283/283, PlayMode 21/21, build Origami.exe, artifact Origami-windows-build 34232248 B. Playtest pending: Korean glyphs, layout, real input."
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
-    "review": "pass"
+    "review": "pass",
+    "unity-build": "pass",
+    "unity-compile": "pass",
+    "unity-editmode": "pass",
+    "unity-playmode": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-005",
   "title": "Unity 컨트롤러·화면",
   "verification": [

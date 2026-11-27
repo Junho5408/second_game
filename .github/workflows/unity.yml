@@ -21,8 +21,6 @@ env:
   # GameCI image generation 4 is the one published for Unity 6.3.
   UNITY_VERSION: 6000.3.29f1
   GAMECI_IMAGE_GEN: "4"
-  # Pinned: resolving "latest" hits the unauthenticated GitHub API and can fail with 403.
-  GAMECI_CLI_VERSION: v0.1.77
 
 concurrency:
   group: unity-${{ github.ref }}
@@ -109,13 +107,14 @@ jobs:
 
       - name: Unity tests (EditMode + PlayMode)
         id: tests
-        uses: game-ci/unity-test-runner@v4
+        # Pinned to v4.3.2: v4.4.0+ (game-ci CLI path) rejects Personal .ulf files with
+        # "Code 400 TimeStamp validation failed" (game-ci/unity-test-runner#336).
+        uses: game-ci/unity-test-runner@v4.3.2
         with:
           projectPath: ${{ env.PROJECT_PATH }}
           testMode: all
           unityVersion: ${{ env.UNITY_VERSION }}
           customImage: unityci/editor:ubuntu-${{ env.UNITY_VERSION }}-linux-il2cpp-${{ env.GAMECI_IMAGE_GEN }}
-          cliVersion: ${{ env.GAMECI_CLI_VERSION }}
           artifactsPath: test-results
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: ${{ matrix.game }} Unity Test Results

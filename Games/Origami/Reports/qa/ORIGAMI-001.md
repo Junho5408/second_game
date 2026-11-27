@@ -65,3 +65,40 @@ None. This is a design-only task with no code under `Unity/Assets/Game/`, so the
 
 ## Decision
 FIX_REQUIRED. game-designer fixes BUG-1 (required). BUG-2, BUG-3 and BUG-4 should be fixed in the same pass; each is a one-line edit.
+
+## Re-test (fix pass 1)
+
+- Commit under test: 27717e3 (design fix d8828b9, status 724d0e8, re-review 27717e3). Same standard as above: can architect, developer and QA build and test without guessing?
+- Result: **PASS → COMPLETED**. All four bugs are fixed. The new review notes N-1 and N-2 are Low and do not block.
+
+### Verification run
+| Command | Result |
+|---|---|
+| `bash studio/scripts/verify_core.sh Origami` | PASS (1/1, no Core code in this task) |
+| `python3 studio/scripts/check_meta.py Games/Origami/Unity` | OK |
+| `git diff f4d4f87 724d0e8 -- Games/Origami/Docs/design` | only GAME_DESIGN, GAME_RULES, FEATURE_SPECS changed; no existing number changed |
+| `grep -n "파산\|즉시" Games/Origami/Docs/design/*.md` | no remaining "mid-day bankruptcy" wording. Every bankruptcy statement says the check happens at the start of a new day. |
+| R-014 evaluator (scratchpad `end.py`, not committed) applied to F-006 AC-01..09 under the new 공통 표기 convention | 13/13 cases give the stated ending |
+
+### Bug status
+| Bug | Status | Evidence |
+|---|---|---|
+| BUG-ORIGAMI-001-1 (High) | **Fixed** | GAME_DESIGN.md line 23 now says that money 0 during the day is not bankruptcy, that the check runs at the start of a new day (R-013), and that day 7 has no check. This agrees with R-013, R-015 승패, F-001 edge cases, AC-06/07, and CONTENT_SPECS 파산 최단 시나리오. F-001 AC-07 (money 0 on day 4, then 45 after EndDay) is now consistent with every document. |
+| BUG-ORIGAMI-001-2 (Medium) | **Fixed** | R-004 #3 now covers the empty string and null as UnknownModel. R-005 adds InvalidAction, which is not a mistake, with check order RunEnded → NoFold → InvalidAction. R-015 adds InvalidAction to the reason list and gives the same order. Tests can assert both through F-002 AC-03 (`Start(boat)` then `Start(null)` gives FoldInProgress, which matches the R-004 order) and F-003 AC-15 (3 invalid inputs do not ruin the fold, because they are not mistakes; outside a fold the result is NoFold). |
+| BUG-ORIGAMI-001-3 (Low) | **Fixed** | 공통 표기 sets a convention: mentioned counts take their minimum, unmentioned counts are 0, and bankruptcy means money 0. Re-derived results: AC-05b (no counts) E-05, AC-06 (each model ★3 = 1, cranes 1 < 15, money 500) E-04, AC-09b (bankruptcy, money 0) E-01. All 13 cases match. AC-07b can be read as either 15 or 16 cranes, but both readings give E-02, so it is not ambiguous for testing. |
+| BUG-ORIGAMI-001-4 (Low) | **Fixed** | R-002 and F-001 AC-01 now list 총 판매액 0 and 총 종이값 0 |
+| F-007 minor notes | **Fixed** | Esc confirmation: Enter or "포기한다" confirms, Esc or "계속 접기" cancels, and arrow keys, Space and H are ignored while the dialog is open (AC-08). Bankruptcy settlement: no next-day popular model, a bankruptcy notice is shown, and confirming goes to the result screen (AC-09). The AC-09 values (total 0, money 0, E-01) match F-001 AC-06: on day 4 every sheet is wasted, so there are no sales. |
+
+### Review notes N-1 / N-2 (judged by the no-guessing standard)
+- **N-1** (Enter missing from the GAME_RULES 보조 동작 line and the F-007 조작 key list): **Low, not a bug.** F-007 defines exactly what Enter does in the dialog edge case and in AC-08, and Enter is used nowhere else. A developer implementing F-007 reads that section, so nobody has to guess. Enter pressed outside the dialog is not specified. The only reasonable reading is "no effect", which is what the next fix would have to say anyway. Recommend adding "포기 확인: Enter" the next time the docs are touched.
+- **N-2** (the last sentence of AC-08 comes after the step that closes the dialog): **Low, not a bug.** The sentence states its precondition ("확인 창이 떠 있을 때"), and the expected result (no change to progress or mistakes) follows from the edge-case rule. A test writer opens the dialog with Esc and then presses ↑. Even the misordered reading (↑ after the dialog closed and the fold ended) produces the same observable "no change" result.
+
+### Tests added
+None. This is a design-only task with no code under `Unity/Assets/Game/`.
+
+### Untested areas (unchanged)
+- Unity and presentation behavior (F-007, including the new AC-08/AC-09): there is no implementation yet. These are for the F-007 implementation task and its PlayMode/QA.
+- Play time (10-20 minutes) and "첫 작품 1분 안에": these need playtesting.
+
+### Decision
+COMPLETED. The task's only verification item is `review`, and it passed. There are no `unity-*` items.

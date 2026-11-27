@@ -5,7 +5,7 @@
     "거부된 명령은 스냅샷을 바꾸지 않음"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "a3d2f63ee8117cf40e20380a8eda84ced2542e00",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-002"
@@ -19,12 +19,15 @@
   ],
   "notes": [
     "READ-ONLY in scope (contract, architect-owned): RuleConstants, CompletionCounts, RunEndReason, all result/snapshot types (CommandResult, CommandOutcome, CompletedPiece, SaleLine, SettlementResult, FoldSnapshot, RunSnapshot, RejectReason). Implement only bodies of Grading, Pricing, Unlocking, EndingRules, OrigamiRun. (review ORIGAMI-002 W-2)",
-    "Never return an accepted=false result with RejectReason.None (review W-4)"
+    "Never return an accepted=false result with RejectReason.None (review W-4)",
+    "192 Core tests pass (55 existing + 137 new: Rules 61, Run 76). Public surface unchanged."
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-003",
   "title": "Core 규칙 구현",
   "verification": [

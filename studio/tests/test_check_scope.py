@@ -89,3 +89,70 @@ def test_cli_flags_task_commit_outside_scope(task_cli, studio_repo):
     git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"{tid}: oops")
     r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
     assert r.returncode == 1 and r.stdout.split() == ["LICENSE"]
+
+
+def test_cli_handles_non_ascii_paths(task_cli, studio_repo):
+    tid = task_cli("new", "Demo", "--title", "t", "--agent", "game-designer",
+                   "--scope", "Games/Demo/Docs/design/").stdout.strip()
+    for s in ["ASSIGNED", "IN_PROGRESS"]:
+        assert task_cli("set", "Demo", tid, "--status", s).returncode == 0
+    d = studio_repo / "Games/Demo/Docs/design"
+    d.mkdir(parents=True)
+    (d / "기획.md").write_text("x")
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout          # uncommitted
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"{tid}: 기획")
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout          # committed
+
+
+def _started_task(task_cli, scope="Games/Demo/Src/"):
+    tid = task_cli("new", "Demo", "--title", "t", "--agent", "developer", "--scope", scope).stdout.strip()
+    for s in ["ASSIGNED", "IN_PROGRESS"]:
+        assert task_cli("set", "Demo", tid, "--status", s).returncode == 0
+    return tid
+
+
+def test_role_qa_flags_production_code(task_cli, studio_repo):
+    tid = _started_task(task_cli)
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", "orchestrator: start")
+    prod = studio_repo / "Games/Demo/Unity/Assets/Game/Core"
+    prod.mkdir(parents=True)
+    (prod / "X.cs").write_text("x")
+    tests = studio_repo / "Games/Demo/Unity/Assets/Game/Tests/EditMode"
+    tests.mkdir(parents=True)
+    (tests / "XTests.cs").write_text("x")
+    (studio_repo / "Games/Demo/Reports/qa").mkdir(parents=True)
+    (studio_repo / f"Games/Demo/Reports/qa/{tid}.md").write_text("x")
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"qa({tid}): PASS")
+    r = run_script("check_scope.py", "Demo", tid, "--role", "qa", cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 1
+    assert r.stdout.split() == ["Games/Demo/Unity/Assets/Game/Core/X.cs"]
+    # implementer view is unaffected by qa commits
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout
+
+
+def test_role_review_only_own_report(task_cli, studio_repo):
+    tid = _started_task(task_cli)
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", "orchestrator: start")
+    (studio_repo / "Games/Demo/Reports/review").mkdir(parents=True)
+    (studio_repo / f"Games/Demo/Reports/review/{tid}.md").write_text("x")
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"review({tid}): APPROVED")
+    r = run_script("check_scope.py", "Demo", tid, "--role", "review", cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout
+    (studio_repo / "Games/Demo/Src").mkdir(parents=True)
+    (studio_repo / "Games/Demo/Src/hack.cs").write_text("x")
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", f"review({tid}): oops")
+    r = run_script("check_scope.py", "Demo", tid, "--role", "review", cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 1 and r.stdout.split() == ["Games/Demo/Src/hack.cs"]
+
+
+def test_commit_body_line_does_not_count(task_cli, studio_repo):
+    tid = _started_task(task_cli)
+    git(studio_repo, "add", "-A"); git(studio_repo, "commit", "-qm", "orchestrator: start")
+    (studio_repo / "LICENSE").write_text("x")
+    git(studio_repo, "add", "-A")
+    git(studio_repo, "commit", "-qm", "orchestrator: unrelated", "-m", f"{tid}: mentioned in body")
+    r = run_script("check_scope.py", "Demo", tid, cwd=studio_repo, env_root=studio_repo)
+    assert r.returncode == 0, r.stdout

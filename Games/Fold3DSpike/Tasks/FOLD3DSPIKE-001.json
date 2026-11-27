@@ -6,7 +6,7 @@
     "Windows 빌드에서 실행"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "b39f375f0395d130a7a07529e18d3a25479d6c53",
   "deliverables": [],
   "dependencies": [],
   "description": "",
@@ -14,12 +14,15 @@
     "Games/Fold3DSpike/"
   ],
   "notes": [
-    "SPIKE: throwaway prototype; review/QA skipped by Orchestrator decision; judged by user playtest"
+    "SPIKE: throwaway prototype; review/QA skipped by Orchestrator decision; judged by user playtest",
+    "Spike done; unity-compile/unity-build unverified until CI (no Unity here; Unity code compile-checked only against hand-written API stubs)"
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "REVIEW",
   "task_id": "FOLD3DSPIKE-001",
   "title": "3D 종이 접기 시험판 (종이비행기)",
   "verification": [

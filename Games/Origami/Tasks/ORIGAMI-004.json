@@ -20,10 +20,11 @@
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-004",
   "title": "Core 화면 흐름 구현",
   "verification": [

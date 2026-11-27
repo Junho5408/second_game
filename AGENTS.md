@@ -67,7 +67,8 @@ Every development task defines its allowed paths in `file_scope`. You may modify
 
 Shared files require explicit ownership assignment by the Orchestrator.
 `python3 studio/scripts/check_scope.py <G> <ID>` lists any file outside your scope touched by the task's `<ID>:` commits
-or by uncommitted changes — run it before reporting.
+or by uncommitted changes — run it before reporting. Reviewer and QA check their own work with `--role review` / `--role qa`
+(review may touch only `Reports/review/<ID>.md`; QA only `Unity/Assets/Game/Tests/`, `Reports/qa/`, `Reports/build/`).
 
 ## 7. Git Rules
 
@@ -88,7 +89,7 @@ Run from the repository root.
 | `python3 studio/scripts/check_scope.py <G> <ID>` | files changed outside the task scope |
 | `python3 studio/scripts/gen_meta.py <path>...` | create missing `.meta` files |
 | `python3 studio/scripts/check_meta.py Games/<G>/Unity` | missing/orphan `.meta`, duplicate GUIDs |
-| `bash studio/scripts/verify_core.sh <G>` | `dotnet test` of Core (no Unity needed) |
+| `bash studio/scripts/verify_core.sh <G>` | builds Core against **netstandard2.1 / C# 9** (`Core.Build/`, same API surface as Unity) and runs `dotnet test` (no Unity needed) |
 
 Task states: `BACKLOG → ASSIGNED → IN_PROGRESS → REVIEW → QA → COMPLETED`;
 `QA → AWAITING_UNITY → COMPLETED` when Unity verification is pending in CI;

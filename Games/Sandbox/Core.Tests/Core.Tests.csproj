@@ -9,9 +9,11 @@
     <RootNamespace>Sandbox.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Same sources Unity compiles: Core code and engine-free Core tests -->
-    <Compile Include="../Unity/Assets/Game/Core/**/*.cs" />
+    <!-- Engine-free Core tests (also compiled by Unity EditMode). Core itself comes from Core.Build (netstandard2.1). -->
     <Compile Include="../Unity/Assets/Game/Tests/EditMode/Core/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Core.Build/Core.Build.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

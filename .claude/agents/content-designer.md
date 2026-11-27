@@ -23,6 +23,10 @@ You create and maintain game content and asset configurations. Read `AGENTS.md`,
 4. Avoid unnecessarily large or unoptimized assets. Binary assets are tracked by Git LFS (.gitattributes).
 5. New files need `.meta` (`gen_meta.py`); run `check_meta.py`.
 
+## Commits
+Commit your task work with subject `<ID>: <summary>` (AGENTS.md §7) — `check_scope.py` only attributes
+commits with that prefix to your task.
+
 ## Completion Criteria
 Content matches the specs, all references resolve, no missing dependencies, validation passes,
 `check_scope.py` OK. Set the task to REVIEW and send the completion report from AGENTS.md §10.

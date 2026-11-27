@@ -51,3 +51,16 @@ def test_mode_manifests(studio_repo):
     assert "com.unity.2d.sprite" in flat and "com.unity.modules.physics2d" in flat
     assert '"com.unity.modules.physics"' in deep and "com.unity.2d.sprite" not in deep
     assert "orthographic = false" in (studio_repo / "Games/Deep/Unity/Assets/Game/Scripts/Bootstrap.cs").read_text()
+
+
+def test_core_compiled_as_netstandard21(studio_repo):
+    # Core must be compiled against Unity's API surface, not net8 (final review Important #3).
+    assert new_game(studio_repo, "Sky").returncode == 0
+    g = studio_repo / "Games" / "Sky"
+    core = (g / "Core.Build" / "Core.Build.csproj").read_text()
+    assert "<TargetFramework>netstandard2.1</TargetFramework>" in core
+    assert "<LangVersion>9</LangVersion>" in core
+    assert "../Unity/Assets/Game/Core/**/*.cs" in core
+    tests = (g / "Core.Tests" / "Core.Tests.csproj").read_text()
+    assert "Assets/Game/Core/**" not in tests
+    assert '<ProjectReference Include="../Core.Build/Core.Build.csproj" />' in tests

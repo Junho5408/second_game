@@ -37,9 +37,11 @@ Severity: **Critical** (cannot start, crash, data loss) · **High** (core gamepl
 
 ## Unity verification from CI (task in AWAITING_UNITY)
 Repository: owner `Junho5408`, repo `second_game`, workflow `unity.yml`.
-1. `mcp__github__actions_list` (`list_workflow_runs`, resource_id `unity.yml`) → find the run whose
-   `head_sha` is the commit that contains the task's work (or a later commit on the same branch).
-   If it is still queued/in progress, report "CI pending" and stop without changing the status.
+1. `mcp__github__actions_list` (`list_workflow_runs`, resource_id `unity.yml`) → find a run whose head commit
+   contains the task's work (that commit or a later one on the same branch) **and whose job list includes
+   `unity (<G>)`** — a run that did not test this game proves nothing about it.
+   If none exists, report "CI pending: no unity run covers <G>; Orchestrator should run unity.yml with game=<G>"
+   and stop without changing the status. If it is still queued/in progress, report "CI pending" and stop.
 2. `list_workflow_jobs` for that run → the job for this game. If only the `skipped` job ran, Unity secrets are
    missing: report it as an **environment** failure (not a code failure) and leave AWAITING_UNITY.
 3. On failure read `mcp__github__get_job_logs` (tail) and separate code failures (compile errors, failing
@@ -50,6 +52,7 @@ Repository: owner `Junho5408`, repo `second_game`, workflow `unity.yml`.
    code failure → `--status FIX_REQUIRED` with a bug report; environment failure → leave status, report it.
 
 ## Commit
+Before committing run `python3 studio/scripts/check_scope.py <G> <ID> --role qa` → must be OK.
 Commit only your files, message `qa(<ID>): <RESULT>` (never `<ID>:` — that prefix is the implementer's).
 
 ## Restrictions

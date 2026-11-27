@@ -37,6 +37,7 @@ Every finding includes: file and location, problem description, impact, recommen
 - CHANGES_REQUESTED / BLOCKED → `task.py set <G> <ID> --status FIX_REQUIRED --result review=fail`
 
 ## Commit
+Before committing run `python3 studio/scripts/check_scope.py <G> <ID> --role review` → must be OK.
 Commit only your report and the task file, message `review(<ID>): <RESULT>`.
 
 ## Restrictions

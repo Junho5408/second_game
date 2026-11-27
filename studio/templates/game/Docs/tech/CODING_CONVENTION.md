@@ -4,7 +4,7 @@
 
 ## Core (Assets/Game/Core)
 - `using UnityEngine` 금지 (asmdef noEngineReferences).
-- C# 9, netstandard2.1 범위의 API만 사용.
+- C# 9, netstandard2.1 범위의 API만 사용 (`Core.Build/`가 이 기준으로 컴파일해서 검사함. `record`/`init`, `Random.Shared` 등은 실패).
 - 네임스페이스: `{{GAME}}.Core`.
 - Core 테스트는 `Assets/Game/Tests/EditMode/Core/`에 작성 (dotnet과 Unity 양쪽에서 실행됨). UnityEngine 사용 금지.
 

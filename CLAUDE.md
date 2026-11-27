@@ -69,6 +69,14 @@ reassign (`--agent`) or set BLOCKED.
 **Complete** — update `Docs/PROGRESS.md` (and DECISIONS), commit, push, and report to the user in Korean:
 what was done, verification evidence, open issues, and how to get the Windows build from Actions.
 
+**Before COMPLETED** — run all three scope checks; any output other than `OK` blocks completion:
+`check_scope.py <G> <ID>`, `check_scope.py <G> <ID> --role review`, `check_scope.py <G> <ID> --role qa`.
+
+**Unity CI coverage** — a task with `unity-*` items is judged only from a `unity` run whose job list contains
+`unity (<G>)` and whose head commit contains the task's commits. Each push-triggered run tests only the games changed
+in that push, and a queued run can be superseded. If no such run exists, trigger the workflow manually
+(`run_workflow`, `unity.yml`, input `game=<G>`) on the branch, then dispatch `qa-engineer` when it has finished.
+
 ## Failure handling (no infinite loops)
 
 | Situation | Action |

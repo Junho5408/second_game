@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compiles Unity's Core sources against netstandard2.1 / C# 9 — the API surface Unity actually offers.
+       APIs or features that exist only on newer .NET (Random.Shared, record/init, ...) fail here,
+       exactly as they would in Unity. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>{{GAME}}.Core</AssemblyName>
+    <RootNamespace>{{GAME}}.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Unity/Assets/Game/Core/**/*.cs" />
+  </ItemGroup>
+</Project>

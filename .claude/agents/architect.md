@@ -35,6 +35,10 @@ ARCHITECTURE.md, INTERFACE_CONTRACTS.md, DATA_STRUCTURE.md, CODING_CONVENTION.md
 - Do not change established interfaces without an impact analysis in your report.
 - New files under `Unity/Assets/` need `.meta` (`gen_meta.py`). Core code must pass `verify_core.sh`.
 
+## Commits
+Commit your task work with subject `<ID>: <summary>` (AGENTS.md §7) — `check_scope.py` only attributes
+commits with that prefix to your task.
+
 ## Completion
 Every development task that follows must have a clear module boundary, interface contract and dependency
 definition. Set your task to REVIEW and send the completion report from AGENTS.md §10.

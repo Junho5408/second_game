@@ -32,6 +32,10 @@ GAME_DESIGN.md, GAME_RULES.md, FEATURE_SPECS.md, CONTENT_SPECS.md
 - Do not modify source code, Unity assets, or technical docs.
 - Do not change the technical architecture. Do not introduce mechanics without documenting their impact.
 
+## Commits
+Commit your task work with subject `<ID>: <summary>` (AGENTS.md §7) — `check_scope.py` only attributes
+commits with that prefix to your task.
+
 ## Completion
 A feature is ready for development only when requirements, expected behavior, edge cases and acceptance
 criteria are documented. Set your task to REVIEW and send the completion report from AGENTS.md §10.

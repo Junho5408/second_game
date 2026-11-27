@@ -4,7 +4,7 @@
     "엣지 케이스와 테스트 가능한 수용 기준 포함"
   ],
   "agent": "game-designer",
-  "base_commit": null,
+  "base_commit": "54d9699a459760d9afda6e88fd220d64781721cc",
   "deliverables": [
     "Games/Sandbox/Docs/design/FEATURE_SPECS.md"
   ],
@@ -17,7 +17,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "REVIEW",
   "task_id": "SANDBOX-001",
   "title": "점수 카운터 기획",
   "verification": [

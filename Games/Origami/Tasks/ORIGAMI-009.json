@@ -24,15 +24,17 @@
   ],
   "notes": [
     "QA-2(ORIGAMI-008): LineOnPaper.TryGet / FoldLine.FromGrabDrop는 grab-drop 거리 < 1e-9면 false(거부) — 이 경우 테스트 1개 추가",
-    "verify_core 469/469 (186 new); check_meta OK. CONTENT §2 house step 3 lists line ends in reverse order vs balance_check.py steps (tests compare CONTENT lines as unordered pairs, Python order checked in parity tests)."
+    "verify_core 469/469 (186 new); check_meta OK. CONTENT §2 house step 3 lists line ends in reverse order vs balance_check.py steps (tests compare CONTENT lines as unordered pairs, Python order checked in parity tests).",
+    "QA PASS: 126 black-box QA tests added (Qa/V2SpecBook, FoldingSpecQaTests, RecognitionSpecQaTests, CatalogV2SpecQaTests); verify_core 595/595; check_meta OK. Report Reports/qa/ORIGAMI-009.md"
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-009",
   "title": "v2 Core 접기 엔진·자석·판정·카탈로그",
   "verification": [

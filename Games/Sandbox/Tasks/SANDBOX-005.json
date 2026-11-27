@@ -1,0 +1,26 @@
+{
+  "acceptance_criteria": [
+    "C-004에 SANDBOX-004가 추가한 공개 API(ProcessFrame, EnsureInstance, Instance, ObjectName, ScoreView.Format/Bind/Text/Source)와 표시 형식 기록",
+    "CODING_CONVENTION에 IMGUI 예외(DECISIONS.md 참조) 기록"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "SANDBOX-004"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Sandbox/Docs/tech/"
+  ],
+  "notes": [],
+  "priority": "low",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "SANDBOX-005",
+  "title": "C-004/코딩 규칙 문서 갱신",
+  "verification": [
+    "review"
+  ]
+}

@@ -16,14 +16,16 @@
   ],
   "notes": [
     "Reset() takes no time; NaN/±Inf query semantics per FEATURE_SPECS AC-20; SANDBOX-003 must test NaN/+Inf/-Inf on a new counter (QA N-3)",
-    "Contracts C-001..C-004 in INTERFACE_CONTRACTS.md. SANDBOX-003: test GetState(NaN/+Inf/-Inf) on a new counter (QA N-3). SANDBOX-004: Bootstrap.cs outside its scope -> controller self-creates via RuntimeInitializeOnLoadMethod; legacy Input Manager (no inputsystem package)."
+    "Contracts C-001..C-004 in INTERFACE_CONTRACTS.md. SANDBOX-003: test GetState(NaN/+Inf/-Inf) on a new counter (QA N-3). SANDBOX-004: Bootstrap.cs outside its scope -> controller self-creates via RuntimeInitializeOnLoadMethod; legacy Input Manager (no inputsystem package).",
+    "review APPROVED_WITH_WARNINGS: W-1 PlayMode clock race, W-2 Current init/view order, W-3 legacy input handler unverified (C-004); see Reports/review/SANDBOX-002.md"
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "SANDBOX-002",
   "title": "점수 카운터 인터페이스 설계",
   "verification": [

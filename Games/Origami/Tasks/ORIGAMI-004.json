@@ -1,0 +1,29 @@
+{
+  "acceptance_criteria": [
+    "C-020·C-021 구현(화면 전환, 키 표, 한 프레임 한 키, 문구 형식)",
+    "F-007 AC-01~06, 08, 09와 F-006 AC-11을 텍스트 수준 테스트로 검증",
+    "접기 화면 문구에 남은 단계가 절대 나오지 않음"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-003"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Core/Flow/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Flow/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-004",
+  "title": "Core 화면 흐름 구현",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

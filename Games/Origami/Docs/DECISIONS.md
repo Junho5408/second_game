@@ -10,3 +10,5 @@
 | 2026-11-27 | 엔딩 우선순위 E-01 빈손 > E-02 학의 소원(학 15마리) > E-03 종이 재벌(1000원) > E-04 명인(5종 모두 ★3) > E-05 동네 가게 | 의도적 목표(학)를 돈보다 우선 | game-designer |
 | 2026-11-27 | E-03 종이 재벌이 E-04 명인보다 우선 → 모든 작품 ★3 + 최적 플레이 시 '재벌' 엔딩 | 의도된 트레이드오프. 사용자가 원하면 순서 변경 가능 | Orchestrator (리뷰 ORIGAMI-001 지적) |
 | 2026-11-27 | 잘못된 입력: Start(null)=UnknownModel, U/D/L/R/F 외 행동=InvalidAction(실수 아님). Esc 확인=Enter, 취소=Esc 재입력 | QA BUG-ORIGAMI-001-2, F-007 | game-designer |
+| 2026-11-27 | 게임 데이터는 Core 코드 카탈로그(JSON 아님), UI는 IMGUI, 화면 흐름·한국어 문구는 Core(OrigamiFlow/FlowTexts)에 두어 Unity 없이 테스트 | dotnet에서 F-007까지 검증 가능, 패키지 추가 불필요 | architect (ORIGAMI-002, ARCHITECTURE §8 A-1~A-3) |
+| 2026-11-27 | 한 프레임 한 키(Esc>Enter>H>↑>↓>←>→>Space), 한글 글꼴은 OS 글꼴(맑은 고딕) 동적 생성 — 한글 표시는 사용자 플레이테스트로 확인 | CI에서 글꼴 표시 확인 불가 | architect (A-4, A-5) |

@@ -1,0 +1,31 @@
+{
+  "acceptance_criteria": [
+    "C-006~C-010 구현, 공개 API 변경 없음",
+    "F-001~F-006 모든 AC를 Core 테스트로 검증(판매가 30개, F-006 AC-10 돈 70/209/479/749/1019/1289/1709 포함)",
+    "거부된 명령은 스냅샷을 바꾸지 않음"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-002"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Core/Rules/",
+    "Games/Origami/Unity/Assets/Game/Core/Run/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Rules/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Run/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-003",
+  "title": "Core 규칙 구현",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

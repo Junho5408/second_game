@@ -85,3 +85,51 @@ None. Fixing the defective test belongs to the developer. QA did not modify the 
 - `OnGUI` rendering (font size, position, colour). Nothing checks it visually.
 - Compiling on Unity 6000.3 and the runtime `activeInputHandler` behaviour (review W-3 / R-3). Watch the first successful CI log for `InvalidOperationException` from `UnityEngine.Input`.
 - Windows player build.
+
+## Re-test + Unity CI
+
+- Re-tested commit: 7d26984 (fix pass 1, test file only). CI commit: 5e3a048 (contains 7d26984).
+- **Result: PASS → COMPLETED**
+
+### Commands run
+| Command | Result |
+|---|---|
+| `bash studio/scripts/verify_core.sh Sandbox` | PASS, 87/87 |
+| `python3 studio/scripts/check_meta.py Games/Sandbox/Unity` | OK |
+| `python3 studio/scripts/check_scope.py Sandbox SANDBOX-004` | OK |
+| GitHub Actions run 45928856363, job 140276583022 log + `Sandbox-test-results` artifact XML | compile OK, EditMode 87/87, PlayMode 14/14, build Succeeded |
+
+### BUG-SANDBOX-004-1: FIXED (verified)
+- Code check: the test now applies fix (a). It presses ×3 at `Time.unscaledTimeAsDouble - 10.0`, checks synchronously that the state is (3,3,1) and that the formatted text is `"Score: 3\nCombo: 3\nx1"`, yields twice, then asserts exactly `Current == (3,0,1)` and `view.Text == "Score: 3\nCombo: 0\nx1"`. `Time.unscaledTimeAsDouble` never decreases, so every later frame gives `t - past >= 10 > 1.0`. The expected state is therefore the same whatever the frame duration. The final text differs from both the Bind-time and the pre-frame text, so the test now proves a LateUpdate refresh ran after a controller Update. The comments are corrected. The assertion is stricter than before, not weaker.
+- `RuntimeInstance_IsCreatedOnce_WithView` now yields a second time and asserts the exact `Initial` state and text. This is deterministic.
+- CI evidence: `View_ShowsCurrentAfterFrame` and `RuntimeInstance_IsCreatedOnce_WithView` both have `result="Passed"` in playmode-results.xml (run 45928856363).
+
+### Acceptance criteria (final)
+| # | Criterion | Result | Evidence |
+|---|---|---|---|
+| AC-1 | 스페이스/클릭 입력 시 Core ScoreCounter 호출 | PASS | The `ProcessFrame_*` tests (Space+click = 2 presses, reset first) passed in Unity PlayMode. Legacy `Input.*` calls in `Update` ran without throwing: `View_ShowsCurrentAfterFrame` reached (3,0,1), which only `Update`→`ProcessFrame` can produce, and the logs contain no `InvalidOperationException`. Real key/mouse presses are not simulated. C-004 accepts that. |
+| AC-2 | 현재 점수, 콤보, 배율이 화면 텍스트로 표시 | PASS | `Format_ShowsScoreComboAndMultiplier` and `View_ShowsCurrentAfterFrame` (exact `view.Text` after a real LateUpdate) passed in Unity. Visual `OnGUI` drawing was not checked (see untested areas). |
+| AC-3 | PlayMode 테스트로 입력→점수 반영 검증 | PASS | PlayMode 14/14 passed, 0 failed, 0 skipped. That is all 13 ScoreCounterControllerTests plus BootstrapTests. BUG-1 is fixed, so the result is valid evidence. |
+
+### Verification items
+| Item | Result | Evidence |
+|---|---|---|
+| review | pass | APPROVED_WITH_WARNINGS (re-review) |
+| unity-compile | pass | Tundra build success, no `error CS` |
+| unity-editmode | pass | 87/87 (not a required item for this task, recorded for completeness) |
+| unity-playmode | pass | 14/14 |
+| unity-build | pass | `[StudioBuild] result=Succeeded errors=0 ... Sandbox.exe`, artifact `Sandbox-windows-build` (id 15167484564) |
+
+Check run "Sandbox Unity Test Results" has conclusion `neutral`, but its own title/summary is `101/101 - Passed`, and the artifact XML shows `total=87 passed=87` and `total=14 passed=14` with failed/skipped/inconclusive 0. This is a real pass, not a zero-test run. Details are in `Reports/build/SANDBOX-004.md`.
+
+### Review warnings
+- W-1: resolved (BUG-1 fixed).
+- W-3 (legacy Input / activeInputHandler): resolved for Editor PlayMode by the evidence above. An architect task for R-3 is not needed based on this run.
+- W-2 (C-004 docs for the extra public API): still open, not a code defect. It is tracked outside this task (SANDBOX-005).
+
+### Tests added
+None. The existing tests cover the criteria, and CI confirmed them.
+
+### Untested areas
+- Running the Windows player (`Sandbox.exe`): real keyboard/mouse input and the `OnGUI` label's position, font and readability. Only a manual playtest can check these.
+- Legacy Input in the standalone player at runtime. Compile and build succeeded, but the player was not run.

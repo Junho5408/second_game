@@ -1,0 +1,28 @@
+{
+  "acceptance_criteria": [
+    "INTERFACE_CONTRACTS.md에 ScoreCounter 계약(시그니처·동작) 기록",
+    "Core/Scoring에 계약을 나타내는 C# 골격(컴파일 가능, 동작 미구현 가능)"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "SANDBOX-001"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Sandbox/Docs/tech/",
+    "Games/Sandbox/Unity/Assets/Game/Core/Scoring/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "SANDBOX-002",
+  "title": "점수 카운터 인터페이스 설계",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "acceptance_criteria": [
+    "스페이스/클릭 입력 시 Core ScoreCounter 호출",
+    "현재 점수와 콤보가 화면 텍스트로 표시",
+    "PlayMode 테스트로 입력→점수 반영 검증"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "SANDBOX-003"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Sandbox/Unity/Assets/Game/Scripts/Gameplay/",
+    "Games/Sandbox/Unity/Assets/Game/Scripts/UI/",
+    "Games/Sandbox/Unity/Assets/Game/Tests/PlayMode/Scoring/"
+  ],
+  "notes": [],
+  "priority": "medium",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "SANDBOX-004",
+  "title": "점수 카운터 화면 연결",
+  "verification": [
+    "review",
+    "unity-compile",
+    "unity-playmode",
+    "unity-build"
+  ]
+}

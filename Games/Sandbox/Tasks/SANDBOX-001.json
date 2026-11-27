@@ -1,0 +1,26 @@
+{
+  "acceptance_criteria": [
+    "점수 증가·콤보·리셋 규칙이 수치와 함께 정의됨",
+    "엣지 케이스와 테스트 가능한 수용 기준 포함"
+  ],
+  "agent": "game-designer",
+  "base_commit": null,
+  "deliverables": [
+    "Games/Sandbox/Docs/design/FEATURE_SPECS.md"
+  ],
+  "dependencies": [],
+  "description": "",
+  "file_scope": [
+    "Games/Sandbox/Docs/design/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "SANDBOX-001",
+  "title": "점수 카운터 기획",
+  "verification": [
+    "review"
+  ]
+}

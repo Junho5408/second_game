@@ -4,7 +4,8 @@
     "지원: F-007 AC-06 책 그리기 부분(소유 014). F-007 AC-07은 사용자 플레이테스트로 기록",
     "PlayMode 테스트는 프레임 타이밍 비의존",
     "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
-    "check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode 통과"
+    "check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode 통과",
+    "CONTENT §3의 책 고정 문구('봉인됨 — 표지에서 페이지를 사세요', '판매대에서 기본 N원', 목차 '보유'/'N원')를 명세 그대로 쓰고 PlayMode/EditMode 테스트에서 문자열로 확인 (리뷰 ORIGAMI-011 W-2)"
   ],
   "agent": "developer",
   "base_commit": null,

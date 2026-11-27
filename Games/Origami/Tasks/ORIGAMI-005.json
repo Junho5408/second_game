@@ -16,7 +16,10 @@
     "Games/Origami/Unity/Assets/Game/Scripts/UI/",
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Flow/"
   ],
-  "notes": [],
+  "notes": [
+    "OS font creation (Font.CreateDynamicFontFromOSFont) must tolerate failure in batchmode CI without logging errors that fail PlayMode tests (review ORIGAMI-002 W-5)",
+    "Multi-key frames: only highest-priority key counts even if the screen ignores it — intended (A-4)"
+  ],
   "priority": "high",
   "result": {},
   "retry_count": 0,

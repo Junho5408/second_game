@@ -17,7 +17,10 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Rules/",
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Run/"
   ],
-  "notes": [],
+  "notes": [
+    "READ-ONLY in scope (contract, architect-owned): RuleConstants, CompletionCounts, RunEndReason, all result/snapshot types (CommandResult, CommandOutcome, CompletedPiece, SaleLine, SettlementResult, FoldSnapshot, RunSnapshot, RejectReason). Implement only bodies of Grading, Pricing, Unlocking, EndingRules, OrigamiRun. (review ORIGAMI-002 W-2)",
+    "Never return an accepted=false result with RejectReason.None (review W-4)"
+  ],
   "priority": "high",
   "result": {},
   "retry_count": 0,

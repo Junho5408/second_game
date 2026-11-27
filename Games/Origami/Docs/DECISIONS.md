@@ -12,3 +12,4 @@
 | 2026-11-27 | 잘못된 입력: Start(null)=UnknownModel, U/D/L/R/F 외 행동=InvalidAction(실수 아님). Esc 확인=Enter, 취소=Esc 재입력 | QA BUG-ORIGAMI-001-2, F-007 | game-designer |
 | 2026-11-27 | 게임 데이터는 Core 코드 카탈로그(JSON 아님), UI는 IMGUI, 화면 흐름·한국어 문구는 Core(OrigamiFlow/FlowTexts)에 두어 Unity 없이 테스트 | dotnet에서 F-007까지 검증 가능, 패키지 추가 불필요 | architect (ORIGAMI-002, ARCHITECTURE §8 A-1~A-3) |
 | 2026-11-27 | 한 프레임 한 키(Esc>Enter>H>↑>↓>←>→>Space), 한글 글꼴은 OS 글꼴(맑은 고딕) 동적 생성 — 한글 표시는 사용자 플레이테스트로 확인 | CI에서 글꼴 표시 확인 불가 | architect (A-4, A-5) |
+| 2026-11-27 | 명세 밖 단축키: 미리보기에서 Enter=접기 시작·Esc=닫기, 공지·정산 화면에서 Enter=확인. 잠긴 작품 선택은 해금 조건 문구만 표시(미리보기·Core 호출 없음) | 키보드만으로 진행 가능하게 | architect (A-6, A-7; 리뷰 ORIGAMI-002 W-1) |

@@ -10,7 +10,7 @@
 | Core.Scoring | Assets/Game/Core/Scoring | `Sandbox.Core` / `Sandbox.Core.Scoring` | F-001 점수 카운터 규칙 (R-001~R-006) | 없음 (System만) |
 | Runtime | Assets/Game/Scripts | `Sandbox.Runtime` / `Sandbox.Runtime` | 화면·입력·연출, Core 호출 | Core |
 | Runtime.Gameplay | Assets/Game/Scripts/Gameplay | `Sandbox.Runtime` / `Sandbox.Runtime.Gameplay` | 입력 폴링 → `ScoreCounter` 호출, 카운터 인스턴스 소유 | Core.Scoring |
-| Runtime.UI | Assets/Game/Scripts/UI | `Sandbox.Runtime` / `Sandbox.Runtime.UI` | `ScoreSnapshot` 표시 | Core.Scoring (스냅샷 타입만) |
+| Runtime.UI | Assets/Game/Scripts/UI | `Sandbox.Runtime` / `Sandbox.Runtime.UI` | `ScoreSnapshot` 표시 (IMGUI, DECISIONS.md) | Runtime.Gameplay (`ScoreCounterController.Current`), Core.Scoring (스냅샷 타입만) |
 
 의존 방향은 한쪽뿐이다: `Runtime.UI → Runtime.Gameplay → Core.Scoring`. Core는 Runtime을 모른다. 순환 없음.
 Core/Scoring은 별도 asmdef를 두지 않고 `Sandbox.Core` 어셈블리에 포함된다(작은 게임이라 분리 이득 없음).
@@ -29,13 +29,21 @@ Core/Scoring은 별도 asmdef를 두지 않고 `Sandbox.Core` 어셈블리에 �
               │ snapshot
               ▼
  ┌───────────────────────────┐
- │ ScoreView (Scripts/UI)     │  점수 / 콤보 / 배수 텍스트
+ │ ScoreView (Scripts/UI)     │  점수 / 콤보 / 배수 텍스트 (IMGUI OnGUI)
  └───────────────────────────┘
 ```
 
 - **소유**: `ScoreCounter` 인스턴스는 런타임에서 하나뿐이며 `ScoreCounterController`(SANDBOX-004)가 `new`로 생성·소유한다. 다른 코드는 카운터를 직접 갖지 않고 컨트롤러가 내놓는 `ScoreSnapshot`만 읽는다.
 - **시각 원천**: Core는 시계를 읽지 않는다(R-001). Runtime이 프레임마다 `Time.unscaledTimeAsDouble`을 한 번 읽어 그 프레임의 모든 `Press`/`GetState`에 같은 값을 넘긴다. 자세한 호출 규약은 INTERFACE_CONTRACTS.md C-004.
-- **생성 위치**: `Bootstrap.cs`는 SANDBOX-004의 file_scope 밖이므로, 컨트롤러는 `Scripts/Gameplay` 안에서 자체 `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]`로 자기 GameObject를 만든다(C-004 참고). Bootstrap 수정이 필요해지면 Orchestrator가 범위를 배정한다.
+- **생성 위치**: `Bootstrap.cs`는 SANDBOX-004의 file_scope 밖이므로, 컨트롤러와 뷰가 각자 `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` 훅에서 `ScoreCounterController.EnsureInstance()`를 불러 `"[ScoreCounter]"` GameObject(DontDestroyOnLoad) 하나에 컨트롤러와 `ScoreView`를 붙인다. 훅 순서와 무관하다(C-004 "생성"). Bootstrap 수정이 필요해지면 Orchestrator가 범위를 배정한다.
+- **화면 표시**: `ScoreView`가 `LateUpdate`에서 `Current`를 `ScoreView.Format`으로 문자열화하고 IMGUI(`OnGUI`)로 그린다. UI Toolkit 기본값의 예외이며 근거는 DECISIONS.md, 규칙은 CODING_CONVENTION.md "UI".
+
+## 외부 의존 / 엔진 기능
+
+| 의존 | 용도 | 상태 |
+|---|---|---|
+| 레거시 Input Manager (`UnityEngine.Input`) | Space / 마우스 왼쪽 / R 키 다운 판정 (`ScoreCounterController.Update`) | Unity CI PlayMode(Editor, batchmode)에서 예외 없이 동작 확인 — Reports/build/SANDBOX-004.md (리뷰 W-3 해소). 단독 실행 플레이어에서 실제 키·마우스 입력은 CI 미검증(사람이 빌드를 실행해야 확인 가능). `com.unity.inputsystem` 패키지는 없음. `ProjectSettings`의 `activeInputHandler`는 커밋하지 않았고 Unity 기본값으로 동작한다. 바뀌어 예외가 나면 architect 작업으로 Input Manager(또는 Both)를 명시한다. |
+| IMGUI (`OnGUI`, `GUI.Label`) | 점수 표시 (`ScoreView`) | 추가 에셋·패키지 불필요. 플레이어에서의 렌더링은 CI 미검증. |
 
 ## 이벤트 / 통신 방식
 

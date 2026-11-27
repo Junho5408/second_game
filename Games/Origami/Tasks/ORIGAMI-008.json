@@ -1,0 +1,29 @@
+{
+  "acceptance_criteria": [
+    "ARCHITECTURE: v2 모듈 구성(Core: Folding 엔진/Recognize/Economy/Day·Ending/Tutorial·Book 상태, Runtime: 방·캐릭터·테이블 좌석·접기 뷰·책 UI), v1 코드의 유지/교체/삭제 이전 계획 포함",
+    "INTERFACE_CONTRACTS: Fold3DSpike Core를 기반으로 한 v2 접기 엔진 API(위 n겹 선택 접기 R-007 닫힘, 접은 자국 R-021 자석과 결정적 동점 규칙, Unfold/Undo) 와 Recognize(state, owned, catalogue) 순수 함수 시그니처·반환값",
+    "DATA_STRUCTURE: 종이 상태(면/겹 순서/자국은 종이 좌표), 작품 카탈로그·책 페이지·윤곽 데이터, 저장 상태(7일 진행) 정의",
+    "구현 작업 분해 제안: file_scope가 겹치지 않는 Core/Runtime 작업 목록과 의존 순서, 각 작업에 대응하는 FEATURE_SPECS AC 번호",
+    "CODING_CONVENTION 갱신(필요 시), 결정적 수치 비교(1e-9 반올림 등) 규칙 명시"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-007"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/"
+  ],
+  "notes": [],
+  "priority": "critical",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "ORIGAMI-008",
+  "title": "v2 기술 설계: 3D 공간·캐릭터·책·접기 엔진",
+  "verification": [
+    "review"
+  ]
+}

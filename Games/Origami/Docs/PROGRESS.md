@@ -20,3 +20,13 @@
 | ORIGAMI-006 키보드 전용 단축키 | architect | BACKLOG |
 
 사용자 플레이테스트 대기: 한글 표시, 화면 배치, 실제 입력, 그래픽, 7일 완주.
+
+## 2026-11-27 — v2 재기획 (3D 공간·캐릭터·책·자유 접기)
+
+| 작업 | 담당 | 결과 |
+|---|---|---|
+| ORIGAMI-006 키보드 단축키 | architect | CANCELLED (v2로 대체) |
+| ORIGAMI-007 v2 기획 | game-designer | COMPLETED — 리뷰 3회(2회 반려 후 APPROVED_WITH_WARNINGS), QA PASS, scope 3종 OK |
+| ORIGAMI-008 v2 기술 설계 | architect | 진행 |
+
+다음 문서 정리 때 반영: W-5(매미 겹 기법 근거 표현), O-1(F-006 AC-04 시험 순서), O-2(GAME_DESIGN 규칙 범위 R-021).

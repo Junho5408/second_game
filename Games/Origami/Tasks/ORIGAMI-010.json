@@ -6,7 +6,7 @@
     "verify_core.sh Origami 통과, check_meta OK"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "7190c812aaacf8fe1d2ab5a0c17cea9e8a3d99af",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-009"
@@ -24,7 +24,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-010",
   "title": "v2 Core 공방 규칙·경제·튜토리얼",
   "verification": [

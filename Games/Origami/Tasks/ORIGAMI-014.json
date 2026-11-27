@@ -50,7 +50,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-014",
   "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
   "verification": [

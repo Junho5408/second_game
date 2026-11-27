@@ -20,7 +20,7 @@
   "priority": "low",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-016",
   "title": "v2 기술 문서 후속 정리(계약 보완)",
   "verification": [

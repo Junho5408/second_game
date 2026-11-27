@@ -212,3 +212,67 @@ R-1, R-2 (guard + corrected numbers + policy decision), R-4. R-3 and N-6/N-7 are
 
 ### Status
 `task.py set Origami ORIGAMI-007 --status FIX_REQUIRED --result review=fail`
+
+## Re-review (fix pass 2)
+
+- Reviewer: code-reviewer · Date: 2026-11-27 · Commits reviewed: `f4b4c90` (docs + balance_check.py), `a613a2f` (task file). Orchestrator commits `43963dd` and `bb8b649` (DECISIONS) were read for the policy only.
+- Policy applied (DECISIONS, last 4 rows): paid models (tulip/dog/cicada) must not reach ★2 (0.93) with fewer folds than the book, and the script enforces < 0.91. ★1 with fewer folds is allowed. Free models are recorded only. Documented results keep 0.02 from 0.85/0.93/0.97; the exception is J-05, which uses 0.95 ± 0.002. Top-2 layers is the only layer technique that is required. Cicada wing q = 0.62.
+- Result: **APPROVED_WITH_WARNINGS**
+
+All required items (R-1, R-2, R-4) and the recommended ones (R-3, N-6..N-8) are resolved. I reproduced every number in the docs with a full script run, and two independent scratch scripts agree with it. The remaining items are low-severity wording and coverage notes. They do not block the architect.
+
+### Verification run
+
+| Command | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Origami ORIGAMI-007` | `OK` |
+| `python3 Games/Origami/Docs/design/balance_check.py` (full) | exit 0, 9m32s. `경제 검증 OK` (967/562/242/437, tulip-only ★1 197, 44 pages, covers 2/10/17/24/32, play time 38/61/90). `판정 검증 OK`: J-01..J-18 all OK, invariance 1.000, max off-diagonal 0.611, magnets unchanged for all 5 models (cicada `P P P P P - L P P P`). Error table and expected money 961/896/705/492 match CONTENT §4.1 cell for cell. `지름길 검증 OK`: subsequences 30/31, 6/7, 25/31, 14/15, 158/255; best plane 1.000, house 0.788, tulip 0.716, dog 0.867, cicada 0.892. Beam rows and the tulip depth-5 row 0.632/0.740/0.790/0.824/0.845 match §4.2. Glider self-check 0.857 |
+| `bash studio/scripts/verify_core.sh Origami` | PASS (283 tests, Core unchanged) |
+| `python3 studio/scripts/check_meta.py Games/Origami/Unity` | `OK` (no Unity files touched) |
+| Reviewer `rv2/indep_judge.py` (scratchpad) | Independent IoU pipeline. It uses its own rasterizer on an offset 0.003 grid, its own centroid, and D4 applied to polygon coordinates. Only the fold engine comes from balance_check. Results: J-15 0.646 (doc 0.648) crumpled. Step 7 after an all-layer wing fails "잡은 곳에 종이가 없어요" and step 8 fails "접히는 부분이 없어요", exactly as the J-15 text says. Both wings all-layer: invalid. Wings removed: 0.774. J-17 1.000. J-18 0.781 (0.782). J-11 tulip 0.678. J-14 0.717 (0.714). J-05 0.952. Cicada without steps 2 and 7: 0.889 (0.892). Without step 9 or step 10: 0.648. Dog without step 1: 0.868. Dog without step 6: 0.846. Plane without step 2: 1.000. All values agree with the script within ±0.004 |
+| Reviewer `rv2/subseq_layers.py` (scratchpad, 2m24s) | Recounts the doc's subsequence totals (identical). Then widens the search: every subsequence × every per-fold layer choice {all, top 1, top 2}, compared with every model that has more book folds (24,789 valid states). Best result for a paid model: cicada 0.887 (steps 2, 6, 7 removed, 5 folds), dog 0.867, tulip 0.721. All are < 0.91, so changing layer choices opens no shortcut |
+
+### Earlier findings
+
+| ID | Status | Evidence |
+|---|---|---|
+| R-1 cicada top-1 head step did not change the outline | **Resolved** | The head step is removed. The head is now step 8, an all-layer fold of the remaining 2 bottom layers. Skipping it is crumpled (J-18 0.782, independent check 0.781). A vertical crease (step 5) provides the landmark for steps 9 and 10. The book stays at 10 actions and 44 pages. "위 1겹" is removed from every claim: GAME_DESIGN 진행, CONTENT §1, and the DECISIONS row "위 2겹뿐". J-17 documents that top 1 gives the same result as top 2 because of the hinge |
+| R-2 shortcut guard missed skip-step shortcuts | **Resolved** | `shortcut` mode [1] exhaustively enumerates every proper subsequence and enforces `SHORTCUT_MAX` 0.91 for paid models. The counts and maxima match my own enumeration. The §1 "알려진 최단" column and the §4.2 tables are corrected: plane 4 folds 1.000 (free, recorded), dog 3 folds 0.867 ★1, cicada 6 folds 0.892 ★1. Both paid ★1 shortcuts are allowed by policy and are 0.038 or more below 0.93 |
+| R-3 results near boundaries | **Resolved** | `margin_ok` enforces 0.02 margins, ≤ 0.83 for crumpled J-cases, and the J-05 band exception, which DECISIONS records. Every J value passes; the closest is J-04 at 0.992, which is 0.022 from 0.97. "필수" is reworded to "★2 이상에 필요" in R-011, GAME_DESIGN, and CONTENT §1/§4.2. The tulip all-layer best at book depth (0.845) is stated honestly and is not over-claimed |
+| R-4 F-005 AC-11 facet count | **Resolved** | Now "조각 수 2". Reviewer check: 2 facets, 1 fold, creases (0,−1)–(0,0) and (0,1)–(0,0) |
+| N-6 `Unfold` rejection wording | **Resolved** | R-007 has one condition (undo history empty), and the history is defined. F-005 AC-05 adds the flip-only case |
+| N-7 split constants table | **Resolved** | The blank line is removed, so the table renders as one table |
+| N-8 L-magnet tie-break | **Resolved** | R-021 now gives a deterministic order: distances rounded to 1e-9, then (sum, first point x, y, second point x, y), and the result does not depend on list order. `snap()` implements exactly this (`_key`, sorted pairs, `min` on tuples) |
+
+### Cross-document consistency
+
+- **Step counts**: plane 6 (5+1), house 5 (3+2), tulip 5, dog 6 (4+2), cicada 10 (8+2). These are the same in CONTENT §1/§2, GAME_DESIGN ("가장 긴 10동작"), `REF`/`steps` output, and R-008 (tutorial a < 6 = plane's 6 actions).
+- **Pages**: 2 + 8 + 7 + 7 + 8 + 12 = 44. Covers 2/10/17/24/32 are the same in CONTENT §3/§9, F-007 AC-01 (cicada 32–43), AC-02 (plane page 6 = step 4, "4 / 6"), AC-03 (tulip 17/18), and AC-04 (clamp 42).
+- **Grade thresholds 97/93/85**: GAME_RULES constants and R-012, GAME_DESIGN, F-009 AC-04, and the script all agree. The GAME_DESIGN σ = 2 mm summary ("★3 33~87%, ★2 이상 83% 이상") and assumption 12 (705) match the §4.1 output.
+- **Endings**: E-01 ≤ 20 / bankrupt, E-02 tulips ≥ 12, E-03 all 5 at ★3, E-04 ≥ 600. GAME_RULES R-018, CONTENT §8, and F-012 AC-01..07 agree.
+- **Cicada references**: J-11 ("1~8단계, 옆 접기 없음"), J-15 (steps 7–8 impossible), J-17, J-18, and the F-009 AC-01 range J-01..J-18 are all consistent with the new 10-step sequence.
+
+### Warnings (non-blocking)
+
+#### W-5 (Low, wording vs evidence) — Cicada evidence for "★2 needs top-N layers" is weaker than tulip's
+- Location: `GAME_DESIGN.md` 판정 bullet ("튤립·매미는 그 단계를 지켜야 ★2 이상을 받는다"); `balance_check.py` `TECH_DEPTH = dict(tulip=5)`.
+- Problem: for tulip, the claim is backed by an all-layer beam search to the book's fold count (5; best 0.845). For cicada, the only evidence is J-15 (the book positions with all layers), the exhaustive subsequence/layer variants, and an all-layer beam to depth 4 of 8 (0.827). An all-layer 5–8-fold route to cicada ★2 has not been searched. GAME_RULES R-011 phrases this correctly: only J-14/J-15 for both models, and the search for tulip only. The GAME_DESIGN sentence reads as a general claim.
+- Impact: low. The economy and recognition rules do not depend on it. A player might find an all-layer ★2 cicada, which would make the technique optional for that model.
+- Recommendation: either add `cicada` to `TECH_DEPTH` (a longer run; the beam could be capped at depth 6), or reword the GAME_DESIGN sentence to match R-011 ("책의 위 2겹을 전체 겹으로 바꾸면 구겨진 종이", plus the search claim for tulip only). Do this in a later docs pass; no new fix cycle is needed.
+
+#### W-6 (Info, testing) — Dog without the chin = 0.849 is boundary-dependent by design
+- Location: CONTENT §4.2 정리, GAME_DESIGN assumption 14.
+- This result is 0.001 below MATCH_MIN, so any implementation within ±0.01 may report it as crumpled or as dog ★1. Both outcomes comply with the policy (★1 allowed, 0.081 below 0.93), and the docs deliberately leave it open. The architect and QA should **not** write a test that asserts its outcome. The other shortcut results stay ★1 under ±0.01 (dog 0.857–0.877, cicada 0.882–0.902).
+
+### Checklist (delta)
+
+1. Spec/AC: the four task ACs are met. The claims about which techniques each model needs now match the evidence (except the W-5 wording).
+2–3. Conventions/boundaries: only `Docs/design/` changed, in scope. No Unity files.
+4. Edge cases: J-15 states the invalid follow-up steps and their reasons, and my check confirms them. N-6 closes the flip-only `Unfold` gap.
+5. Performance: the full script takes 9.5 min, mostly the beam searches. The exhaustive subsequence check takes seconds.
+6. Duplication: none.
+7. Regression: v1 Core is untouched (verify_core PASS, 283 tests).
+8. Verification: the script now guards the easiest class of shortcuts exhaustively and enforces the margin policy on every J-case. Varying layer choices inside the subsequences (reviewer check) found nothing new.
+
+### Status
+`task.py set Origami ORIGAMI-007 --status QA --result review=pass`

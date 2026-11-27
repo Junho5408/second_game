@@ -24,7 +24,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-011",
   "title": "v2 Core 책 도해·문구·화면 흐름",
   "verification": [

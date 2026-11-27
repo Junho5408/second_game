@@ -1,1 +1,1 @@
-UI Toolkit 기반 UI 코드와 UXML/USS.
+IMGUI(OnGUI) 기반 UI 코드 (ARCHITECTURE.md A-2): OrigamiView, OrigamiButtons, ModelIcons.

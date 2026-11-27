@@ -25,7 +25,7 @@
   "priority": "medium",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "SANDBOX-004",
   "title": "점수 카운터 화면 연결",
   "verification": [

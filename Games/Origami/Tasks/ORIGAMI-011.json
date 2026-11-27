@@ -20,11 +20,15 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Texts/",
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Screens/"
   ],
-  "notes": [],
+  "notes": [
+    "Book/Texts/ScreenFlow implemented; 921 dotnet tests pass. Assumptions in GameTexts/ScreenFlow remarks (line formats, ★n digit form, ConfirmNewRun also on Mode Ended, MessageKind.Info unused, sealed step pages keep step number/label)."
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-011",
   "title": "v2 Core 책 도해·문구·화면 흐름",
   "verification": [

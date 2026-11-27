@@ -1,0 +1,130 @@
+name: unity
+
+on:
+  push:
+    paths:
+      - "Games/**/Unity/**"
+      - ".github/workflows/unity.yml"
+  workflow_dispatch:
+    inputs:
+      game:
+        description: "Game name (empty = all games)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: unity-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      games: ${{ steps.games.outputs.games }}
+      has_license: ${{ steps.lic.outputs.has_license }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: lic
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ]; then echo "has_license=true"; else echo "has_license=false"; fi >> "$GITHUB_OUTPUT"
+
+      - id: games
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_GAME: ${{ inputs.game }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          ZERO=0000000000000000000000000000000000000000
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ -n "$INPUT_GAME" ]; then
+              if ! [[ "$INPUT_GAME" =~ ^[A-Z][A-Za-z0-9]{1,31}$ ]] || [ ! -d "Games/$INPUT_GAME/Unity" ]; then
+                echo "Unknown game: $INPUT_GAME"; exit 1
+              fi
+              games="[\"$INPUT_GAME\"]"
+            else
+              games=$(python3 studio/scripts/changed_games.py --base "$ZERO" --head "$SHA")
+            fi
+          elif [ "$BEFORE" != "$ZERO" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null \
+               && git diff --name-only "$BEFORE" "$SHA" | grep -q '^\.github/workflows/unity\.yml$'; then
+            # Workflow itself changed: re-verify every game.
+            games=$(python3 studio/scripts/changed_games.py --base "$ZERO" --head "$SHA")
+          else
+            games=$(python3 studio/scripts/changed_games.py --base "$BEFORE" --head "$SHA")
+          fi
+          echo "games=$games"
+          echo "games=$games" >> "$GITHUB_OUTPUT"
+
+  skipped:
+    needs: detect
+    if: needs.detect.outputs.has_license != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "### Unity secrets not configured — Unity jobs skipped" >> "$GITHUB_STEP_SUMMARY"
+          echo "Register UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD (see README)." >> "$GITHUB_STEP_SUMMARY"
+
+  unity:
+    needs: detect
+    if: needs.detect.outputs.has_license == 'true' && needs.detect.outputs.games != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        game: ${{ fromJSON(needs.detect.outputs.games) }}
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      PROJECT_PATH: Games/${{ matrix.game }}/Unity
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: Games/${{ matrix.game }}/Unity/Library
+          key: Library-${{ matrix.game }}-${{ hashFiles(format('Games/{0}/Unity/Packages/manifest.json', matrix.game)) }}
+          restore-keys: |
+            Library-${{ matrix.game }}-
+
+      - name: Unity tests (EditMode + PlayMode)
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: all
+          artifactsPath: test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: ${{ matrix.game }} Unity Test Results
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.game }}-test-results
+          path: test-results
+
+      - name: Windows build
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          targetPlatform: StandaloneWindows64
+          buildMethod: StudioBuild.Build
+          buildName: ${{ matrix.game }}
+          versioning: None
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.game }}-windows-build
+          path: build/StandaloneWindows64

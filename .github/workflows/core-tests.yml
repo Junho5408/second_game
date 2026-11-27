@@ -1,0 +1,45 @@
+name: core-tests
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Studio tool tests
+        run: |
+          pip install pytest
+          python -m pytest studio/tests -q
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Core tests (dotnet, no Unity)
+        run: |
+          if ls -d Games/*/Core.Tests >/dev/null 2>&1; then
+            bash studio/scripts/verify_core.sh
+          else
+            echo "No games yet"
+          fi
+
+      - name: Unity .meta check
+        run: |
+          status=0
+          for u in Games/*/Unity; do
+            [ -d "$u" ] || continue
+            echo "== $u =="
+            python studio/scripts/check_meta.py "$u" || status=1
+          done
+          exit $status

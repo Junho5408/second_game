@@ -45,12 +45,15 @@
     "v1 Qa 파일 6개 경로는 ARCHITECTURE §10 참고; 해당 파일 삭제는 이 작업에 허용(Orchestrator 배정). 리뷰 실패 2회 시 Core/Room 분리(리뷰 N-5)",
     "리뷰 ORIGAMI-009 I-1: ModelCatalog.Recognition 첫 접근 ~0.35s — 로드 시 한 번 미리 접근(첫 완성 멈춤 방지)",
     "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남아 있는 거절 토스트를 지울 것",
-    "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남은 거절 토스트를 지울 것"
+    "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남은 거절 토스트를 지울 것",
+    "Core/Room + Runtime workshop integration + v1 deletion (§10). verify_core 728/728; Workshop PlayMode tests (33) also run against a scratch UnityEngine stub harness (64/64 incl. FoldTable) — Unity CI still required. OnGUI smoke test is Inconclusive if CI never calls OnGUI (QA: check result XML)."
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-014",
   "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
   "verification": [

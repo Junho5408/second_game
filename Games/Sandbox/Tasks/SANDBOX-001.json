@@ -23,7 +23,7 @@
     "review": "pass"
   },
   "retry_count": 1,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "SANDBOX-001",
   "title": "점수 카운터 기획",
   "verification": [

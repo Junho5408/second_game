@@ -4,3 +4,4 @@
 |---|---|---|---|
 | 2026-11-27 | 콤보 경계(정확히 1.0초)는 double 원시 차이로 비교하고 epsilon을 두지 않는다. 1.2→2.2처럼 이진수로 정확하지 않은 값은 경계에서 콤보가 끊길 수 있다 | 실제 입력 시간은 프레임 단위라 정확히 1.0초 차이가 될 일이 사실상 없음. 경계 테스트는 정확히 표현되는 값(0.5, 1.0 등)만 사용 | Orchestrator (리뷰 SANDBOX-003 W-1) |
 | 2026-11-27 | Reset은 시간 인자를 받지 않는다. NaN/±Inf 질의는 마지막 유효 입력 직후 상태를 반환 | 명세 모순 해소 (QA BUG-SANDBOX-001-1/2) | game-designer |
+| 2026-11-27 | Sandbox 화면 표시는 IMGUI(OnGUI)로 한다 (CODING_CONVENTION의 "UI Toolkit" 기본값의 예외) | 에디터 없이 코드만으로 만들 때 UI Toolkit은 PanelSettings/테마 에셋이 필요함. 자산 없는 IMGUI가 가장 안전 | Orchestrator (SANDBOX-004) |

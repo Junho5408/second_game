@@ -23,12 +23,15 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Catalog/"
   ],
   "notes": [
-    "QA-2(ORIGAMI-008): LineOnPaper.TryGet / FoldLine.FromGrabDrop는 grab-drop 거리 < 1e-9면 false(거부) — 이 경우 테스트 1개 추가"
+    "QA-2(ORIGAMI-008): LineOnPaper.TryGet / FoldLine.FromGrabDrop는 grab-drop 거리 < 1e-9면 false(거부) — 이 경우 테스트 1개 추가",
+    "verify_core 469/469 (186 new); check_meta OK. CONTENT §2 house step 3 lists line ends in reverse order vs balance_check.py steps (tests compare CONTENT lines as unordered pairs, Python order checked in parity tests)."
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-009",
   "title": "v2 Core 접기 엔진·자석·판정·카탈로그",
   "verification": [

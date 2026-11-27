@@ -19,11 +19,15 @@
     "Games/Origami/Unity/Assets/Game/Scripts/Folding/",
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/FoldTable/"
   ],
-  "notes": [],
+  "notes": [
+    "PlayMode tests (33) also run locally against a scratch UnityEngine stub + real Core: all pass; real Unity compile/EditMode/PlayMode only in CI. PaperMeshBuilder.Build takes IReadOnlyList<Facet> (spike: IList) because Core v2 exposes IReadOnlyList. No asmdef change needed."
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-012",
   "title": "v2 Unity 접기 테이블 (종이 메시·끌기·겹 고르기·자석·애니메이션)",
   "verification": [

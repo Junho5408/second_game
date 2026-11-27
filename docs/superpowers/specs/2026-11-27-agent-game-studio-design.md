@@ -1,7 +1,7 @@
 # 에이전트 게임 스튜디오 설계 (A안)
 
 작성일: 2026-11-27
-상태: 초안 (사용자 승인 대기)
+상태: 초안 v2 (사용자 승인 대기)
 
 ## 1. 의도
 
@@ -22,8 +22,9 @@ Claude Code의 기본 기능으로 대체할 수 있는 것은 전부 대체한�
 - 저장소 루트에 모든 게임이 공유하는 에이전트 팀(규칙 + 에이전트 정의 + 작업 템플릿)을 둔다.
 - 새 게임은 `Games/<게임이름>/` 아래에 스크립트 한 번으로 시작할 수 있다.
 - 게임 핵심 로직은 Unity 없이 클라우드 세션에서도 에이전트가 직접 테스트할 수 있다.
-- Unity 쪽 검증(컴파일, EditMode/PlayMode 테스트, 빌드)은 사용자 PC에서 스크립트 한 번으로 돌릴 수 있고,
-  선택적으로 GitHub Actions(GameCI)에서도 돌릴 수 있다.
+- Unity 쪽 검증(컴파일, EditMode/PlayMode 테스트, 빌드)은 GitHub Actions(GameCI)에서 자동으로 돈다.
+  에이전트가 GitHub 도구로 CI 결과를 직접 읽어 판정하므로 사용자 개입 없이 루프가 닫힌다.
+- 사용자는 Unity를 설치하지 않고도 CI가 만든 Windows 빌드(zip)를 내려받아 게임을 직접 플레이할 수 있다.
 
 **비목표**
 - 별도 Orchestrator 프로그램(Python/Node), SQLite 상태 저장소, 멀티 LLM 실행 추상화 계층.
@@ -40,7 +41,12 @@ Claude Code의 기본 기능으로 대체할 수 있는 것은 전부 대체한�
 
 - 클라우드 세션 컨테이너에는 Unity 에디터/라이선스가 없다. 현재 `dotnet`도 설치되어 있지 않다
   (패키지 레지스트리 접근은 가능하므로 설치는 빌더가 해결한다).
-- 사용자는 PC에서 Unity를 실행한다.
+- 사용자 PC는 Windows이고 **Unity 에디터가 설치되어 있지 않다.** 따라서 사람이 Unity 에디터에서
+  씬·프리팹을 열어 손으로 만지는 단계가 없다. 모든 Unity 실행은 GitHub Actions에서만 일어난다.
+- Personal 라이선스 파일(.ulf) 발급에는 Unity Hub가 필요하므로, 사용자는 **Unity Hub만** 한 번 설치해
+  라이선스를 활성화하고 GitHub 시크릿(`UNITY_LICENSE`, `UNITY_EMAIL`, `UNITY_PASSWORD`)을 등록한다.
+- GitHub Actions 사용 시간 한도(비공개 저장소 무료 플랜 월 2,000분)를 고려해 Unity 잡은 캐시를 쓰고,
+  Unity 관련 파일이 바뀐 푸시에서만 돈다.
 - 저장소(`junho5408/second_game`)는 비어 있다. 개발 브랜치는 `claude/serene-fermat-4bwjlo`.
 
 ## 4. 고려한 방안
@@ -80,7 +86,7 @@ Claude Code의 기본 기능으로 대체할 수 있는 것은 전부 대체한�
 ├── .claude/agents/            # 6개 에이전트 정의
 ├── studio/
 │   ├── templates/             # 새 게임용 문서·작업 템플릿, task 스키마
-│   └── scripts/               # new-game, verify-core, verify-unity(로컬), task 상태 도구
+│   └── scripts/               # new-game, verify-core, check-scope, check-meta, task 상태 도구
 ├── .github/workflows/         # core 테스트(항상), Unity 테스트/빌드(시크릿 있을 때만)
 └── Games/
     └── <GameName>/
@@ -117,12 +123,12 @@ Claude Code의 기본 기능으로 대체할 수 있는 것은 전부 대체한�
 acceptance_criteria, verification, retry_count, notes, result`.
 
 `verification` 항목은 다음 중에서 고른다:
-`core-tests`(클라우드), `review`(클라우드), `unity-compile`, `unity-editmode`, `unity-playmode`, `unity-build`(로컬/CI).
+`core-tests`(클라우드), `review`(클라우드), `unity-compile`, `unity-editmode`, `unity-playmode`, `unity-build`(GitHub Actions).
 
 상태: `BACKLOG → ASSIGNED → IN_PROGRESS → REVIEW → QA → COMPLETED`,
 그 외 `FIX_REQUIRED`(→ IN_PROGRESS 복귀), `BLOCKED`, `CANCELLED`,
 그리고 A안 추가 상태 **`AWAITING_UNITY`**: 클라우드 검증은 모두 통과했지만
-Unity 검증 항목이 아직 실행되지 않은 상태. 사용자가 로컬 스크립트나 CI 결과를 넘겨줘야 COMPLETED가 된다.
+Unity 검증 항목의 CI 결과를 기다리는 상태. `qa-engineer`가 CI 결과를 읽어 COMPLETED/FIX_REQUIRED로 바꾼다.
 
 ### 5.5 작업 흐름
 
@@ -140,24 +146,42 @@ Unity 검증 항목이 아직 실행되지 않은 상태. 사용자가 로컬 �
 5. **QA** — `qa-engineer`가 수용 기준 대비 검증, 필요한 테스트 추가, 버그는 원본 양식으로 리포트.
 6. **Fix** — 실패는 원래 담당 에이전트에게 재배정. 같은 원인으로 최대 2회, 이후 원인 분석 후 재배정 또는 BLOCKED
    (리뷰 반복 실패 → architect 재검토, QA 반복 실패 → designer 범위 재검토. 원본 7-2).
-7. **Complete** — Unity 검증 항목이 없으면 COMPLETED, 있으면 AWAITING_UNITY로 두고 사용자에게
-   실행할 명령을 한 줄로 알려준다. `PROGRESS.md`와 `DECISIONS.md` 갱신, 작업 단위 커밋.
+7. **Complete** — Unity 검증 항목이 없으면 COMPLETED, 있으면 푸시 후 AWAITING_UNITY로 두고 CI 결과로 판정한다. `PROGRESS.md`와 `DECISIONS.md` 갱신, 작업 단위 커밋.
 
-### 5.6 Unity 검증
+### 5.6 Unity 검증 (GitHub Actions 전용)
 
-- **로컬(기본)**: `studio/scripts/verify-unity` — Unity를 batchmode로 실행해 컴파일, EditMode, PlayMode,
-  (옵션) 빌드를 순서대로 돌리고 결과를 `Reports/build/`에 XML/로그로 남긴다.
-  사용자는 결과를 커밋/푸시하거나 대화에 붙여 넣고, `qa-engineer`가 판정해 AWAITING_UNITY를 해소한다.
-- **CI(선택)**: GameCI(`game-ci/unity-test-runner`, `game-ci/unity-builder@v4`) 워크플로를 넣되,
-  `UNITY_LICENSE`/`UNITY_EMAIL`/`UNITY_PASSWORD` 시크릿이 없으면 Unity 잡은 건너뛴다.
-  `dotnet test` 잡은 시크릿과 무관하게 항상 돈다.
+- 워크플로 2개:
+  - `core-tests`: 모든 푸시에서 `dotnet test` (Unity 불필요, 빠름).
+  - `unity`: `Games/*/Unity/**` 변경 시 GameCI `unity-test-runner`(EditMode + PlayMode) →
+    `unity-builder@v4`(StandaloneWindows64, Mono 백엔드)로 빌드 → 빌드 zip과 테스트 결과를 Actions 아티팩트로 업로드.
+    게임 폴더별 matrix로 바뀐 게임만 돈다.
+- 시크릿이 없으면 `unity` 워크플로는 실패가 아니라 "건너뜀"으로 끝나고 이유를 요약에 남긴다.
+- **판정 루프**: Orchestrator가 작업 브랜치를 푸시하면 `qa-engineer`가 GitHub 도구로 해당 커밋의 CI 결과·로그를 읽어
+  AWAITING_UNITY를 COMPLETED 또는 FIX_REQUIRED로 바꾼다. 결과는 `Reports/build/`에 요약 기록.
+- Unity 버전: **GameCI 도커 이미지가 존재하는 최신 Unity 6 LTS**로 저장소 전체를 고정한다(빌더가 확인해 기록).
+  사용자가 나중에 에디터를 설치한다면 같은 버전을 설치하도록 README에 적는다.
+- 로컬 Unity 검증 스크립트는 만들지 않는다(사용자 PC에 Unity가 없으므로).
 
 ### 5.7 새 게임 시작
 
-`studio/scripts/new-game <GameName>`이 `Games/<GameName>/`에 문서 템플릿, 빈 `Tasks/`,
-`Core.Tests` 프로젝트, 최소 Unity 프로젝트 골격(Assets/Game 구조, asmdef, `Packages/manifest.json`,
-`ProjectSettings/ProjectVersion.txt`)을 만든다. 나머지 Unity 생성 파일은 사용자가 PC에서 처음 열 때 생성되고,
-`.meta` 파일과 함께 커밋한다. `.gitignore`/`.gitattributes`(Force Text, LFS 대상)도 포함한다.
+`studio/scripts/new-game <GameName> [2d|3d]`이 `Games/<GameName>/`에 문서 템플릿, 빈 `Tasks/`,
+`Core.Tests` 프로젝트, Unity 프로젝트 골격(Assets/Game 구조, asmdef, `Packages/manifest.json`,
+`ProjectSettings/ProjectVersion.txt`, 최소 ProjectSettings, 부트스트랩 씬 1개)을 만든다.
+2D/3D에 따라 패키지 목록과 기본 카메라 설정이 달라진다.
+CI 워크플로가 새 게임 폴더를 자동으로 matrix에 포함한다.
+`.gitignore`/`.gitattributes`(Force Text, 바이너리 LFS)는 저장소 루트에 한 번만 둔다.
+
+### 5.7.1 코드 우선 Unity (에디터 없이 개발하기 위한 규칙)
+
+사람이 에디터를 열지 않으므로 Unity가 자동 생성하는 것에 기대지 않는다.
+
+- **`.meta` 파일은 에이전트가 직접 작성**한다(고유 GUID 생성). 스크립트·asmdef·데이터 파일마다 커밋.
+  `qa-engineer`는 `.meta` 누락/GUID 중복을 확인하는 검사 스크립트를 돌린다.
+- **씬은 부트스트랩 씬 1개만** 두고, 게임 오브젝트 구성은 코드에서 생성한다(손으로 쓴 씬/프리팹 YAML 최소화).
+- UI는 텍스트 파일로 작성 가능한 **UI Toolkit(UXML/USS)** 을 쓴다.
+- 데이터는 ScriptableObject 에셋 대신 **JSON(또는 코드 정의)** 을 기본으로 하고, Core가 이를 로드한다
+  (dotnet 테스트에서도 같은 데이터로 검증 가능). ScriptableObject가 꼭 필요하면 architect가 결정해 기록.
+- 아트/오디오는 처음엔 코드로 만든 기본 도형·단색 스프라이트로 시작하고, 외부 에셋은 사용자가 제공할 때 추가한다.
 
 ### 5.8 안전장치 (원본 9장 축약)
 
@@ -179,7 +203,7 @@ Unity 검증 항목이 아직 실행되지 않은 상태. 사용자가 로컬 �
 
 
 - 에이전트 프롬프트의 구체적 문장, 템플릿 문서의 세부 항목.
-- 스크립트 언어(bash + Windows용 PowerShell 병행 여부 포함), 테스트 프레임워크(xUnit/NUnit) 선택.
+- 스크립트 언어(클라우드 세션에서 도므로 bash), 테스트 프레임워크(Core는 NUnit — Unity Test Framework와 통일) 선택.
 - `dotnet` SDK 설치 방법.
 - 작업 상태 갱신을 손으로 할지 작은 스크립트로 할지.
 
@@ -189,4 +213,6 @@ Unity 검증 항목이 아직 실행되지 않은 상태. 사용자가 로컬 �
 - 샘플 게임 하나를 `new-game`으로 만들고, 작은 기능 1개를 designer → architect → developer → reviewer → qa
   전 과정으로 돌려 COMPLETED(또는 AWAITING_UNITY)까지 도달한 기록이 `Tasks/`와 `Reports/`에 남는다.
 - 그 과정에서 `dotnet test`가 클라우드에서 실제로 실행되어 통과한다.
-- 사용자가 PC에서 `verify-unity`를 실행할 수 있는 안내가 README에 있다.
+- 같은 기능이 GitHub Actions에서 Unity 컴파일·테스트·Windows 빌드까지 통과하고
+  (시크릿 등록 후), `qa-engineer`가 그 결과를 읽어 COMPLETED로 판정한 기록이 남는다.
+- README에 Unity Hub 설치 → 라이선스 활성화 → 시크릿 등록 → 빌드 내려받아 플레이하는 방법이 있다.

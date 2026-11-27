@@ -17,7 +17,9 @@
     "Games/Origami/Unity/Assets/Game/Scripts/Book/",
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Book/"
   ],
-  "notes": [],
+  "notes": [
+    "QA-1: DiagramRaster는 Core.Folding(PaperState, Facet, FoldStep, SnapKind, DropSnap.MarkPieces)·Core.Geometry(Vec2) using 허용. QA-3: 44쪽이라 RightPage가 null인 펼침은 없음 — null 기대 테스트 금지"
+  ],
   "priority": "high",
   "result": {},
   "retry_count": 0,

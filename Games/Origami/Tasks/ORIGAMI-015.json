@@ -22,10 +22,11 @@
   "result": {
     "econ": "OK",
     "gen_parity": "byte-identical",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-015",
   "title": "v2 기획 문서 정리 + 파이썬 대조 데이터 생성기 보관",
   "verification": [

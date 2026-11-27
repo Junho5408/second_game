@@ -3,7 +3,7 @@
     "FEATURE_SPECS의 점수 카운터 수용 기준 전부를 Core 테스트로 검증"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "303dce1ccb8384878542323dbb32046ba9b34441",
   "deliverables": [],
   "dependencies": [
     "SANDBOX-002"
@@ -17,7 +17,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "SANDBOX-003",
   "title": "점수 카운터 Core 구현",
   "verification": [

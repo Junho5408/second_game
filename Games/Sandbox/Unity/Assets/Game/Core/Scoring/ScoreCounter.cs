@@ -1,5 +1,3 @@
-using System;
-
 namespace Sandbox.Core.Scoring
 {
     /// <summary>
@@ -9,6 +7,11 @@ namespace Sandbox.Core.Scoring
     /// </summary>
     public sealed class ScoreCounter
     {
+        private int _score;
+        private int _combo;          // combo right after the last valid press
+        private bool _hasLastPress;
+        private double _lastPress;   // time of the last valid press; meaningful only when _hasLastPress
+
         /// <summary>Creates a counter in the initial state (score 0, combo 0, no previous press). AC-01.</summary>
         public ScoreCounter()
         {
@@ -23,7 +26,14 @@ namespace Sandbox.Core.Scoring
         /// <returns>true if the press was applied; false if it was ignored.</returns>
         public bool Press(double time)
         {
-            throw new NotImplementedException("SANDBOX-003");
+            if (!IsFinite(time)) return false;
+            if (_hasLastPress && time < _lastPress) return false;
+
+            _combo = _hasLastPress && time - _lastPress <= ScoreRules.ComboWindowSeconds ? _combo + 1 : 1;
+            _score += ScoreRules.BasePoints * ScoreRules.MultiplierForCombo(_combo);
+            _lastPress = time;
+            _hasLastPress = true;
+            return true;
         }
 
         /// <summary>
@@ -34,7 +44,11 @@ namespace Sandbox.Core.Scoring
         /// </summary>
         public ScoreSnapshot GetState(double now)
         {
-            throw new NotImplementedException("SANDBOX-003");
+            if (!_hasLastPress) return ScoreSnapshot.Initial;
+            // +Infinity is never "expired" (R-001): the expiry check applies to finite now only.
+            if (IsFinite(now) && now - _lastPress > ScoreRules.ComboWindowSeconds)
+                return new ScoreSnapshot(_score, 0, ScoreRules.MultiplierForCombo(0));
+            return new ScoreSnapshot(_score, _combo, ScoreRules.MultiplierForCombo(_combo));
         }
 
         /// <summary>
@@ -43,7 +57,12 @@ namespace Sandbox.Core.Scoring
         /// </summary>
         public void Reset()
         {
-            throw new NotImplementedException("SANDBOX-003");
+            _score = 0;
+            _combo = 0;
+            _lastPress = 0.0;
+            _hasLastPress = false;
         }
+
+        private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
     }
 }

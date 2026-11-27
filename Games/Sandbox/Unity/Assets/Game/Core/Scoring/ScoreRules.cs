@@ -21,7 +21,10 @@ namespace Sandbox.Core.Scoring
         /// </summary>
         public static int MultiplierForCombo(int combo)
         {
-            throw new System.NotImplementedException("SANDBOX-003");
+            if (combo >= 20) return MaxMultiplier;
+            if (combo >= 10) return 3;
+            if (combo >= 5) return 2;
+            return 1;
         }
     }
 }

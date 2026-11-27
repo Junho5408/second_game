@@ -16,7 +16,8 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Flow/"
   ],
   "notes": [
-    "Decisions: ScreenLines(null) -> ArgumentNullException; UnlockCondition(null|initially unlocked, any counts) -> \"\", locked model with null counts -> ArgumentNullException (as Unlocking.Progress); '맞힌 단계: ' joins glyphs with one space, '-' when none. Core tests 275/275 pass."
+    "Decisions: ScreenLines(null) -> ArgumentNullException; UnlockCondition(null|initially unlocked, any counts) -> \"\", locked model with null counts -> ArgumentNullException (as Unlocking.Progress); '맞힌 단계: ' joins glyphs with one space, '-' when none. Core tests 275/275 pass.",
+    "QA PASS: 283/283 core tests (8 new QA: seeded flow-vs-reference fuzz ~300k frames, keyboard playthroughs E-01..E-05); 1 Low spec gap BUG-ORIGAMI-004-1 (no keys on Workbench/Result). Reports/qa/ORIGAMI-004.md"
   ],
   "priority": "high",
   "result": {
@@ -24,7 +25,7 @@
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-004",
   "title": "Core 화면 흐름 구현",
   "verification": [

@@ -13,11 +13,15 @@
   "file_scope": [
     "Games/Origami/Docs/design/"
   ],
-  "notes": [],
+  "notes": [
+    "v2 design docs + balance_check.py (econ OK, recognition 17/17 reference cases OK)"
+  ],
   "priority": "critical",
-  "result": {},
+  "result": {
+    "design": "v2-phase1"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-007",
   "title": "v2 재기획: 3D 공간·캐릭터·책·자유 접기",
   "verification": [

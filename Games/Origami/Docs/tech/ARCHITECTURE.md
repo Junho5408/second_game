@@ -64,9 +64,12 @@ Core:   Geometry ◀─ Folding ◀─ Recognition ◀─ Catalog ◀─ Economy
 
 Runtime: UI(OrigamiGui) ─▶ Gameplay(OrigamiApp) ─▶ Folding view, Book view, Systems ─▶ Core
          Folding view ─▶ Core.Folding/Geometry만 (Game/Screens 모름 — IFoldTableHost로 연결)
-         Book view    ─▶ Core.Book/Texts/Catalog만
+         Book view    ─▶ Core.Book/Catalog/Folding/Geometry (+ Core.Texts 허용), Runtime.UI.KoreanFont (Game/Screens 모름 — IBookHost로 연결)
 ```
 
+- Book view → `Runtime.UI.KoreanFont`는 공유 글꼴 도우미 하나만 쓰는 예외다(CODING_CONVENTION의 `KoreanFont.Get` 규칙). `KoreanFont`는 Book view를 모르므로 순환이 없다
+  (UI의 `OrigamiGui` → Book view 호출과는 다른 클래스, 같은 `Origami.Runtime` 어셈블리). Folding/Geometry는 `DiagramRaster`가 도해(`StepDiagram`·`PaperState`)를 그리려고 쓴다(ORIGAMI-013 W-2).
+  책 화면 전용 표시 라벨은 Runtime `Scripts/Book/BookTexts.cs`(internal)에 둔다 — 게임 규칙 문구는 Core/Texts(C-170, C-192, DECISIONS).
 - 화살표 = "참조한다". 역방향 `using` 금지. Book은 Game을 모른다(보유 목록을 인자로 받음). Room은 Game을 모른다.
 - Runtime `Folding`은 `ScreenFlow`·`OrigamiGame`을 직접 부르지 않는다. 명령은 `IFoldTableHost`(C-191)를 통해서만 낸다.
   그래서 012(접기 테이블)는 009만 끝나면 010/011과 **병렬로** 만들 수 있고, 테스트는 `FoldSession`을 감싼 가짜 host로 한다.

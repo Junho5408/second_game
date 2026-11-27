@@ -32,6 +32,7 @@
 | ORIGAMI-010 Core 공방 규칙·경제·튜토리얼 | developer | COMPLETED — 리뷰 W, QA 803/803 (7일 플레이 5종 고정값 일치) |
 | ORIGAMI-015 문서 정리 | game-designer | COMPLETED |
 | ORIGAMI-012 Unity 접기 테이블 | developer | COMPLETED — Unity CI 46028807396: EditMode 735/735, PlayMode 54/54, Windows 빌드 성공 (손맛 AC-19는 플레이테스트 대기) |
-| ORIGAMI-011 Core 책·문구·화면 흐름 | developer | 진행 |
+| ORIGAMI-011 Core 책·문구·화면 흐름 | developer | COMPLETED — 리뷰 W, QA 972/972 (키 표 143칸, 7일 키 입력 플레이) |
+| ORIGAMI-013 Unity 책 화면 | developer | 진행 |
 
 다음 문서 정리 때 반영: W-5(매미 겹 기법 근거 표현), O-1(F-006 AC-04 시험 순서), O-2(GAME_DESIGN 규칙 범위 R-021).

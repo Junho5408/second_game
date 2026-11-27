@@ -47,15 +47,21 @@
     "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남아 있는 거절 토스트를 지울 것",
     "리뷰 ORIGAMI-011 N-2: 새 게임 확정 시(SheetChangeKind.Reset) 남은 거절 토스트를 지울 것",
     "Core/Room + Runtime workshop integration + v1 deletion (§10). verify_core 728/728; Workshop PlayMode tests (33) also run against a scratch UnityEngine stub harness (64/64 incl. FoldTable) — Unity CI still required. OnGUI smoke test is Inconclusive if CI never calls OnGUI (QA: check result XML).",
-    "review APPROVED_WITH_WARNINGS: W-1 OnGUI book test Inconclusive in CI run 46041182289 (batchmode, no Repaint) -> user playtest item; W-2 per-frame GUI allocations; W-3 C-180 doc: 600 s cap / NaN->0"
+    "review APPROVED_WITH_WARNINGS: W-1 OnGUI book test Inconclusive in CI run 46041182289 (batchmode, no Repaint) -> user playtest item; W-2 per-frame GUI allocations; W-3 C-180 doc: 600 s cap / NaN->0",
+    "QA PASS: CI run 46041182289 unity (Origami) EditMode 728/728, PlayMode 102 pass + 1 Inconclusive (OnGui_DrawsTheBookWithBookPanelDraw = PENDING user playtest, DECISIONS W-1), Windows build artifact Origami-windows-build 15221105864. QA added Qa/RoomSpecQaTests.cs (7, dotnet 735/735)"
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
-    "review": "pass"
+    "qa": "pass",
+    "review": "pass",
+    "unity-build": "pass",
+    "unity-compile": "pass",
+    "unity-editmode": "pass",
+    "unity-playmode": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-014",
   "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
   "verification": [

@@ -54,3 +54,42 @@
 
 ## Conclusion
 The numbers are internally consistent and were verified independently. The ACs are concrete and deterministic. The edge cases called out in the request (rejection order, unlocks, bankruptcy, day-7 end, ending ties) are all specified. The three warnings are documentation-clarity issues and can be fixed alongside or before ORIGAMI tech/impl tasks.
+
+## Re-review (fix pass 1)
+
+- Reviewed commit: d8828b9 (design fix). Also read: 724d0e8 (task status), 9fc4b3d (orchestrator DECISIONS rows, outside the designer's scope and not part of this review).
+- Result: **APPROVED_WITH_WARNINGS** (two Low notes, neither blocks)
+
+### Verification run
+| Command | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Origami ORIGAMI-001` | OK |
+| `bash studio/scripts/verify_core.sh Origami` | PASS (1/1, no Core code in this task) |
+| `python3 studio/scripts/check_meta.py Games/Origami/Unity` | OK |
+| `git diff 965045a d8828b9 -- Games/Origami/Docs/design` | only FEATURE_SPECS, GAME_DESIGN, GAME_RULES changed; CONTENT_SPECS untouched |
+
+### Finding status
+| Finding | Status | Evidence |
+|---|---|---|
+| BUG-1 / W-1 bankruptcy timing | Resolved | GAME_DESIGN step 4 now says that money 0 during the day is not bankruptcy, that the check happens when a new day starts (R-013), and that day 7 has no check. This matches R-013 and F-001 edge cases, AC-06 and AC-07. |
+| BUG-2 / W-3 out-of-domain inputs | Resolved | R-004 #3 covers null and the empty string as UnknownModel. R-005 adds InvalidAction, which is not a mistake. R-015 adds InvalidAction to the reason list. F-002 AC-03 and F-003 AC-15 test both. |
+| BUG-3 / W-2 implicit ending inputs | Resolved | FEATURE_SPECS 공통 표기 now has a rule (mentioned counts at their minimum, unmentioned counts 0, bankruptcy means money 0). Each F-006 AC re-derived under it: AC-04 E-03, AC-05 E-03/E-05, AC-06 (crane ★3 1 < 15, money 500) E-04, AC-07 E-03/E-02, AC-08 (crane 1) E-05, AC-09 E-01/E-01. Every result matches the stated ending. |
+| BUG-4 cumulative records | Resolved | R-002 and F-001 AC-01 now list 총 판매액 0 and 총 종이값 0 |
+| F-007 Esc confirm | Resolved | Enter or the button confirms. Esc again or the button cancels. Other inputs are ignored while the dialog is open. Covered by AC-08. |
+| F-007 bankruptcy settlement | Resolved | On bankruptcy the screen shows the settlement and a bankruptcy notice, no next-day popular model, then the result screen. AC-09 matches F-001 AC-06 (day-4 sales 0, money 0, E-01). |
+
+### Numbers
+No existing number changed. Every removed line reappears with the same values. The new ACs reuse values already verified in the first review: F-002 AC-03 (money 20, attempts 5); F-003 AC-15 (boat progress 0/4, MISTAKE_LIMIT 3); F-007 AC-09 (F-001 AC-06: total 0, money 0, E-01).
+
+### Rejection-order consistency (new InvalidAction reason)
+- `In(x)`: R-005, R-015, the F-003 edge case and F-003 AC-15 all give RunEnded → NoFold → InvalidAction. Hint and Abandon stay RunEnded → NoFold, so splitting the old shared line in R-015 lost nothing.
+- `Start(m)`: null is handled at step 3 of R-004, after RunEnded and FoldInProgress. F-002 AC-03 (`Start(boat)` then `Start(null)` gives FoldInProgress) matches that order.
+- F-001 rule 4 (after the run ends, everything except NewRun gives RunEnded) still holds for both new inputs.
+- InvalidAction cannot be produced through the UI, because keys and buttons map only to the 5 actions. The F-007 per-reason message rule still has nothing to contradict.
+
+### New notes (Low, no fix required for this task)
+- N-1 `GAME_RULES.md` line 39 (보조 동작) and the F-007 조작 line list the keys ↑/W … Esc but not **Enter**. Enter is now used to confirm abandoning. Impact: low, because F-007 defines Enter explicitly. Recommendation: add "포기 확인: Enter" to the GAME_RULES 보조 동작 line the next time the docs are touched.
+- N-2 The last sentence of F-007 AC-08 ("확인 창이 떠 있을 때 ↑ 키는 …") follows the Enter step, after which the dialog is closed. Impact: a test writer must reopen the dialog first, which is obvious. Recommendation: reword to "확인 창을 다시 연 상태에서 ↑ 키 …" or move it to after the first Esc.
+
+### Conclusion
+All four QA bugs, the three review warnings and both F-007 UI notes are resolved. No number changed. The new InvalidAction reason has the same check order in every document. The two Low wording notes can be fixed later.

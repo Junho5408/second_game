@@ -17,14 +17,16 @@
     "Games/Origami/Docs/tech/"
   ],
   "notes": [
-    "v2 tech design done: contracts C-101..C-194, tasks ORIGAMI-009..014 proposed (ARCHITECTURE §13); no package/settings change needed"
+    "v2 tech design done: contracts C-101..C-194, tasks ORIGAMI-009..014 proposed (ARCHITECTURE §13); no package/settings change needed",
+    "review APPROVED_WITH_WARNINGS: W-1 AC multi-mapping, W-2 F-008 AC-03 -> 010, W-3 J-05 percent 94 under scanline; N-1..N-5"
   ],
   "priority": "critical",
   "result": {
-    "docs": "Games/Origami/Docs/tech/"
+    "docs": "Games/Origami/Docs/tech/",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-008",
   "title": "v2 기술 설계: 3D 공간·캐릭터·책·접기 엔진",
   "verification": [

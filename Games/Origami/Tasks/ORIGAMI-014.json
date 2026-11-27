@@ -1,0 +1,59 @@
+{
+  "acceptance_criteria": [
+    "방·캐릭터(RoomMotion은 Core)·카메라(CameraRig는 카메라를 지연 생성/획득, 리뷰 N-2)·HUD·덮개·판매대 통합, OrigamiApp 단일 Update/OnGUI",
+    "소유 AC: F-002 AC-01~06, F-003 AC-05~07, F-007 AC-06, F-010 AC-06, F-011 AC-07, F-012 AC-09, F-013 AC-03",
+    "전체 연결 스모크 PlayMode 테스트: 1일 플레이(앉기 → 튜토리얼 6단계 → 완성 → 잠 → 정산)",
+    "v1 삭제는 ARCHITECTURE §10 목록만(Core/Content·Rules·Run·Flow, 해당 v1 테스트, §10의 v1 Qa 파일 6개). Scripts/UI/KoreanFont.cs는 수정 금지. GameInfo 버전 2.0.0",
+    "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
+    "verify_core.sh 통과, check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode·Windows 빌드 통과"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-011",
+    "ORIGAMI-012",
+    "ORIGAMI-013"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Core/Room/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Room/",
+    "Games/Origami/Unity/Assets/Game/Core/GameInfo.cs",
+    "Games/Origami/Unity/Assets/Game/Scripts/Gameplay/",
+    "Games/Origami/Unity/Assets/Game/Scripts/UI/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Workshop/",
+    "Games/Origami/Unity/Assets/Game/Core/Content/",
+    "Games/Origami/Unity/Assets/Game/Core/Rules/",
+    "Games/Origami/Unity/Assets/Game/Core/Run/",
+    "Games/Origami/Unity/Assets/Game/Core/Flow/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Contracts/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Flow/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Rules/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Run/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Flow/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/FlowEndingPlaythroughQaTests.cs",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/FlowFuzzQaTests.cs",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/RunDifferentialQaTests.cs",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/RunReferenceModel.cs",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/ExtremeRunQaTests.cs",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Qa/CatalogSpecQaTests.cs"
+  ],
+  "notes": [
+    "v1 Qa 파일 6개 경로는 ARCHITECTURE §10 참고; 해당 파일 삭제는 이 작업에 허용(Orchestrator 배정). 리뷰 실패 2회 시 Core/Room 분리(리뷰 N-5)"
+  ],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-014",
+  "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
+  "verification": [
+    "core-tests",
+    "unity-compile",
+    "unity-editmode",
+    "unity-playmode",
+    "unity-build",
+    "review"
+  ]
+}

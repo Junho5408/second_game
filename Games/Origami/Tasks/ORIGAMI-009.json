@@ -1,0 +1,36 @@
+{
+  "acceptance_criteria": [
+    "INTERFACE_CONTRACTS의 Geometry/Folding/Recognition/Catalog 계약(C-1xx) 구현: FoldSession/FoldPlanner/DropSnap/FoldGesture/Recognizer.Recognize, balance_check.py와 같은 의미",
+    "소유 AC: F-005 AC-06·AC-11~16, F-009 AC-01~06, F-007 AC-01(BookLayout). 지원(엔진 수준 테스트): F-005 AC-01~05·AC-10(소유 010), F-005 AC-18 Core 값(겹 수·'겹: 위 2 / 6', 소유 012)",
+    "DATA_STRUCTURE D-103 단계별 조각·자국·접기 수 일치, CONTENT §1 표·§2 순서(선 끝점 ±1e-4, 자석 종류)·§4 작품끼리 표·J-01~J-18 등급 일치(점수 ±0.01)·§5 인기 표",
+    "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
+    "verify_core.sh Origami 통과(기존 v1 테스트 포함), check_meta OK"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-008"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Core/Geometry/",
+    "Games/Origami/Unity/Assets/Game/Core/Folding/",
+    "Games/Origami/Unity/Assets/Game/Core/Recognition/",
+    "Games/Origami/Unity/Assets/Game/Core/Catalog/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Folding/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Recognition/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Catalog/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-009",
+  "title": "v2 Core 접기 엔진·자석·판정·카탈로그",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "acceptance_criteria": [
+    "Book/Texts/ScreenFlow 계약 구현",
+    "소유 AC: F-007 AC-02~03, F-013 AC-01~02, F-003 모드×키 표(Core), F-010 결과 문구(R-012), F-006 안내 문구, F-013 1회성 안내 상태. 지원: F-011 AC-07·F-012 AC-09 문구 데이터(소유 014)",
+    "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
+    "verify_core.sh Origami 통과, check_meta OK"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-010"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Core/Book/",
+    "Games/Origami/Unity/Assets/Game/Core/Texts/",
+    "Games/Origami/Unity/Assets/Game/Core/Screens/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Book/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Texts/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Screens/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-011",
+  "title": "v2 Core 책 도해·문구·화면 흐름",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

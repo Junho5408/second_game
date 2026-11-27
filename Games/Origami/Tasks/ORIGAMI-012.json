@@ -1,0 +1,35 @@
+{
+  "acceptance_criteria": [
+    "IFoldTableHost 계약 구현, 코드로 만든 메시, 광선-평면 선택(Physics·Collider·CreatePrimitive 금지), 놓을 때 Core 적용 후 애니메이션",
+    "소유 AC: F-005 AC-17·AC-18, F-006 AC-09(host가 가이드를 줄 때만 표시). F-005 AC-19는 사용자 플레이테스트로 기록",
+    "PlayMode 테스트는 dt를 직접 넘기고 프레임 타이밍에 의존하지 않음. 테스트 네임스페이스가 FoldTable 클래스를 가리지 않게 할 것(리뷰 N-1, 예: Origami.Tests.PlayMode.FoldTableTests)",
+    "휠 입력: 한 프레임에 delta 부호로 ±1겹(리뷰 N-3). Materials는 셰이더를 못 찾으면 조용히 대체(리뷰 N-4)",
+    "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
+    "verify_core.sh 통과, check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode 통과"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-009"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Scripts/Systems/",
+    "Games/Origami/Unity/Assets/Game/Scripts/Folding/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/FoldTable/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-012",
+  "title": "v2 Unity 접기 테이블 (종이 메시·끌기·겹 고르기·자석·애니메이션)",
+  "verification": [
+    "unity-compile",
+    "unity-editmode",
+    "unity-playmode",
+    "review"
+  ]
+}

@@ -21,7 +21,8 @@
     "R-2: Current starts at ScoreSnapshot.Initial; view reads in LateUpdate",
     "R-3: if UnityEngine.Input throws in CI, Orchestrator opens architect task to commit ProjectSettings activeInputHandler",
     "Review SANDBOX-003 W-1: use exactly representable times (0.5 steps) in boundary tests",
-    "Display uses IMGUI (OnGUI+GUI.Label), not UI Toolkit: no PanelSettings/theme asset needed. Added public ProcessFrame(time, reset, space, click) and static EnsureInstance/Instance beyond C-004 recommended surface. unity-compile/playmode/build unverified (no Unity here); only a stub-UnityEngine dotnet build was done."
+    "Display uses IMGUI (OnGUI+GUI.Label), not UI Toolkit: no PanelSettings/theme asset needed. Added public ProcessFrame(time, reset, space, click) and static EnsureInstance/Instance beyond C-004 recommended surface. unity-compile/playmode/build unverified (no Unity here); only a stub-UnityEngine dotnet build was done.",
+    "QA: BUG-SANDBOX-004-1 (Medium) View_ShowsCurrentAfterFrame compares Current (this frame's Update) with Text (previous LateUpdate); fails if frame gap > 1.0s. Fix: press at t0-10 (expired) and yield twice, assert exact text; fix comments. See Reports/qa/SANDBOX-004.md. CI run 45925656829: license activation Code 400 TimeStamp validation failed = environment failure."
   ],
   "priority": "medium",
   "result": {
@@ -29,7 +30,7 @@
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "FIX_REQUIRED",
   "task_id": "SANDBOX-004",
   "title": "점수 카운터 화면 연결",
   "verification": [

@@ -31,7 +31,7 @@
     "review": "pass"
   },
   "retry_count": 1,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "SANDBOX-004",
   "title": "점수 카운터 화면 연결",
   "verification": [

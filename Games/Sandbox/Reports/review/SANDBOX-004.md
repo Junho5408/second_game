@@ -73,3 +73,51 @@ None of these leaks the `ScoreCounter` itself; ownership stays single.
 
 ## Unverified (needs CI)
 unity-compile, unity-playmode, unity-build. The task note correctly says only a stub-UnityEngine dotnet build was done.
+
+## Re-review (fix pass 1)
+
+- Reviewed commit: 7d26984 (test file + task status only). Also looked at what else changed since the first review (`git diff 0b28b76..HEAD`): QA report, orchestrator commits 20972b3 (task notes, SANDBOX-005 docs task) and 0ade70a (`.github/workflows/unity.yml` pin). None of those is a `SANDBOX-004:` commit or under this task's scope, so they are not part of this re-review. `Scripts/Gameplay/` and `Scripts/UI/` are unchanged since b5d12a4 (empty diff).
+- **Result: APPROVED_WITH_WARNINGS** (W-1 and BUG-SANDBOX-004-1 resolved; W-2 and W-3 are still open, both outside this task's scope)
+
+### Commands run
+| Command | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Sandbox SANDBOX-004` | OK |
+| `bash studio/scripts/verify_core.sh Sandbox` | PASS (87/87, 0 failed) |
+| `python3 studio/scripts/check_meta.py Games/Sandbox/Unity` | OK |
+
+Unity was still not run. The frame-order reasoning below comes from reading the code only.
+
+### BUG-SANDBOX-004-1 / W-1: resolved
+`View_ShowsCurrentAfterFrame` now:
+1. presses 3 times at `past = Time.unscaledTimeAsDouble - 10.0`, then checks synchronously that `Current == (3,3,1)` and that the formatted text is `"Score: 3\nCombo: 3\nx1"`;
+2. yields twice;
+3. asserts `Current == (3,0,1)` and `view.Text == "Score: 3\nCombo: 0\nx1"` exactly.
+
+Why the result no longer depends on frame timing:
+- `Time.unscaledTimeAsDouble` never decreases, so every later controller `Update` uses some `t >= t0`, and `t - past >= 10 > 1.0`. By C-001 `GetState`, the snapshot is therefore always (3,0,1), however long the frames take. Floating-point error in `t - (t0 - 10)` is many orders of magnitude below the 9 s margin.
+- `past` can be negative if the player has been running for less than 10 s. C-001 says negative finite times are valid presses ("음수 유한 시각도 유효"), so this is fine.
+- Possible text values over time: Bind gives `Initial`. If Unity runs a LateUpdate in frame 0 for the newly added component, it gives (3,3,1), because no controller Update has run since the presses. From frame 1 on, Update runs before LateUpdate, so every refresh gives (3,0,1). After the second yield, frame 1's LateUpdate has run, so the text is (3,0,1) whatever happened in frame 0. That text differs from both earlier possible values, so the test now proves that LateUpdate read the result of a controller Update. This was the missing evidence in W-1.
+- Yielding twice also removes the QA "secondary uncertainty" about whether a component added in the coroutine phase gets a LateUpdate in that same frame.
+- `WaitForEndOfFrame` was avoided, as QA recommended for batchmode.
+
+`RuntimeInstance_IsCreatedOnce_WithView` now yields a second time and asserts exact `Initial` for both `Current` and `Text`. This is deterministic: no code presses on the runtime instance and batchmode has no input, so every frame gives `Initial`. I checked the other tests: none touches `ScoreCounterController.Instance` or the `[ScoreCounter]` object. They all use their own `TestScoreCounter` GameObject, which TearDown destroys.
+
+### Comments: now correct
+- The class summary now says what Unity actually does: after `yield return null`, the coroutine resumes after Update and before LateUpdate. It also explains why frame tests yield at least twice and only assert states that are the same at every real time `>= t0`. The old false claim ("only assert values that do not depend on frame duration") is gone, and the test is now built to match the new wording.
+- The inline comments `frame 1: resumes after Update (Current = (3,0,1)), before LateUpdate` and `frame 1 LateUpdate refreshed Text; frame 2 Update ran again` describe the phase order correctly.
+- The added assumption "no real keyboard/mouse input during the run (always true in batchmode)" is accurate. It also applies to the test-owned controller, which polls `Input` in `Update`. It only matters if someone runs the tests interactively in the Editor and presses keys.
+
+### Regression check
+- No production code changed. The 10 synchronous tests are unchanged.
+- The test asserts were made stricter, not weaker: an exact expected string replaced `StartsWith` plus a comparison that mixed values from different frames. No test was removed or skipped.
+- Test file `.meta` files are unchanged, and check_meta reports OK.
+- The new code uses no new APIs or `using` directives, so the compile surface is the same as in the first review.
+
+### Remaining findings
+- W-2 (C-004 does not document the added public surface): still open. It needs an architect/Orchestrator action. SANDBOX-005 appears to be the docs task for it; I did not review it here.
+- W-3 (legacy `Input` / `activeInputHandler`): still open. It can only be settled by a CI log.
+- I-2 (info, new): the determinism argument assumes Unity's usual behaviour that a MonoBehaviour added during frame N gets its first `Update` in frame N+1. This is standard Unity behaviour (Start runs before the first Update in the next frame), so no change is needed. If a CI run ever shows `Text` = (3,3,1) at the final assert, this assumption is the first thing to check.
+
+### Unverified (needs CI)
+unity-compile, unity-playmode, unity-build.

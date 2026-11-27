@@ -12,7 +12,9 @@
   "file_scope": [
     "Games/Origami/Docs/tech/"
   ],
-  "notes": [],
+  "notes": [
+    "Also: add OrigamiButtons/OrigamiButton to C-031 + change history (review ORIGAMI-005 W-1)"
+  ],
   "priority": "low",
   "result": {},
   "retry_count": 0,

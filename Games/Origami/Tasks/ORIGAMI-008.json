@@ -16,11 +16,15 @@
   "file_scope": [
     "Games/Origami/Docs/tech/"
   ],
-  "notes": [],
+  "notes": [
+    "v2 tech design done: contracts C-101..C-194, tasks ORIGAMI-009..014 proposed (ARCHITECTURE §13); no package/settings change needed"
+  ],
   "priority": "critical",
-  "result": {},
+  "result": {
+    "docs": "Games/Origami/Docs/tech/"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-008",
   "title": "v2 기술 설계: 3D 공간·캐릭터·책·접기 엔진",
   "verification": [

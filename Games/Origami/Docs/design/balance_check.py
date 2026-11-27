@@ -6,10 +6,10 @@
 
   python3 Games/Origami/Docs/design/balance_check.py            # 전부 (약 5~10분, 4코어)
   python3 Games/Origami/Docs/design/balance_check.py econ       # 경제·책·플레이 시간 (빠름)
-  python3 Games/Origami/Docs/design/balance_check.py recog      # 판정 기준값 J-01~J-16, 불변성, 작품 사이 일치도, 자석 검사
+  python3 Games/Origami/Docs/design/balance_check.py recog      # 판정 기준값 J-01~J-18, 불변성, 작품 사이 일치도, 자석 검사
   python3 Games/Origami/Docs/design/balance_check.py steps      # 기준 순서의 접는 선 위 점(도해용) 출력
   python3 Games/Origami/Docs/design/balance_check.py errors     # 사람 오차 모의실험(시드 고정) + 기대 경제
-  python3 Games/Origami/Docs/design/balance_check.py shortcut   # 지름길 탐색(빔 탐색)
+  python3 Games/Origami/Docs/design/balance_check.py shortcut   # 지름길 검사(책 순서의 모든 부분 순서 전수 + 빔 탐색 + 기법 필요성)
 
 판정(IoU)은 격자 샘플링 근사다(격자 0.004, 무게중심 정렬 후 D4 8가지). 정확값과 약 ±0.003 차이가 날 수 있다.
 접기 규칙은 GAME_RULES R-007(전체 접기 = Fold3DSpike FoldPlanner, 위 N겹 접기, 접었다 펴기), 자석은 R-021을 그대로 옮겼다.
@@ -519,33 +519,42 @@ def _refl_ab(p, a, b):
     return (2 * f[0] - p[0], 2 * f[1] - p[1])
 
 
+def _key(q):
+    """동점 처리용 좌표 키: x, 그다음 y (1e-9 단위로 반올림)."""
+    return (round(q[0], 9), round(q[1], 9))
+
+
 def snap(st, grab, drop):
-    """R-021 놓기 자석. 반환 (놓는 점, 종류): P 기준점, L 접는 선 맞춤, M 자국 선, - 없음."""
+    """R-021 놓기 자석. 반환 (놓는 점, 종류): P 기준점, L 접는 선 맞춤, M 자국 선, - 없음.
+    동점 순서(리뷰 N-8, 결정적): 거리(L은 거리 합)를 1e-9로 반올림해 작은 것 → 점 좌표 x → y가 작은 것.
+    L의 쌍은 두 점을 (x, y) 순으로 정렬한 (앞 점, 뒤 점)으로 비교한다."""
     lms = [q for q in landmarks(st) if math.dist(q, grab) > 1e-6]
-    near = [(math.dist(q, drop), q) for q in lms if math.dist(q, drop) <= SNAP_POINT]
+    near = [(round(math.dist(q, drop), 9),) + _key(q) + (q,) for q in lms if math.dist(q, drop) <= SNAP_POINT]
     if near:
-        return min(near)[1], "P"
+        return min(near)[-1], "P"
     if math.dist(grab, drop) < 1e-9:
         return drop, "-"
     L = Line(grab, drop)
     cand = [(abs(_dot(_sub(q, L.pt), L.n)), q) for q in lms]
     cand = [c for c in cand if c[0] <= SNAP_LINE]
-    pair = None
+    pairs = []
     for (da, a), (db, b) in itertools.combinations(cand, 2):
-        if math.dist(a, b) >= LINE_PAIR_MIN and (pair is None or da + db < pair[0]):
-            pair = (da + db, a, b)
-    if pair:
-        return _refl_ab(grab, pair[1], pair[2]), "L"
-    bestc = None
+        if math.dist(a, b) >= LINE_PAIR_MIN:
+            a, b = sorted((a, b), key=_key)
+            pairs.append((round(da + db, 9), _key(a), _key(b), a, b))
+    if pairs:
+        pair = min(pairs)
+        return _refl_ab(grab, pair[3], pair[4]), "L"
+    marks = []
     for a, b, f in mark_pieces(st):
         ab = _sub(b, a)
         t = max(0, min(1, _dot(_sub(drop, a), ab) / _dot(ab, ab)))
         q = (a[0] + ab[0] * t, a[1] + ab[1] * t)
         d = math.dist(q, drop)
-        if d <= SNAP_MARK and visible(st, q, f) and (bestc is None or d < bestc[0]):
-            bestc = (d, q)
-    if bestc:
-        return bestc[1], "M"
+        if d <= SNAP_MARK and visible(st, q, f):
+            marks.append((round(d, 9),) + _key(q) + (q,))
+    if marks:
+        return min(marks)[-1], "M"
     return drop, "-"
 
 
@@ -575,9 +584,12 @@ REF = {
               ("F", C, _tip(0.7, (0, -1)), False, 2), ("F", C, _tip(0.7, (-1, 0)), False, 2)],
     "dog": [("F", (1, 1), C), ("C", (-1, 1), (1, -1)), ("C", C, (0, 0)),
             ("F", (-1, 1), (-1.4, 0.0)), ("F", (1, -1), (0.0, -1.4)), ("F", C, (-0.5, -0.5))],
-    "cicada": [("F", (1, 1), C), ("F", (-1, 1), C), ("F", (1, -1), C), ("C", (-1, 0), (0, -1)),
-               ("F", C, _tip(0.6, (0, -1)), False, 2), ("F", C, _tip(0.6, (-1, 0)), False, 2),
-               ("F", C, (-0.4, -0.4), False, 1), ("F", C, (-0.7, -0.7)),
+    # 매미 (수정 2차, 리뷰 R-1): 위 1겹 머리 단계 삭제. 날개 = 위 2겹(이음선 때문에 위 1겹을 골라도 같음), 머리 = 남은 바닥 2겹 전체.
+    # 날개 선 = 아래 꼭짓점 (0,-1)과 대각선 자국 위 (-0.38,-0.38)을 지나는 선(q = 0.62, 손으로 맞춤). 머리 = C를 두 날개 선이 만난 점으로.
+    # 옆 = 옆 꼭짓점을 두 자국(대각선·세로)이 만나는 점 (-0.5,-0.5)에 맞춰 뒤로(산접기).
+    "cicada": [("F", (1, 1), C), ("F", (-1, 1), C), ("F", (1, -1), C), ("C", (-1, 0), (0, -1)), ("C", (-1, 0), (0, 0)),
+               ("F", C, _tip(0.62, (0, -1)), False, 2), ("F", C, _tip(0.62, (-1, 0)), False, 2),
+               ("F", C, (-0.38, -0.38)),
                ("F", (-1, 0), (-0.5, -0.5), True), ("F", (0, -1), (-0.5, -0.5), True)],
 }
 FOLDS = {m: sum(1 for s in REF[m] if s[0] == "F") for m in MODELS}
@@ -692,6 +704,14 @@ def judge(st, owned, refm, G):
 
 
 GRADE3_MIN, GRADE2_MIN, MATCH_MIN = 97, 93, 85   # GAME_RULES 기본 수치 (W-3 재조정: 95/90 → 97/93)
+MARGIN = 0.02        # 문서가 기대는 판정 결과는 경계(0.85/0.93/0.97)에서 이만큼 떨어져야 한다(DECISIONS 지름길 정책, 리뷰 R-3)
+GRID_ERR = 0.002     # 격자 0.004 근사 오차 여유. ★2 구간(0.93~0.97, 폭 0.04)은 가운데 0.95 ± GRID_ERR만 허용
+
+
+def margin_ok(s):
+    if GRADE2_MIN / 100 <= s < GRADE3_MIN / 100:
+        return abs(s - 0.95) <= GRID_ERR
+    return all(abs(s - b / 100) >= MARGIN for b in (GRADE3_MIN, GRADE2_MIN, MATCH_MIN))
 
 
 def grade(s):
@@ -717,11 +737,15 @@ def recognition():
         ("J-08", "house 지붕 한쪽만", hf[:2], MODELS, None, 0.783, 0.006),
         ("J-09", "반으로 한 번", hf[:1], MODELS, None, 0.728, 0.006),
         ("J-10", "dog 귀 없이(턱만)", Dg[:3] + Dg[5:], MODELS, None, None, None),
-        ("J-11", "cicada 옆 접기 없이", Ci[:8], MODELS, None, None, None),
+        ("J-11", "cicada 옆 접기 없이(1~8단계)", Ci[:8], MODELS, None, None, None),
         ("J-12", "dog (plane·house만 보유)", Dg, ["plane", "house"], None, None, None),
         ("J-14", "tulip 꽃잎을 전체 겹으로", [s[:4] for s in T], MODELS, None, None, None),
-        ("J-15", "cicada 날개를 전체 겹으로(머리 접기 불가 → 옆만)", Ci[:4] + [s[:4] for s in Ci[4:6]] + Ci[8:], MODELS, None, None, None),
+        ("J-15", "cicada 1~5단계 + 6단계를 전체 겹으로 + 9·10단계(C의 모든 겹이 넘어가 7·8단계는 할 수 없다)",
+         Ci[:5] + [Ci[5][:4]] + Ci[8:], MODELS, None, None, None),
         ("J-16", "house 자국 없이(접기만)", hf, MODELS, "house", 1.0, 0.005),
+        ("J-17", "cicada 날개(6·7단계)를 위 1겹으로(이음선 때문에 덮개 2겹이 같이 접힘)",
+         Ci[:5] + [s[:4] + (1,) for s in Ci[5:7]] + Ci[7:], MODELS, "cicada", 1.0, 0.005),
+        ("J-18", "cicada 머리(8단계) 없이", Ci[:7] + Ci[8:], MODELS, None, None, None),
     ]
     for m in MODELS:
         cases.insert(0, ("J-01", f"{m} 기준 순서", REF[m], MODELS, m, 1.0, 0.005))
@@ -730,9 +754,9 @@ def recognition():
     for cid, name, seq, owned, exp, val, tol in cases:
         got, b, s = judge(apply(seq), owned, refm, G)
         good = got == exp and (val is None or abs(s - val) <= tol)
-        good = good and all(abs(s - b / 100) >= 0.015 for b in (GRADE3_MIN, GRADE2_MIN, MATCH_MIN))  # 경계에서 떨어져 있어야 한다
-        if val is None:  # 실패작이어야 하고, 경계에서 0.02 이상 떨어져야 한다
-            good = good and s <= 0.83
+        good = good and margin_ok(s)  # 등급 경계에서 0.02 이상(★2 구간은 가운데) — DECISIONS 지름길 정책
+        if exp is None:  # 구겨진 종이여야 한다(0.85 − 0.02 이하)
+            good = good and s <= MATCH_MIN / 100 - MARGIN
         ok &= good
         res = f"{NAMES[got]} ★{grade(s)}" if got else "구겨진 종이"
         print(f"{'OK ' if good else 'BAD'} {cid} {name}: 최고 {b} {s:.3f} → {res}")
@@ -942,10 +966,59 @@ OLD_GLIDER = [("F", (-1, 1), (0, 0)), ("F", (1, 1), (0, 0)), ("F", (0, 1), (0, 0
               ("F", (0.5, 0.5), (0, 0)), ("F", (-0.3, -1), (0.3, -1))]
 
 
+SHORTCUT_MAX = GRADE2_MIN / 100 - MARGIN   # 0.91: 유료 작품은 책보다 적은 접기로 이 값 이상이면 실패(★2 경계 0.93 − 여유 0.02)
+TECH_DEPTH = dict(tulip=5)                  # 기법 필요성: 전체 겹만으로 책 접기 수만큼 탐색
+
+
+def subsequences():
+    """리뷰 R-2: 각 책 순서에서 접기를 1개 이상 뺀 모든 부분 순서(남은 동작 순서 유지)를 정확히 다시 잰다.
+    접었다 펴기는 모양을 바꾸지 않으므로 그대로 둔다(빼도 같은 상태). 무효가 되는 순서(잡을 곳 없음 등)는 건너뛴다.
+    각 부분 순서의 상태를 5종 기준 모두와 비교한다: 그 작품보다 접기 수가 적은데 유료 작품 m과 0.91 이상이면 실패."""
+    G = grid(R_FINE)
+    refm = {m: d4(cmask(apply(REF[m]), G)) for m in MODELS}
+    ok, found = True, {m: [] for m in MODELS}
+    for src in MODELS:
+        seq = REF[src]
+        fidx = [i for i, s in enumerate(seq) if s[0] == "F"]
+        n_valid = n_all = 0
+        for k in range(1, len(fidx) + 1):
+            for drop in itertools.combinations(fidx, k):
+                n_all += 1
+                sub = [s for i, s in enumerate(seq) if i not in drop]
+                try:
+                    st = apply(sub)
+                except (FoldError, ZeroDivisionError):
+                    continue
+                if st.folds == 0:
+                    continue
+                n_valid += 1
+                ma = cmask(st, G)
+                for m in MODELS:
+                    if st.folds >= FOLDS[m]:
+                        continue
+                    found[m].append((iou(ma, refm[m]), src, [d + 1 for d in drop], st.folds))
+        print(f"  {src}: 부분 순서 {n_all}개 중 유효 {n_valid}개 검사")
+    for m in MODELS:
+        top3 = sorted(found[m], key=lambda r: -r[0])[:3]
+        v = top3[0][0]
+        paid = PAGE[m] > 0
+        good = v < SHORTCUT_MAX or not paid
+        ok &= good
+        print(f"  {'OK ' if good else 'BAD'}{'' if paid else '(무료, 기록만)'} 부분 순서 최고 {m} (책 {FOLDS[m]}접기), 상위 3개:")
+        for v, src, drop, nf in top3:
+            print(f"      {v:.3f} ← {src} 순서에서 {drop}단계 뺌({nf}접기) → "
+                  f"{NAMES[m] + ' ★' + str(grade(v)) if v >= 0.85 else '구겨진 종이'}")
+    return ok
+
+
 def shortcut():
     G = grid(R_FINE)
     ok = True
-    print(f"지름길 탐색 (빔 {BEAM}, 격자 {R_SEARCH}로 고르고 격자 {R_FINE}로 다시 잼). 기준: 유료 작품이 책보다 적은 접기로 0.85 이상이면 실패(무료 plane·house는 기록만)")
+    print(f"지름길 검사 (DECISIONS 지름길 정책): 유료 작품은 책보다 적은 접기로 {SHORTCUT_MAX:.2f}(★2 경계 0.93 − 여유 0.02) 이상이면 실패. "
+          "★1까지는 허용. 무료 plane·house는 기록만")
+    print("[1] 책 순서의 모든 부분 순서 (전수)")
+    ok &= subsequences()
+    print(f"[2] 빔 탐색 (빔 {BEAM}, 격자 {R_SEARCH}로 고르고 격자 {R_FINE}로 다시 잼)")
     # 탐색기가 실제 지름길을 찾는지 먼저 확인: v2 초안 글라이더(리뷰 W-1)는 3번 안에 0.85를 넘어야 한다
     tgt = apply(OLD_GLIDER)
     ref = d4(cmask(tgt, G))
@@ -961,11 +1034,20 @@ def shortcut():
             fine = [iou(cmask(apply([("F",) + x[:2] + (False, x[2]) for x in b[2]]), G), ref) for b in res]
             top = max(fine)
             paid = PAGE[m] > 0
-            good = top < 0.85 or not paid
+            good = top < SHORTCUT_MAX or not paid
             ok &= good
             path = res[fine.index(top)][2]
             print(f"  {'OK ' if good else 'BAD'}{'' if paid else '(무료, 기록만)'} {m} (책 {FOLDS[m]}접기) {'위 1·2겹 포함' if sel else '전체 접기만'} 깊이 {depth}: "
                   f"깊이별 최고 {' '.join(f'{v:.3f}' for v in fine)} / 최고 경로 {[(_r6(a), _r6(b), l) for a, b, l in path]}")
+    print("[3] 기법 필요성: 전체 겹 접기만으로 책 접기 수까지 탐색해도 ★2 미만(0.91 미만)이어야 '위 N겹이 ★2 이상에 필요'라고 쓴다")
+    for m, depth in TECH_DEPTH.items():
+        tgt = apply(REF[m])
+        ref = d4(cmask(tgt, G))
+        res = beam(tgt, depth, False)
+        fine = [iou(cmask(apply([("F",) + x[:2] + (False, x[2]) for x in b[2]]), G), ref) for b in res]
+        good = max(fine) < SHORTCUT_MAX
+        ok &= good
+        print(f"  {'OK ' if good else 'BAD'} {m} 전체 겹만 깊이 {depth}: 깊이별 최고 {' '.join(f'{v:.3f}' for v in fine)}")
     print("지름길 검증", "OK" if ok else "실패")
     if not ok:
         sys.exit(1)

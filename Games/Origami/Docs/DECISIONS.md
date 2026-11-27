@@ -38,3 +38,4 @@
 | 2026-11-27 | 책 화면 전용 표시 라벨(난이도, 기본가, 페이지 가격, 가진 돈, 접기 종류 표기, 기호 설명, 앞/뒤)은 Runtime `Scripts/Book/BookTexts.cs`에 둔다(책 화면에서만 쓰는 표시 문구). 게임 규칙 문구는 계속 Core/Texts | 리뷰 ORIGAMI-013 W-1, 이동 비용 대비 이득 작음 | Orchestrator |
 | 2026-11-27 | 대화상자 문구(명세에 없는 부분): 일시정지 "일시정지"/"Esc = 계속, Enter = 새로 시작", 새 게임 확인 "새로 시작할까요?" 예/아니오, 잠자기 확인 제목 "잠자기 확인", 정산 버튼 "다음 날"(끝나면 "결과 보기"), 결과 "새로 시작", 판매대·책장 "닫기" — Runtime WorkshopTexts | ORIGAMI-014 구현, 가장 짧은 문구 | Orchestrator |
 | 2026-11-27 | 잘못된 끌기(접기 실패)를 놓으면 FoldTexts.ErrorMessage를 2초 알림으로 표시. 걷는 중에는 포인터 입력을 접기 테이블에 넘기지 않음 | ORIGAMI-014 구현 | Orchestrator |
+| 2026-11-27 | 배치 모드 CI는 OnGUI를 그리지 않으므로 `OnGui_DrawsTheBookWithBookPanelDraw`의 Inconclusive는 실패가 아니라 미검증으로 본다. "실제 화면에서 HUD·버튼·책·대화상자가 오류 없이 그려진다"는 사용자 플레이테스트 항목으로 넘긴다 | 리뷰 ORIGAMI-014 W-1, 대안 없음 | Orchestrator |

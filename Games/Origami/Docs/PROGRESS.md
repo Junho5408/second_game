@@ -28,6 +28,7 @@
 | ORIGAMI-006 키보드 단축키 | architect | CANCELLED (v2로 대체) |
 | ORIGAMI-007 v2 기획 | game-designer | COMPLETED — 리뷰 3회(2회 반려 후 APPROVED_WITH_WARNINGS), QA PASS, scope 3종 OK |
 | ORIGAMI-008 v2 기술 설계 | architect | COMPLETED — 리뷰 APPROVED_WITH_WARNINGS, QA PASS, scope 3종 OK |
-| ORIGAMI-009~014 v2 구현 | developer | 계획됨 (009부터 진행) |
+| ORIGAMI-009 Core 접기 엔진·판정 | developer | COMPLETED — 리뷰 W(독립 대조 900열 0 불일치), QA 595/595, Unity CI 46023021200 성공 |
+| ORIGAMI-010·012·015 | developer·developer·game-designer | 병렬 진행 |
 
 다음 문서 정리 때 반영: W-5(매미 겹 기법 근거 표현), O-1(F-006 AC-04 시험 순서), O-2(GAME_DESIGN 규칙 범위 R-021).

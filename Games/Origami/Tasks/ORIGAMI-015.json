@@ -19,7 +19,7 @@
   "priority": "medium",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-015",
   "title": "v2 기획 문서 정리 + 파이썬 대조 데이터 생성기 보관",
   "verification": [

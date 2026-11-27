@@ -23,7 +23,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-012",
   "title": "v2 Unity 접기 테이블 (종이 메시·끌기·겹 고르기·자석·애니메이션)",
   "verification": [

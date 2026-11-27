@@ -17,9 +17,11 @@
     "C-004 rewritten to shipped API (ScoreCounterController/ScoreView), display format, IMGUI choice, creation hooks; CODING_CONVENTION UI section with IMGUI exception -> DECISIONS.md; ARCHITECTURE dependency table fixed (UI -> Gameplay) and external dependency table (legacy Input CI-verified per Reports/build/SANDBOX-004.md, user playtest per DECISIONS.md). Docs only."
   ],
   "priority": "low",
-  "result": {},
+  "result": {
+    "review": "pass"
+  },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "SANDBOX-005",
   "title": "C-004/코딩 규칙 문서 갱신",
   "verification": [

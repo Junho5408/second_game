@@ -1,0 +1,20 @@
+# Unity
+Games/*/Unity/[Ll]ibrary/
+Games/*/Unity/[Tt]emp/
+Games/*/Unity/[Oo]bj/
+Games/*/Unity/[Bb]uild/
+Games/*/Unity/[Bb]uilds/
+Games/*/Unity/[Ll]ogs/
+Games/*/Unity/[Uu]ser[Ss]ettings/
+Games/*/Unity/*.csproj
+Games/*/Unity/*.sln
+Games/*/Unity/Assets/Game/Scenes/Generated/
+Games/*/Unity/Assets/Game/Scenes/Generated.meta
+# .NET
+bin/
+obj/
+# Python
+__pycache__/
+.pytest_cache/
+# Tooling
+.superpowers/

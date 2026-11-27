@@ -18,7 +18,8 @@
     "Orchestrator: user chose option 1 — add layer-selective folds + crease marks to phase 1; fix review W-1 (glider shortcut), W-3 (★3 difficulty), W-4, N-1..N-4",
     "Fix pass 1: phase 1 adds layer-selective Fold(layers)+Crease+drop magnets (R-007, R-021); models plane/house/tulip/dog/cicada (glider replaced, W-1); grades 97/93/85 from seeded error sim (W-3); play time 40-90 min (W-4); balance_check.py modes econ/steps/recog/errors/shortcut all OK (N-1,N-2); TurnPage even-page spreads 44 pages (N-3); spawn (-1.6,0) (N-4); Recognize(state, owned, catalogue) (N-5)",
     "Re-review fix 1: CHANGES_REQUESTED — R-1 cicada step7 (top-1-layer) outline-invisible (8 folds ★3), R-2 skip-step shortcuts dog 3f 0.867/cicada 7f 0.919/plane 4f 1.000 missed by beam guard, R-3 0.849/0.848 near boundary, R-4 F-005 AC-11 facet count 2",
-    "fix pass 2 (last retry for game-designer): R-1, R-2 per DECISIONS shortcut policy, R-3 margins, R-4, N-6, N-7"
+    "fix pass 2 (last retry for game-designer): R-1, R-2 per DECISIONS shortcut policy, R-3 margins, R-4, N-6, N-7",
+    "Fix pass 2: R-1 cicada redesign (no top-1 head; J-15/17/18), R-2 exhaustive subsequence check + policy <0.91 for paid (dog 0.867, cicada 0.892 star-1 allowed), R-3 margins 0.02, R-4 AC-11, N-6/N-7/N-8; full balance_check.py OK (8m57s)"
   ],
   "priority": "critical",
   "result": {
@@ -26,7 +27,7 @@
     "review": "fail"
   },
   "retry_count": 2,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-007",
   "title": "v2 재기획: 3D 공간·캐릭터·책·자유 접기",
   "verification": [

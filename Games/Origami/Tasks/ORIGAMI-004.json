@@ -15,11 +15,15 @@
     "Games/Origami/Unity/Assets/Game/Core/Flow/",
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Flow/"
   ],
-  "notes": [],
+  "notes": [
+    "Decisions: ScreenLines(null) -> ArgumentNullException; UnlockCondition(null|initially unlocked, any counts) -> \"\", locked model with null counts -> ArgumentNullException (as Unlocking.Progress); '맞힌 단계: ' joins glyphs with one space, '-' when none. Core tests 275/275 pass."
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-004",
   "title": "Core 화면 흐름 구현",
   "verification": [

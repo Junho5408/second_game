@@ -13,11 +13,15 @@
     "Games/Sandbox/Unity/Assets/Game/Core/Scoring/",
     "Games/Sandbox/Unity/Assets/Game/Tests/EditMode/Core/Scoring/"
   ],
-  "notes": [],
+  "notes": [
+    "ScoreCounter + MultiplierForCombo implemented; 48 new Core tests (AC-01..AC-22 + N-3), 64/64 total pass"
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "SANDBOX-003",
   "title": "점수 카운터 Core 구현",
   "verification": [

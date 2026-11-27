@@ -1,0 +1,30 @@
+{
+  "acceptance_criteria": [
+    "Docs/tech 4종에 모듈 경계, Core 공개 API(명령·거부 사유·상태 조회·정산·엔딩 판정) 시그니처, 데이터(작품 5종·유행표·엔딩) 정의 방식, Unity 화면 구조와 입력 매핑 기록",
+    "Core에 계약을 나타내는 컴파일 가능한 C# 골격(본문 미구현 가능), netstandard2.1 / UnityEngine 없음",
+    "개발 작업 분할 제안(파일 범위가 겹치지 않게)"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-001"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/",
+    "Games/Origami/Unity/Assets/Game/Core/",
+    "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Contracts/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "ORIGAMI-002",
+  "title": "Origami 구조·인터페이스 설계",
+  "verification": [
+    "core-tests",
+    "review"
+  ]
+}

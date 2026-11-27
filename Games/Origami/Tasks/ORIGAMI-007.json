@@ -1,0 +1,26 @@
+{
+  "acceptance_criteria": [
+    "v2 핵심 루프: 캐릭터 이동 → 테이블에 앉기 → 3D 끌어 접기 → (판매) → 7일 → 엔딩",
+    "튜토리얼(첫 접기만 가이드), 책(접는 방법 열람), 가이드 없이 접은 결과를 어떤 작품으로·어떤 품질로 판정하는지 규칙과 수치",
+    "3D 공간 구성(방, 테이블, 책, 판매 장소 등)과 캐릭터 조작, 작품 목록을 v2 접기 기능 범위에 맞게 재정의",
+    "모든 기능에 테스트 가능한 수용 기준"
+  ],
+  "agent": "game-designer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/design/"
+  ],
+  "notes": [],
+  "priority": "critical",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "ORIGAMI-007",
+  "title": "v2 재기획: 3D 공간·캐릭터·책·자유 접기",
+  "verification": [
+    "review"
+  ]
+}

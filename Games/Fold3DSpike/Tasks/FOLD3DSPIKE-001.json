@@ -15,14 +15,16 @@
   ],
   "notes": [
     "SPIKE: throwaway prototype; review/QA skipped by Orchestrator decision; judged by user playtest",
-    "Spike done; unity-compile/unity-build unverified until CI (no Unity here; Unity code compile-checked only against hand-written API stubs)"
+    "Spike done; unity-compile/unity-build unverified until CI (no Unity here; Unity code compile-checked only against hand-written API stubs)",
+    "User playtest: 'this feel is good' — drag folding approved"
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "user-playtest": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "COMPLETED",
   "task_id": "FOLD3DSPIKE-001",
   "title": "3D 종이 접기 시험판 (종이비행기)",
   "verification": [

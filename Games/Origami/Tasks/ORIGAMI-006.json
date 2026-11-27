@@ -13,12 +13,13 @@
     "Games/Origami/Docs/tech/"
   ],
   "notes": [
-    "Also: add OrigamiButtons/OrigamiButton to C-031 + change history (review ORIGAMI-005 W-1)"
+    "Also: add OrigamiButtons/OrigamiButton to C-031 + change history (review ORIGAMI-005 W-1)",
+    "Superseded by v2 redesign (3D world + drag folding); arrow-key flow will be replaced"
   ],
   "priority": "low",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "CANCELLED",
   "task_id": "ORIGAMI-006",
   "title": "키보드만으로 전체 진행 단축키",
   "verification": [

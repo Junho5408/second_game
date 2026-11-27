@@ -5,18 +5,20 @@
     "각 기능에 테스트 가능한 수용 기준과 엣지 케이스"
   ],
   "agent": "game-designer",
-  "base_commit": null,
+  "base_commit": "d31fef8308923c281095dde6ca595df15cf09b64",
   "deliverables": [],
   "dependencies": [],
   "description": "",
   "file_scope": [
     "Games/Origami/Docs/design/"
   ],
-  "notes": [],
+  "notes": [
+    "design docs written: GAME_DESIGN, GAME_RULES (R-001~R-015), FEATURE_SPECS (F-001~F-007), CONTENT_SPECS"
+  ],
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-001",
   "title": "종이접기 판매 게임 기획",
   "verification": [

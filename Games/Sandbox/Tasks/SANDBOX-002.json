@@ -4,7 +4,7 @@
     "Core/Scoring에 계약을 나타내는 C# 골격(컴파일 가능, 동작 미구현 가능)"
   ],
   "agent": "architect",
-  "base_commit": null,
+  "base_commit": "0075b01a028a862dabf140eebf5403a59a15c77f",
   "deliverables": [],
   "dependencies": [
     "SANDBOX-001"
@@ -20,7 +20,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "SANDBOX-002",
   "title": "점수 카운터 인터페이스 설계",
   "verification": [

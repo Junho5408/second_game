@@ -24,7 +24,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "BACKLOG",
+  "status": "ASSIGNED",
   "task_id": "ORIGAMI-003",
   "title": "Core 규칙 구현",
   "verification": [

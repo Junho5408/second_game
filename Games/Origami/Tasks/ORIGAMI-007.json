@@ -18,10 +18,11 @@
   ],
   "priority": "critical",
   "result": {
-    "design": "v2-phase1"
+    "design": "v2-phase1",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-007",
   "title": "v2 재기획: 3D 공간·캐릭터·책·자유 접기",
   "verification": [

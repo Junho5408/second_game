@@ -5,7 +5,7 @@
     "타이밍에 의존하지 않는 PlayMode 테스트로 F-007 AC-01·05·08과 런타임 인스턴스 1개 생성 검증"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "f9b0a8fd71ce0fb6b52bfa97d9dd456a63d27e02",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-004"
@@ -18,12 +18,15 @@
   ],
   "notes": [
     "OS font creation (Font.CreateDynamicFontFromOSFont) must tolerate failure in batchmode CI without logging errors that fail PlayMode tests (review ORIGAMI-002 W-5)",
-    "Multi-key frames: only highest-priority key counts even if the screen ignores it — intended (A-4)"
+    "Multi-key frames: only highest-priority key counts even if the screen ignores it — intended (A-4)",
+    "unity-compile/editmode/playmode/build NOT verified (no Unity here); Unity-side code compiled only against hand-written UnityEngine/NUnit stubs (netstandard2.1, C# 9) to catch C# errors. Added public helper OrigamiButtons/OrigamiButton (C-031 extension) so button->Flow wiring is testable without OnGUI."
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-005",
   "title": "Unity 컨트롤러·화면",
   "verification": [

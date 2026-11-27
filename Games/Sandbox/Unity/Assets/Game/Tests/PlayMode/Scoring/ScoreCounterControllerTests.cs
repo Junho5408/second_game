@@ -12,8 +12,13 @@ namespace Sandbox.Tests.PlayMode.Scoring
     /// SANDBOX-004 / C-004: input → Core → Current → on-screen text.
     /// Synchronous tests assert right after SubmitPress/ProcessFrame (R-1), before any Update can
     /// overwrite Current with GetState(real time); they use exactly representable times (0.5 steps, W-1).
-    /// Frame-based tests base their times on Time.unscaledTimeAsDouble and only assert values that do not
-    /// depend on frame duration (score, Text == Format(Current)).
+    /// Frame-based tests (BUG-SANDBOX-004-1): a UnityTest coroutine resumes after <c>yield return null</c>
+    /// in the next frame AFTER Update and BEFORE LateUpdate. So right after one yield, Current is this
+    /// frame's GetState(t) while ScoreView.Text still comes from an earlier LateUpdate. Frame tests therefore
+    /// yield at least twice (so a full Update → LateUpdate has run in between) and only assert states that
+    /// are the same for every real time ≥ t0: either no press at all (Initial), or presses placed far in the
+    /// past (t0 - 10), whose combo is already expired in every later frame whatever the frame duration.
+    /// Assumes no real keyboard/mouse input during the run (always true in batchmode).
     /// </summary>
     public class ScoreCounterControllerTests
     {
@@ -147,17 +152,22 @@ namespace Sandbox.Tests.PlayMode.Scoring
             view.Bind(c);
             Assert.AreEqual(ScoreView.Format(ScoreSnapshot.Initial), view.Text);
 
-            double t0 = Time.unscaledTimeAsDouble;
-            c.SubmitPress(t0);
-            c.SubmitPress(t0);
-            c.SubmitPress(t0);
+            // Presses 10 s in the past: every later frame has real time t >= t0, so t - (t0 - 10) > 1.0 and
+            // the controller's Update always yields (3,0,1), independent of frame duration (R-004 expiry).
+            double past = Time.unscaledTimeAsDouble - 10.0;
+            c.SubmitPress(past);
+            c.SubmitPress(past);
+            c.SubmitPress(past);
             Assert.AreEqual(new ScoreSnapshot(3, 3, 1), c.Current);
+            Assert.AreEqual("Score: 3\nCombo: 3\nx1", ScoreView.Format(c.Current));
 
-            yield return null; // controller Update, then view LateUpdate
+            yield return null; // frame 1: resumes after Update (Current = (3,0,1)), before LateUpdate
+            yield return null; // frame 1 LateUpdate refreshed Text; frame 2 Update ran again
 
-            Assert.AreEqual(3, c.Current.Score, "score survives frames regardless of combo expiry");
-            Assert.AreEqual(ScoreView.Format(c.Current), view.Text);
-            StringAssert.StartsWith("Score: 3\n", view.Text);
+            Assert.AreEqual(new ScoreSnapshot(3, 0, 1), c.Current, "combo expired by Update, score kept");
+            // Differs from both the Bind-time Initial text and the pre-frame (3,3,1) text, so it can only
+            // come from a LateUpdate refresh that ran after a controller Update.
+            Assert.AreEqual("Score: 3\nCombo: 0\nx1", view.Text);
         }
 
         [UnityTest]
@@ -175,7 +185,12 @@ namespace Sandbox.Tests.PlayMode.Scoring
             var view = go.GetComponent<ScoreView>();
             Assert.IsNotNull(view, "ScoreView missing on runtime object");
             Assert.AreSame(controller, view.Source);
-            Assert.AreEqual(ScoreView.Format(controller.Current), view.Text);
+
+            // Nothing presses on the runtime instance (no input in batchmode), so Current stays Initial in
+            // every frame; after a second yield a full Update → LateUpdate has run, and Text is exact.
+            yield return null;
+            Assert.AreEqual(ScoreSnapshot.Initial, controller.Current);
+            Assert.AreEqual(ScoreView.Format(ScoreSnapshot.Initial), view.Text);
         }
     }
 }

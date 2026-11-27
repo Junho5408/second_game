@@ -20,11 +20,15 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Tutorial/",
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Game/"
   ],
-  "notes": [],
+  "notes": [
+    "Economy/Tutorial/Game implemented; verify_core 735 pass; NaN/inf fold coords rejected as InvalidFold+NothingToFold (assumption)"
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-010",
   "title": "v2 Core 공방 규칙·경제·튜토리얼",
   "verification": [

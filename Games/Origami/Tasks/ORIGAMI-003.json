@@ -25,10 +25,11 @@
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-003",
   "title": "Core 규칙 구현",
   "verification": [

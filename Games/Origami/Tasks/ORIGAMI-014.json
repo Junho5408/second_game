@@ -10,7 +10,7 @@
     "책에서 페이지 사기가 거절되면(돈 부족 등) GameTexts.RejectMessage를 화면에 보여 주고, BookPanel.Draw를 실제 OnGUI에서 호출하는 스모크 PlayMode 테스트 1개 이상 (리뷰 ORIGAMI-013 W-3)"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "5384f028682c5eaef92c3897ad45bcd306cbf612",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-011",
@@ -50,7 +50,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-014",
   "title": "v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제",
   "verification": [

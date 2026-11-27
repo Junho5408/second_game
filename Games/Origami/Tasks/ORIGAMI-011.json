@@ -22,15 +22,17 @@
   ],
   "notes": [
     "Book/Texts/ScreenFlow implemented; 921 dotnet tests pass. Assumptions in GameTexts/ScreenFlow remarks (line formats, ★n digit form, ConfirmNewRun also on Mode Ended, MessageKind.Info unused, sealed step pages keep step number/label).",
-    "review: APPROVED_WITH_WARNINGS (W-1 NoSheet silent undocumented; W-2 book/dialog fixed texts left to 013/014)"
+    "review: APPROVED_WITH_WARNINGS (W-1 NoSheet silent undocumented; W-2 book/dialog fixed texts left to 013/014)",
+    "qa: PASS (51 QA tests: BookPagesV2SpecQaTests, TextsV2SpecQaTests, ScreenFlowV2SpecQaTests; 972 dotnet tests pass)"
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-011",
   "title": "v2 Core 책 도해·문구·화면 흐름",
   "verification": [

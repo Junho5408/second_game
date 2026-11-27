@@ -1,0 +1,14 @@
+{
+    "name": "Sandbox.Runtime",
+    "rootNamespace": "Sandbox.Runtime",
+    "references": ["Sandbox.Core"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -6,7 +6,8 @@
     "v1 삭제는 ARCHITECTURE §10 목록만(Core/Content·Rules·Run·Flow, 해당 v1 테스트, §10의 v1 Qa 파일 6개). Scripts/UI/KoreanFont.cs는 수정 금지. GameInfo 버전 2.0.0",
     "모든 public 표면은 Docs/tech/INTERFACE_CONTRACTS를 따른다(변경 필요 시 구현하지 말고 Orchestrator에 요청). 강아지 턱 없이(0.849/0.848)와 J 사례의 퍼센트 표시값은 테스트로 단언하지 않는다(리뷰 W-6, ORIGAMI-008 W-3)",
     "verify_core.sh 통과, check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode·Windows 빌드 통과",
-    "F-003의 일시정지·새 게임 확인·잠자기 확인 문구를 명세 그대로 쓰고 테스트에서 문자열로 확인 (리뷰 ORIGAMI-011 W-2)"
+    "F-003의 일시정지·새 게임 확인·잠자기 확인 문구를 명세 그대로 쓰고 테스트에서 문자열로 확인 (리뷰 ORIGAMI-011 W-2)",
+    "책에서 페이지 사기가 거절되면(돈 부족 등) GameTexts.RejectMessage를 화면에 보여 주고, BookPanel.Draw를 실제 OnGUI에서 호출하는 스모크 PlayMode 테스트 1개 이상 (리뷰 ORIGAMI-013 W-3)"
   ],
   "agent": "developer",
   "base_commit": null,

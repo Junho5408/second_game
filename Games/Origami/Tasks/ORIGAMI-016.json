@@ -1,0 +1,29 @@
+{
+  "acceptance_criteria": [
+    "C-150: Fold/Crease 좌표 NaN·무한대 → InvalidFold(NothingToFold) 명시 (ORIGAMI-010 W-1, DECISIONS)",
+    "C-170: NoSheet 거절은 무음(\"\") 목록에 추가 (ORIGAMI-011 W-1); 정산·판매대·결과 줄 형식을 ORIGAMI-011 구현 형식으로 기록 (N-1)",
+    "C-191: PaperMeshBuilder.Build는 IReadOnlyList<Facet> (ORIGAMI-012 N-2)",
+    "ARCHITECTURE §2 의존 화살표: Book view → Core.Book/Texts/Catalog/Folding/Geometry + Runtime.UI.KoreanFont; 책 표시 라벨은 Runtime BookTexts (ORIGAMI-013 W-1/W-2)",
+    "코드 변경 없음, 문서만"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-013"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/"
+  ],
+  "notes": [],
+  "priority": "low",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-016",
+  "title": "v2 기술 문서 후속 정리(계약 보완)",
+  "verification": [
+    "review"
+  ]
+}

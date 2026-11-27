@@ -98,3 +98,46 @@ None (spec task; no production code exists for F-001 yet).
 - No executable verification is possible until SANDBOX-003; the reference model is a scratch QA aid, not a deliverable.
 - UI presentation (score/combo/multiplier on screen) belongs to SANDBOX-004; review N-1 (SANDBOX-004 AC lacked multiplier) appears addressed by commit 7f7bb35, not re-verified here.
 - CONTENT_SPECS cosmetic ordering (review N-1) not treated as a bug.
+
+## Re-test (fix pass 1)
+
+- QA: qa-engineer
+- Commits verified: 89fc5aa (docs fix), a917843 (status), d59e2f6 (re-review report)
+- Inputs: updated `Docs/design/{GAME_RULES,FEATURE_SPECS,GAME_DESIGN,CONTENT_SPECS}.md`, "Re-review (fix pass 1)" in `Reports/review/SANDBOX-001.md`
+- Standard: unchanged - SANDBOX-002 (contract) and SANDBOX-003 ("FEATURE_SPECS 수용 기준 전부를 Core 테스트로 검증") must be able to build and test F-001 without guessing.
+- **Result: PASS -> COMPLETED**
+
+### Commands run
+| Command | Result |
+|---|---|
+| `bash studio/scripts/verify_core.sh Sandbox` | PASS (1/1; regression only) |
+| `python3 studio/scripts/check_meta.py Games/Sandbox/Unity` | OK |
+| `python3 studio/scripts/check_scope.py Sandbox SANDBOX-001` | OK |
+| `git show --stat 89fc5aa` | only `Docs/design/{CONTENT_SPECS,FEATURE_SPECS,GAME_RULES}.md` |
+| `python3 -I model.py` (scratch reference model of R-001..R-006 incl. new R-001 query rule, not committed) | 29/29 PASS: AC-01..AC-22 at the stated/conventional query time, AC-14 for NaN/+Inf/-Inf on fresh and non-empty counters, plus 2 extra probes (NaN query after reset -> 0/0/x1; NaN query on an otherwise-expired combo -> last-input combo, as R-001 states) |
+
+### Bug re-verification
+| Bug | Verdict | Evidence |
+|---|---|---|
+| BUG-SANDBOX-001-1 (High) reset time argument | **Fixed** | FEATURE_SPECS.md:19 "입력·상태 조회에 쓰이는 시각 ... 리셋은 시각을 받지 않는다(R-005)"; :28 "리셋(시각 인자 없음)"; GAME_RULES.md:26 (R-001) and :51 (R-005) agree and state invalid/backward-time reset cannot occur. GAME_DESIGN mentions reset without time. Contract is unambiguous: `Reset()` with no time. |
+| BUG-SANDBOX-001-2 (High) NaN/±Inf query result | **Fixed** | GAME_RULES.md:28-30 separates input vs query: query performs no expiry check, reports current score + combo/multiplier as of last valid input, no exception, `+Inf` not treated as expiry, no-input state -> 0/0/x1. FEATURE_SPECS.md:34 identical. The two implementations I flagged (`now - tp > 1.0` vs `!(now - tp <= 1.0)`) are now both non-conforming unless they check finiteness first, and AC-20 (NaN, +Inf, -Inf -> 6/5/x2; fresh counter NaN -> 0/0/x1) discriminates: the negated form would report combo 0 for NaN, the plain form would report combo 0 for +Inf. |
+| BUG-SANDBOX-001-3 (Medium) implicit AC query time | **Fixed** | FEATURE_SPECS.md:41 convention "별도 명시가 없으면 now = t_prev"; no-input states declared query-time independent. Every AC checked against it in the model; ACs needing other times (AC-11, AC-19, AC-20, AC-21) state `now` explicitly. AC-12's `t_prev` stays 2.0 after the ignored input, so the convention is still unique. |
+| BUG-SANDBOX-001-4 (Low) rules without AC | **Fixed** | (a) `now < t_prev` query -> AC-19; (b) negative finite time -> AC-21; (c) `t_prev` unchanged after invalid input -> AC-22 (NaN and +Inf; +Inf case discriminates a NaN-only check: it would yield combo 1 instead of 2). |
+
+### Acceptance criteria (re-evaluated)
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| 점수 증가·콤보·리셋 규칙이 수치와 함께 정의됨 | **PASS** | Numbers unchanged and correct; reset now defined consistently in all documents (BUG-1 fixed). |
+| 엣지 케이스와 테스트 가능한 수용 기준 포함 | **PASS** | 10 edge cases, 22 ACs; every edge case maps to an AC; query time convention removes test-author choice; reference model reproduces all AC values. |
+
+### Remaining observations (not bugs, non-blocking)
+- Review N-2: typo "이름" -> "이른" at FEATURE_SPECS.md:35; meaning clear from the formula.
+- Review N-3: -Inf as the *first* input is the only case proving the finiteness check for -Inf (after a valid input it is also rejected as backward time). AC-14 says "NaN 또는 무한대" without listing cases; recommend SANDBOX-003 tests NaN/+Inf/-Inf each on a fresh counter (my model probe did so: all 0/0/x1). Behavior itself is fully specified, so this is coverage guidance, not an ambiguity.
+- No new inconsistency found between GAME_RULES, FEATURE_SPECS and GAME_DESIGN.
+
+### Tests added
+None (spec task; F-001 code arrives in SANDBOX-003).
+
+### Untested areas
+- No executable verification of F-001 until SANDBOX-003; the reference model is a scratch QA aid only.
+- UI presentation (SANDBOX-004) out of scope.

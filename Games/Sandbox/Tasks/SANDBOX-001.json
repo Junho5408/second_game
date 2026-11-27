@@ -15,15 +15,16 @@
   ],
   "notes": [
     "QA FAIL: BUG-SANDBOX-001-1 (High, reset time arg contradicts FEATURE_SPECS vs GAME_RULES), BUG-SANDBOX-001-2 (High, NaN/Inf query result unspecified), -3 (Medium, AC query time implicit), -4 (Low, rules without AC). See Reports/qa/SANDBOX-001.md",
-    "fix pass 1: BUG-SANDBOX-001-1..4"
+    "fix pass 1: BUG-SANDBOX-001-1..4",
+    "QA re-test fix pass 1: BUG-SANDBOX-001-1..4 fixed; see Reports/qa/SANDBOX-001.md"
   ],
   "priority": "high",
   "result": {
-    "qa": "fail",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 1,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "SANDBOX-001",
   "title": "점수 카운터 기획",
   "verification": [

@@ -19,12 +19,15 @@
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Book/"
   ],
   "notes": [
-    "QA-1: DiagramRaster는 Core.Folding(PaperState, Facet, FoldStep, SnapKind, DropSnap.MarkPieces)·Core.Geometry(Vec2) using 허용. QA-3: 44쪽이라 RightPage가 null인 펼침은 없음 — null 기대 테스트 금지"
+    "QA-1: DiagramRaster는 Core.Folding(PaperState, Facet, FoldStep, SnapKind, DropSnap.MarkPieces)·Core.Geometry(Vec2) using 허용. QA-3: 44쪽이라 RightPage가 null인 펼침은 없음 — null 기대 테스트 금지",
+    "BookPanel/DiagramRaster/IBookHost (C-192). Internal drawing model exposed to PlayMode tests via InternalsVisibleTo (no extra public surface). Draw(Rect) is not exercised by tests (IMGUI needs OnGUI); local check compiled Scripts/Book + tests against a UnityEngine stub with dotnet: 37/37. F-007 AC-07 = user playtest."
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-013",
   "title": "v2 Unity 책 화면 (두 쪽 펼침·도해 텍스처·목차·사기)",
   "verification": [

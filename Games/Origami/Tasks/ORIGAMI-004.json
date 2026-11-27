@@ -5,7 +5,7 @@
     "접기 화면 문구에 남은 단계가 절대 나오지 않음"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "c1cfd7cfe0ad9fb3d1101fc30e0ad317647318b5",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-003"
@@ -19,7 +19,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-004",
   "title": "Core 화면 흐름 구현",
   "verification": [

@@ -34,7 +34,7 @@
 - 순수 함수의 잘못된 인자는 `ArgumentNullException`/`ArgumentOutOfRangeException`/`ArgumentException`(INTERFACE_CONTRACTS에 적힌 대로).
 - 공개 데이터 타입은 불변(읽기 전용 프로퍼티, 생성자에서 목록 복사, `ReadOnlyCollection<T>`). 스냅샷은 수락된 명령마다 새 객체.
 - 규칙 수치는 각 모듈의 상수 holder(`RuleConstants`, `FoldPlanner`, `DropSnap`, `Grading`, `RoomLayout`)에서만 읽고, 작품 값은 `ModelCatalog`에서만 읽는다(리터럴 하드코딩 금지).
-- 문자열 비교는 `StringComparison.Ordinal`. 숫자 서식은 `CultureInfo.InvariantCulture`. 표시 문구는 `Core/Texts`(`GameTexts`)와 `Core/Folding/FoldTexts`, 카탈로그 문자열(작품·엔딩·책 설명)에만 둔다.
+- 문자열 비교는 `StringComparison.Ordinal`. 숫자 서식은 `CultureInfo.InvariantCulture`. 표시 문구는 `Core/Texts`(`GameTexts`)와 `Core/Folding/FoldTexts`, 카탈로그 문자열(작품·엔딩·책 설명)에만 둔다. 예외: 책 화면 전용 표시 라벨은 Runtime `Scripts/Book/BookTexts.cs`(C-192, DECISIONS).
 - public 표면 변경 = 계약 변경 요청(Orchestrator → architect). 각 작업의 `<모듈>SurfaceTests`가 표면을 고정한다.
 
 ## Core 테스트 (Assets/Game/Tests/EditMode/Core)

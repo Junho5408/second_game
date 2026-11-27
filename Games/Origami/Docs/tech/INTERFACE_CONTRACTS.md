@@ -590,7 +590,7 @@ public sealed class OrigamiGame
 | `CloseCounter` | RunEnded → WrongMode(≠Counter) | Walking |
 | `Sleep(yes)` | RunEnded → WrongMode(≠SleepConfirm) | no: Walking. yes: 정산(아래) |
 | `TakeSheet` | RunEnded → WrongMode(≠Seated) → SheetOnTable → NoSheetsLeft → NotEnoughMoney(유료이고 돈 < 2) | 새 `FoldSession`. 첫 종이(FreeSheetAvailable)면 무료 + 튜토리얼 종이, 아니면 돈 −2·총 종이값 +2. 남은 종이 −1 |
-| `Fold(g,d,m,n)` | RunEnded → WrongMode(≠Seated) → NoSheet → InvalidFold(n < 0, 또는 엔진 FoldError) | 적용. 가이드가 보였으면 단계 점수 기록 |
+| `Fold(g,d,m,n)` | RunEnded → WrongMode(≠Seated) → NoSheet → InvalidFold(n < 0 → `FoldError.InvalidLayers`; g·d 좌표 중 하나라도 NaN·무한대 → `FoldError.NothingToFold`; 그 밖 엔진 FoldError) | 적용. 가이드가 보였으면 단계 점수 기록 |
 | `Crease(g,d,n)` | 같음 | 같음 (자국) |
 | `Flip` | RunEnded → WrongMode → NoSheet | 적용 |
 | `Undo` / `Unfold` | RunEnded → WrongMode → NoSheet → NothingToUndo(기록 빔) | 적용. 단계 점수를 남은 동작 수만큼으로 자름 / 비움 |
@@ -598,6 +598,9 @@ public sealed class OrigamiGame
 | `Discard` | RunEnded → WrongMode → NoSheet | 실패 +1, 종이 사라짐, 튜토리얼 종이면 튜토리얼 끝 |
 | `SkipGuide` | RunEnded → WrongMode(≠Seated) → NoGuide(가이드가 안 보임 — 종이 없음 포함, A2-10) | 이 종이의 가이드 끔(다시 켤 수 없음) |
 
+- **좌표 방어**(ORIGAMI-010 W-1, DECISIONS): `Fold`/`Crease`는 n 검사 다음, 엔진 호출 전에 `grab`·`drop`의 X·Y가 모두 유한한지 본다. NaN·±∞가 하나라도 있으면
+  `InvalidFold` + `FoldError.NothingToFold`로 거부한다(예외 없음, 세션·스냅샷 불변, 단계 점수 기록 없음). Runtime 포인터는 이런 값을 만들지 않으므로 방어용이다.
+  문구는 `FoldTexts.ErrorMessage(NothingToFold)` = "접히는 부분이 없어요".
 - **가이드 보임** = 종이가 튜토리얼 종이 ∧ 이 종이에서 `SkipGuide` 안 함 ∧ `ActionCount < 6`. 그때 가이드 단계 = `PlaneGuide.Steps[ActionCount]`.
   가이드가 보이는 상태에서 Fold/Crease가 수락되면 `StepScoring.Evaluate(그 단계, 종류, g, d)`를 기록한다(Flip은 기록 없음).
 - **정산**(`Sleep(yes)`, R-016): 진열 순서대로 `SaleLine(id, grade, popular = id == PopularModelId(오늘), price = Pricing.SalePrice(…))`, 합계를 돈·총 판매액에 더하고 진열 비움.
@@ -716,7 +719,8 @@ public static class GameTexts
     public static string RejectMessage(RejectReason reason, FoldError foldError);
     //   SheetOnTable "테이블 위 종이를 먼저 완성하거나 버리세요" · NoSheetsLeft "오늘은 종이를 다 썼어요. 침대에서 쉬세요" · NotEnoughMoney "돈이 모자라요"
     //   NoFolds "아직 접지 않았어요" · NothingToUndo "되돌릴 것이 없어요" · AlreadyOwned "이미 가진 페이지예요" · InvalidFold → FoldTexts.ErrorMessage(foldError)
-    //   NoGuide/WrongMode/UnknownTarget/UnknownModel/RunEnded/None → ""
+    //   NoSheet/NoGuide/WrongMode/UnknownTarget/UnknownModel/RunEnded/None → ""   (무음: 토스트 없음. NoSheet는 ORIGAMI-011 W-1, DECISIONS)
+    //   InvalidFold의 FoldTexts 문구: None·InvalidLayers → "" (제스처는 음수 겹을 만들지 않음), NaN 좌표 → NothingToFold 문구 (C-150)
     public static HudData Hud(GameSnapshot s);        // Lines: "N일차 / 7", "돈 N원", "오늘 남은 종이 N / 5", "오늘의 인기: 이름" (+ 앉음+종이: "접은 횟수 N · 자국 N")
     public static string InteractPrompt(string target);   // "E: 앉기" / "E: 책 읽기" / "E: 판매대 보기" / "E: 잠자기", 그 밖 ""
     public const string WalkHint = "WASD/방향키로 걸어 작업 테이블로 가세요";
@@ -724,12 +728,23 @@ public static class GameTexts
     public const string PostTutorialHint = "이제부터 접는 법은 책에서만 볼 수 있어요. 앉아서 B 또는 책장에서 E";
     public static string RecognitionLine(RecognitionResult r);   // "이름 ★n (일치도 xx%)" / "구겨진 종이 (가장 비슷한 작품: 이름 xx%)"
     public static string GuideTitle(GuideStep step);             // "종이비행기 n / 6" (+ Crease면 " — Ctrl을 누른 채 놓으세요")
-    public static IReadOnlyList<string> SettlementLines(SettlementResult r);
-    public static IReadOnlyList<string> CounterLines(GameSnapshot s);   // 일차·인기 작품, 진열별 (이름, ★, 일치도, 오늘 팔면 값), 합계 예상
-    public static IReadOnlyList<string> ResultLines(GameSnapshot s);    // 엔딩 이름·문구, 최종 돈, 5종 ★3/★2/★1, 실패, 총 판매·종이값·책값
+    public static IReadOnlyList<string> SettlementLines(SettlementResult r);   // 줄 형식: 아래 표
+    public static IReadOnlyList<string> CounterLines(GameSnapshot s);          // 줄 형식: 아래 표
+    public static IReadOnlyList<string> ResultLines(GameSnapshot s);           // 줄 형식: 아래 표
 }
 ```
-- 문구의 정본은 FEATURE_SPECS F-013·CONTENT_SPECS §6·§8. 숫자는 `CultureInfo.InvariantCulture`. 줄 단위 형식은 011이 정하고 테스트로 고정한다(위에 적힌 문장은 그대로).
+- 문구의 정본은 FEATURE_SPECS F-013·CONTENT_SPECS §6·§8. 숫자는 `CultureInfo.InvariantCulture`, 자릿수 구분 기호 없음. 금액 = `N원`.
+- 등급 표기는 **"★n"(별 하나 + 숫자, n = 1..3)** 이다(R-012 표기, DECISIONS). 등급 None은 빈 문자열.
+- 화면 줄 형식(ORIGAMI-011 구현, `GameTextsTests`가 고정 — ORIGAMI-011 N-1, DECISIONS). 줄은 위에서 아래 순서, `[…]`는 조건부 줄, `이름` = `ModelName(id)`:
+
+| 함수 | 줄 (순서대로) |
+|---|---|
+| `SettlementLines(r)` | `{정산한 일차}일차 정산` → 판매 줄마다 `이름 ★n P원`(인기 작품이면 뒤에 ` (인기)`), 판매가 없으면 `팔린 작품이 없어요` 한 줄 → `합계 N원` → `정산 후 돈 N원` → 마지막 한 줄: 계속이면 `내일의 인기: 이름`, Completed면 `7일이 모두 지났어요`, Bankrupt면 `돈이 모자라 공방 문을 닫았어요` |
+| `CounterLines(s)` | `{일차}일차 판매대` → `오늘의 인기: 이름` → 진열 순서대로 `이름 ★n 일치도 xx% · 오늘 팔면 P원`(P = `Pricing.SalePrice(id, grade, 일차)`), 진열이 비면 `진열된 작품이 없어요` 한 줄 → `합계 예상 N원`(P의 합) |
+| `ResultLines(s)` | [엔딩이 있을 때만: 엔딩 이름, 엔딩 문구 — 두 줄] → `최종 돈 N원` → `ModelCatalog.Models` 순서로 작품마다 `이름: ★3 a · ★2 b · ★1 c` → `실패 N` → `총 판매액 N원` → `총 종이값 N원` → `총 책값 N원` |
+
+- 세 함수와 `Hud`·`RecognitionLine`·`GuideTitle`은 인자가 null이면 `ArgumentNullException`. 반환 목록은 읽기 전용 복사본.
+- 책 화면 전용 표시 라벨은 이 클래스에 없다 — Runtime `BookTexts`(C-192, DECISIONS).
 
 ## C-171 화면 흐름 (`Origami.Core.Screens`)
 
@@ -902,10 +917,16 @@ public sealed class FoldTable : MonoBehaviour
 - 012 PlayMode 테스트는 `FoldSession`을 감싼 테스트 전용 host(테스트 폴더 안)로 `ProcessFrame`을 직접 부른다(프레임 대기 없음, dt를 넘김).
 
 ```csharp
-public static class PaperMeshBuilder   // Fold3DSpike PaperMeshBuilder/OverlayBuilder/SphereMesh 이식 (네임스페이스만 변경, 시그니처 동일 + 자국 선 그리기)
+public static class PaperMeshBuilder   // Fold3DSpike PaperMeshBuilder/OverlayBuilder/SphereMesh 이식 (네임스페이스 변경, Build 인자 형식 1곳 변경 + 자국 선 그리기)
 {
     public const float BaseY = 0.003f, LayerGap = 0.0035f, Thickness = 0.002f;
-    // Build(...), LayerTop(...), NewMesh(...) 등 시험판 public 멤버 그대로. 추가:
+    public static float LayerTop(int layer); public static float LayerBottom(int layer);
+    public static Vector3 Identity(double x, double z, float y);
+    public static Mesh NewMesh(string name);
+    public static float Build(Mesh mesh, IReadOnlyList<Facet> facets, VertexXform xf, bool topOnly, bool edges, float yOffset, Color edgeColor);
+    //   시험판은 IList<Facet>. Core v2가 IReadOnlyList<Facet>를 내주므로 IReadOnlyList로 바꿈 (ORIGAMI-012 N-2). 동작 같음:
+    //   facets(null = 빈 메시)를 xf(null = Identity)로 옮겨 채우고 가장 낮은 꼭짓점 y(비면 0)를 돌려줌. mesh null → ArgumentNullException
+    // 추가:
     public static void AddCreaseLines(OverlayBuilder overlay, PaperState state, float halfWidth, Color color);   // DropSnap.MarkPieces의 보이는 부분만
 }
 ```
@@ -939,6 +960,12 @@ public static class DiagramRaster
 }
 ```
 - 버튼 핸들러는 `Click…` 메서드만 부른다(테스트가 같은 메서드를 직접 호출). 텍스처는 `(쪽, 보유 목록)` 키로 캐시하고 `OnDestroy`에서 파괴.
+- 의존(ORIGAMI-013 구현, ARCHITECTURE §2): `Origami.Core.Book`·`Catalog`·`Folding`·`Geometry`(도해 래스터화)와 `Origami.Runtime.UI.KoreanFont`(글꼴, `Draw` 안에서만).
+  `Origami.Core.Game`·`Screens`는 모른다 — 상태는 `IBookHost`로만 받는다.
+- 책 화면 표시 문구는 `internal static class BookTexts`(`Scripts/Book/`)에 있다(DECISIONS, ORIGAMI-013 W-1). CONTENT §3 고정 문장
+  (`봉인됨 — 표지에서 페이지를 사세요`, `판매대에서 기본 N원`, 목차 `보유` / `N원`)은 명세를 그대로 복사하고 PlayMode 테스트가 자기 문자열로 확인한다.
+  그 밖 라벨(`난이도 ★…`, `동작 N번`, `기법: …`, `기본가 N원`, `페이지 가격 N원`, `가진 돈 N원`, 접기 종류·`위 n겹` 표기, 기호 설명, `← 앞`/`뒤 →`, `사기`, `목차`, `접기 기호`, `이름 완성`, 쪽 번호)은 표시 전용이다.
+  게임 규칙 문구(거부·판정·정산·HUD)는 계속 Core `GameTexts`/`FoldTexts`(C-170, C-108).
 
 ## C-193 공방 통합 (`Origami.Runtime.Gameplay`)
 
@@ -1001,3 +1028,4 @@ public sealed class OrigamiGui : MonoBehaviour
 |---|---|---|
 | 2026-11-27 | ORIGAMI-002 | v1 계약 C-001~C-031 |
 | 2026-11-27 | ORIGAMI-008 | v2 계약 C-101~C-194로 전면 교체. v1 계약은 폐기(코드는 ORIGAMI-014에서 삭제) |
+| 2026-11-27 | ORIGAMI-016 | 구현에 맞춘 문서 보완(코드·시그니처 변경 없음): C-150 NaN·무한대 좌표 → InvalidFold(NothingToFold); C-170 NoSheet 무음, 정산·판매대·결과 줄 형식과 "★n" 표기; C-191 `PaperMeshBuilder.Build`는 `IReadOnlyList<Facet>`; C-192 의존·`BookTexts` |

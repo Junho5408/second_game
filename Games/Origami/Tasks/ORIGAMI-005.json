@@ -23,10 +23,11 @@
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-005",
   "title": "Unity 컨트롤러·화면",
   "verification": [

@@ -22,15 +22,17 @@
   ],
   "notes": [
     "Economy/Tutorial/Game implemented; verify_core 735 pass; NaN/inf fold coords rejected as InvalidFold+NothingToFold (assumption)",
-    "review APPROVED_WITH_WARNINGS (W-1 NaN rejection undocumented in C-150, W-2 two code-derived ending asserts)"
+    "review APPROVED_WITH_WARNINGS (W-1 NaN rejection undocumented in C-150, W-2 two code-derived ending asserts)",
+    "QA PASS: 68 black-box QA tests (7-day literal runs 967/437/627/900/bankrupt, W-2 literals, rejection matrix, tutorial, shadow-model fuzz); verify_core 803/803"
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
+    "qa": "pass",
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-010",
   "title": "v2 Core 공방 규칙·경제·튜토리얼",
   "verification": [

@@ -21,14 +21,16 @@
     "Games/Origami/Unity/Assets/Game/Tests/EditMode/Core/Game/"
   ],
   "notes": [
-    "Economy/Tutorial/Game implemented; verify_core 735 pass; NaN/inf fold coords rejected as InvalidFold+NothingToFold (assumption)"
+    "Economy/Tutorial/Game implemented; verify_core 735 pass; NaN/inf fold coords rejected as InvalidFold+NothingToFold (assumption)",
+    "review APPROVED_WITH_WARNINGS (W-1 NaN rejection undocumented in C-150, W-2 two code-derived ending asserts)"
   ],
   "priority": "high",
   "result": {
-    "core-tests": "pass"
+    "core-tests": "pass",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-010",
   "title": "v2 Core 공방 규칙·경제·튜토리얼",
   "verification": [

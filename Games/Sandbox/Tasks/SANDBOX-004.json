@@ -20,12 +20,15 @@
     "R-1 (QA SANDBOX-002): PlayMode tests must use times based on Time.unscaledTimeAsDouble or assert right after SubmitPress",
     "R-2: Current starts at ScoreSnapshot.Initial; view reads in LateUpdate",
     "R-3: if UnityEngine.Input throws in CI, Orchestrator opens architect task to commit ProjectSettings activeInputHandler",
-    "Review SANDBOX-003 W-1: use exactly representable times (0.5 steps) in boundary tests"
+    "Review SANDBOX-003 W-1: use exactly representable times (0.5 steps) in boundary tests",
+    "Display uses IMGUI (OnGUI+GUI.Label), not UI Toolkit: no PanelSettings/theme asset needed. Added public ProcessFrame(time, reset, space, click) and static EnsureInstance/Instance beyond C-004 recommended surface. unity-compile/playmode/build unverified (no Unity here); only a stub-UnityEngine dotnet build was done."
   ],
   "priority": "medium",
-  "result": {},
+  "result": {
+    "core-tests": "pass"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "SANDBOX-004",
   "title": "점수 카운터 화면 연결",
   "verification": [

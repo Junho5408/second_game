@@ -8,7 +8,7 @@
     "CONTENT §3의 책 고정 문구('봉인됨 — 표지에서 페이지를 사세요', '판매대에서 기본 N원', 목차 '보유'/'N원')를 명세 그대로 쓰고 PlayMode/EditMode 테스트에서 문자열로 확인 (리뷰 ORIGAMI-011 W-2)"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "31100835924738301eaac84c39e38b8483913ac4",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-011"
@@ -24,7 +24,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-013",
   "title": "v2 Unity 책 화면 (두 쪽 펼침·도해 텍스처·목차·사기)",
   "verification": [

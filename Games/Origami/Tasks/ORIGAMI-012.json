@@ -8,7 +8,7 @@
     "verify_core.sh 통과, check_meta OK, Unity CI(unity (Origami)) 컴파일·EditMode·PlayMode 통과"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "7190c812aaacf8fe1d2ab5a0c17cea9e8a3d99af",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-009"
@@ -19,11 +19,17 @@
     "Games/Origami/Unity/Assets/Game/Scripts/Folding/",
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/FoldTable/"
   ],
-  "notes": [],
+  "notes": [
+    "PlayMode tests (33) also run locally against a scratch UnityEngine stub + real Core: all pass; real Unity compile/EditMode/PlayMode only in CI. PaperMeshBuilder.Build takes IReadOnlyList<Facet> (spike: IList) because Core v2 exposes IReadOnlyList. No asmdef change needed.",
+    "review: APPROVED_WITH_WARNINGS (W-1 QA must confirm 3 ScreenToPaper camera tests Passed not Inconclusive in CI XML; W-2 drag-frame static mesh rebuild, optional)"
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "core-tests": "pass",
+    "review": "pass"
+  },
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "QA",
   "task_id": "ORIGAMI-012",
   "title": "v2 Unity 접기 테이블 (종이 메시·끌기·겹 고르기·자석·애니메이션)",
   "verification": [

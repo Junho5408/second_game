@@ -15,9 +15,11 @@
   ],
   "notes": [],
   "priority": "high",
-  "result": {},
+  "result": {
+    "review": "pass"
+  },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "SANDBOX-001",
   "title": "점수 카운터 기획",
   "verification": [

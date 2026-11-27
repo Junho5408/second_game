@@ -18,7 +18,8 @@
   ],
   "notes": [
     "Docs/tech 4종 + Core 골격(Content/Rules/Run/Flow) + Contracts 테스트 41개. verify_core PASS, check_meta OK.",
-    "review APPROVED_WITH_WARNINGS (W-1..W-6), Reports/review/ORIGAMI-002.md"
+    "review APPROVED_WITH_WARNINGS (W-1..W-6), Reports/review/ORIGAMI-002.md",
+    "QA PASS: Reports/qa/ORIGAMI-002.md, catalog verified vs CONTENT_SPECS, +14 QA tests (Tests/EditMode/Core/Qa), verify_core 55/55"
   ],
   "priority": "high",
   "result": {
@@ -26,7 +27,7 @@
     "review": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-002",
   "title": "Origami 구조·인터페이스 설계",
   "verification": [

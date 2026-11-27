@@ -14,3 +14,4 @@
 | 2026-11-27 | 한 프레임 한 키(Esc>Enter>H>↑>↓>←>→>Space), 한글 글꼴은 OS 글꼴(맑은 고딕) 동적 생성 — 한글 표시는 사용자 플레이테스트로 확인 | CI에서 글꼴 표시 확인 불가 | architect (A-4, A-5) |
 | 2026-11-27 | 명세 밖 단축키: 미리보기에서 Enter=접기 시작·Esc=닫기, 공지·정산 화면에서 Enter=확인. 잠긴 작품 선택은 해금 조건 문구만 표시(미리보기·Core 호출 없음) | 키보드만으로 진행 가능하게 | architect (A-6, A-7; 리뷰 ORIGAMI-002 W-1) |
 | 2026-11-27 | FlowTexts 세부: ScreenLines(null)=ArgumentNullException; UnlockCondition(null 또는 처음부터 열린 작품)="" / 잠긴 작품+counts null=ArgumentNullException; "맞힌 단계:" 기호는 공백 한 칸으로 구분, 없으면 "-"; 메시지는 마지막 줄(포기 확인 화면에서는 질문 앞) | 명세 미정 부분 결정 (리뷰 ORIGAMI-004 N-2) | developer (ORIGAMI-004) |
+| 2026-11-27 | A-6 문구 정정: 키보드 단축키는 접기·미리보기·확인 화면용. 작품 선택·하루 마치기·다시 시작은 화면 버튼(마우스). 키보드만으로 전부 진행하는 단축키(1~5, E, 결과 화면 Enter)는 ORIGAMI-006으로 미룸 | QA BUG-ORIGAMI-004-1(Low). 첫 플레이 가능 버전을 먼저 완성 | Orchestrator |

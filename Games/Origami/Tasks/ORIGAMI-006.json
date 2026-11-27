@@ -1,0 +1,25 @@
+{
+  "acceptance_criteria": [
+    "C-020에 작업대 1~5(작품 선택)·E(하루 마치기)·결과 화면 Enter(다시 시작) 추가, 이후 구현 작업 제안"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-005"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/"
+  ],
+  "notes": [],
+  "priority": "low",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-006",
+  "title": "키보드만으로 전체 진행 단축키",
+  "verification": [
+    "review"
+  ]
+}

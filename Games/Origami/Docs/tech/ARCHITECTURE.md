@@ -1,124 +1,254 @@
-# Origami 시스템 구조
+# Origami 시스템 구조 (v2)
 
-> 담당: architect · 기준 태스크: ORIGAMI-002 · 기준 명세: `Docs/design/` (F-001~F-007, R-001~R-015, CONTENT_SPECS)
-> 시그니처·동작의 정본은 `INTERFACE_CONTRACTS.md`, 데이터 정의는 `DATA_STRUCTURE.md`, 규칙은 `CODING_CONVENTION.md`.
+> 담당: architect · 기준 태스크: ORIGAMI-008 (v2 기술 설계) · 이전 판: ORIGAMI-002 (v1, 방향키 접기 — **대체됨**)
+> 기준 명세: `Docs/design/` v2 (GAME_RULES R-001~R-021, FEATURE_SPECS F-001~F-013, CONTENT_SPECS, `balance_check.py`).
+> 시그니처·동작의 정본은 `INTERFACE_CONTRACTS.md`(C-1xx), 데이터 정의는 `DATA_STRUCTURE.md`(D-1xx), 규칙은 `CODING_CONVENTION.md`.
+> 기준 구현: 승인된 시험판 `Games/Fold3DSpike/` (Core `Folding/`, Scripts `FoldSpikeController`·`PaperMeshBuilder`·`SpikeMaterials`).
+
+## 0. 요약
+
+- **Core(엔진 없음)** 에 게임의 모든 규칙과 계산을 둔다: 접기 엔진(전체 겹·위 N겹·접었다 펴기·뒤집기·되돌리기), 놓기 자석,
+  윤곽 판정, 작품 카탈로그·책 쪽 배치, 경제·7일·엔딩, 튜토리얼 가이드, 책 도해 데이터, 한국어 문구, 화면 흐름, 방 이동·충돌 수학.
+  전부 `dotnet test`로 검증한다.
+- **Runtime(Unity)** 은 입력 읽기, 3D 그리기(방·캐릭터·종이 메시·애니메이션), 카메라, IMGUI 화면만 한다.
+  모든 시간 의존 동작은 `ProcessFrame(frame, dt)` 하나로 들어오므로 PlayMode 테스트가 프레임 시간과 무관하게 동기 호출로 검증한다.
+- `balance_check.py`는 **접기·자석의 참조 구현**이다. C# 엔진은 그 알고리즘과 상수를 그대로 옮긴다(C-103, C-106).
+  판정 IoU는 격자 대신 **행 주사(scanline) 적분**으로 계산한다(C-110, 정확값과의 오차 ≤ 0.002, `CONTENT_SPECS.md` §4와 ±0.01 이내 — §9 근거).
+- v1 코드(Core `Content/Rules/Run/Flow`, Scripts `OrigamiController/OrigamiView/ModelIcons/OrigamiButton(s)`, v1 테스트)는 v2가 대체한다.
+  **삭제는 마지막 통합 작업(ORIGAMI-014)** 에서 한다 — v1 Unity 화면이 v1 Core를 쓰므로, 그 화면을 대체하는 작업 전에는 지울 수 없다(§10).
 
 ## 1. 모듈과 책임
 
-| 모듈 | 위치 (`Unity/Assets/Game/…`) | 어셈블리 / 네임스페이스 | 책임 | 의존 |
+### 1.1 Core (`Unity/Assets/Game/Core/`, 어셈블리 `Origami.Core`, `noEngineReferences: true`)
+
+| 모듈 | 폴더 / 네임스페이스 | 책임 | 의존 (Core 안) | 구현 작업 |
 |---|---|---|---|---|
-| Core.Content | `Core/Content/` | `Origami.Core` / `Origami.Core.Content` | 작품 5종·일차별 인기 작품·엔딩 5종 정의(코드 카탈로그), 동작·등급 열거형 | 없음 (System만) |
-| Core.Rules | `Core/Rules/` | `Origami.Core` / `Origami.Core.Rules` | 규칙 상수, 순수 규칙 함수(등급·가격·해금·엔딩 판정), 완성 수 표 | Content |
-| Core.Run | `Core/Run/` | `Origami.Core` / `Origami.Core.Run` | 런 상태와 명령(NewRun/Start/Fold/Hint/Abandon/EndDay), 결과·거부 사유, 스냅샷, 정산 결과 | Rules, Content |
-| Core.Flow | `Core/Flow/` | `Origami.Core` / `Origami.Core.Flow` | F-007 화면 상태 기계(엔진 없음), 키→명령 매핑, 모든 표시 문자열(한국어) | Run, Rules, Content |
-| Runtime.Gameplay | `Scripts/Gameplay/` | `Origami.Runtime` / `Origami.Runtime.Gameplay` | `OrigamiController`: `OrigamiFlow` 단독 소유, 레거시 Input 폴링 → `FlowKeys` | Core.Flow |
-| Runtime.UI | `Scripts/UI/` | `Origami.Runtime` / `Origami.Runtime.UI` | `OrigamiView`: IMGUI로 `FlowTexts.ScreenLines` + 버튼 그리기, `ModelIcons`: 코드 생성 도형 텍스처 | Runtime.Gameplay, Core |
-| Bootstrap | `Scripts/Bootstrap.cs` | `Origami.Runtime` | 카메라·루트 오브젝트 생성 (기존, 변경 없음) | — |
+| Geometry | `Core/Geometry/` · `Origami.Core.Geometry` | `Vec2`(double, 시험판 복사) | 없음 | 009 |
+| Folding | `Core/Folding/` · `Origami.Core.Folding` | 종이 상태(조각·겹·앞뒤·자국), `FoldPlanner`(R-007 전체/위 N겹/접었다 펴기/뒤집기), `FoldSession`(되돌리기·처음으로·횟수), `DropSnap`(R-021 기준점·자국 선·자석), `FoldGesture`(잡기 자석·겹 수 고르기·미리보기), 도해 선(`LineOnPaper`), 기준 순서 단계(`FoldStep`) | Geometry | 009 |
+| Recognition | `Core/Recognition/` · `Origami.Core.Recognition` | 윤곽 행 주사(`Outline`), D4 대칭, 일치도(IoU), `RecognitionCatalog`(기준 윤곽 미리 계산), `Recognizer.Recognize` 순수 함수(R-011~R-013), `Grade`·`Grading`(97/93/85) | Geometry, Folding | 009 |
+| Catalog | `Core/Catalog/` · `Origami.Core.Catalog` | 작품 5종 정의(값·기준 접기 순서·책 설명), 인기 작품 표, 엔딩 정의(이름·문구), 책 쪽 배치(`BookLayout` 44쪽), 상호작용 대상 ID | Folding, Recognition | 009 |
+| Economy | `Core/Economy/` · `Origami.Core.Economy` | 규칙 수치(`RuleConstants`), 판매가(R-015), 완성 수 표, 종료 사유, 엔딩 판정(R-018) | Catalog, Recognition | 010 |
+| Tutorial | `Core/Tutorial/` · `Origami.Core.Tutorial` | 종이비행기 6단계 가이드 목표(카탈로그에서 생성), 단계 점수(시험판 `FoldScoring` 공식) | Folding, Catalog | 010 |
+| Game | `Core/Game/` · `Origami.Core.Game` | `OrigamiGame`: 공방 모드(R-003), 모든 명령(GAME_RULES "명령" 표)·거부 순서(R-019), 종이·튜토리얼·책 상태·판매·정산·파산·엔딩, 불변 스냅샷 | 위 모두 | 010 |
+| Book | `Core/Book/` · `Origami.Core.Book` | 책 쪽 내용 데이터(목차·접기 기호·표지·단계 도해·완성·봉인) — `BookPages.Get(page, owned)` 순수 함수 | Geometry, Folding, Catalog | 011 |
+| Texts | `Core/Texts/` · `Origami.Core.Texts` | 모든 한국어 표시 문구(HUD, 안내, 거부 사유, 판정 결과, 정산·판매대·결과 화면, 겹 표시) | Game, Book, Catalog, Economy, Folding, Recognition, Tutorial | 011 |
+| Screens | `Core/Screens/` · `Origami.Core.Screens` | `ScreenFlow`: `OrigamiGame` 단독 소유, 화면 덮개(일시정지·새로 시작 확인·정산·결과), 키→명령 매핑(모드별, 한 프레임 한 키), 1회성 안내, 최근 메시지, 종이 변화 알림 | Game, Texts, Folding, Geometry | 011 |
+| Room | `Core/Room/` · `Origami.Core.Room` | 방 배치 수치(CONTENT §6), 원(반지름 0.3)–상자 충돌 이동 `RoomMotion.Step`, 상호작용 후보 `Interaction.Nearest`(R-004) | Geometry, Catalog | 014 |
+| (루트) | `Core/GameInfo.cs` · `Origami.Core` | 게임 이름·버전 | 없음 | 014(버전 2.0.0) |
 
-의존 방향은 한쪽뿐이다:
-`Runtime.UI → Runtime.Gameplay → Core.Flow → Core.Run → Core.Rules → Core.Content`.
-Core는 Runtime을 모른다. Core 하위 네임스페이스끼리도 위 순서의 역방향 참조 금지(순환 없음). `RunEndReason`이 `Rules`에 있는 이유도 이것이다(엔딩 판정 입력이므로 Rules가 Run을 참조하지 않게).
-Core 하위 폴더는 별도 asmdef 없이 `Origami.Core` 어셈블리 하나에 들어간다(작은 게임이라 분리 이득 없음).
+### 1.2 Runtime (`Unity/Assets/Game/Scripts/`, 어셈블리 `Origami.Runtime`)
 
-## 2. 구성도
-
-```
- Unity 프레임                                Core (엔진 없음, 결정적, dotnet 테스트)
- ┌──────────────────────────┐ FlowKeys    ┌────────────────────────┐ 명령      ┌──────────────────┐
- │ OrigamiController         │ ──────────▶ │ OrigamiFlow (Core.Flow) │ ────────▶ │ OrigamiRun        │
- │ (Scripts/Gameplay)        │ ProcessKeys │  화면 상태 기계          │ Command-  │ (Core.Run)        │
- │  Update: ReadKeys()       │             │  Screen / Snapshot /    │ Result    │  상태 + 명령       │
- │  → ProcessFrame(keys)     │             │  Message / Settlement   │ ◀──────── │  GetSnapshot()    │
- └───────────┬──────────────┘             └──────────┬─────────────┘           └───┬──────────────┘
-             │ Flow                         버튼 → 같은 │ 메서드                    │ 순수 함수
-             ▼                                          │                           ▼
- ┌──────────────────────────┐ ScreenLines  ┌──────────┴─────────────┐   ┌──────────────────────────────┐
- │ OrigamiView (Scripts/UI)  │ ◀─────────── │ FlowTexts (Core.Flow)   │   │ Grading·Pricing·Unlocking·    │
- │  IMGUI OnGUI: 텍스트+버튼 │              │  한국어 문자열 순수 함수 │   │ EndingRules·RuleConstants     │
- │ ModelIcons: 도형 텍스처   │              └────────────────────────┘   │ (Core.Rules) + OrigamiCatalog │
- └──────────────────────────┘                                            └──────────────────────────────┘
-```
-
-## 3. 소유와 생명주기
-
-- `OrigamiRun` 인스턴스는 런타임에 하나뿐이며 `OrigamiFlow`가 생성자에서 `new`로 만들어 단독 소유한다. 외부에 노출하지 않는다(화면 상태와 런 상태가 어긋나지 않게). 런 재시작은 객체 재생성이 아니라 `NewRun()`(Flow의 `Restart()`).
-- `OrigamiFlow`는 `OrigamiController`가 `Awake`에서 만들어 앱 종료까지 소유한다. 다른 코드는 `controller.Flow`를 통해서만 접근한다.
-- 런타임 오브젝트: `"[Origami]"` GameObject(DontDestroyOnLoad) 하나에 `OrigamiController`와 `OrigamiView`. 두 클래스의 `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` 훅이 각자 `OrigamiController.EnsureInstance()`를 불러 순서와 무관하게 하나씩만 생긴다(Sandbox와 같은 방식). `Bootstrap.cs`는 수정하지 않는다.
-- 씬 전환 없음(단일 빈 씬). 저장/불러오기 없음(F-001 범위 밖).
-
-## 4. 이벤트 / 통신 방식
-
-- **이벤트 없음, 명령-결과 + 풀링.** Core 타입은 C# event/콜백을 노출하지 않는다.
-  - Runtime → Core: Flow 메서드 호출(버튼) 또는 `ProcessKeys`(키). 둘 다 같은 Flow 메서드로 수렴하므로 "키와 버튼은 같은 명령"(F-007 AC-05)이 구조적으로 보장된다.
-  - Core → Runtime: 명령은 `CommandResult`(수락/거부 사유/결과 종류/완성 작품/정산)를 반환하고, Flow는 매 명령 뒤 `RunSnapshot`을 새로 받아 보관한다. View는 `LateUpdate`에서 `FlowTexts.ScreenLines(flow)`로 문자열을 다시 만든다.
-- 시간·프레임에 의존하는 규칙이 없다(R-001, 타이머 없음). 따라서 Core에는 시각 인자도 없고, Runtime도 `Time`을 Core에 넘기지 않는다.
-
-## 5. Unity 쪽 화면 구조 (F-007)
-
-| FlowScreen | F-007 화면 | 내용 (텍스트는 `FlowTexts.ScreenLines`, 형식은 C-021) | 버튼 |
+| 모듈 | 폴더 / 네임스페이스 | 책임 | 구현 작업 |
 |---|---|---|---|
-| `Workbench` | 1 작업대(작품 선택) | 일차 n/7, 돈, 시도 k/5, 오늘의 인기 작품, 5종 목록(단계 수·종이값·오늘 ★3 예상가 / 잠김+해금 조건 진행), 오늘 완성 목록, 안내 문구 | 작품 5개(각 `SelectModel`), "하루 마치기" |
-| `Preview` | 2 도안 미리보기 | 작품 이름, 정답 순서 전체(기호), 종이값, 안내 문구 | "접기 시작 (n원)", "닫기" |
-| `Folding` | 3 접기 화면 | 종이(단색 정사각형+진행 표시), 진행 i/N, 맞힌 단계 기호, 실수 m/3, 힌트 수, 예상 등급, 힌트 공개 시 현재 단계 기호 — **남은 정답은 표시하지 않음** | 동작 5개, "힌트", "포기" |
-| `AbandonConfirm` | 3의 포기 확인 창 | 접기 화면 + 확인 문구 | "포기한다", "계속 접기" |
-| `Notice` | 4 완성/망침 알림 | 작품 도형·등급(★) 또는 "종이를 망쳤다"/"접기를 포기했다" | "확인" |
-| `Settlement` | 5 정산 | 작품별 가격, 합계, 정산 후 돈, 다음 날 인기 작품(완주·파산 시 제외), 파산 시 파산 안내 | "확인" |
-| `Result` | 6 결과 | 엔딩 이름·문구, 최종 돈, 5종 ★3/★2/★1 개수, 실패 수, 총 판매액, 총 종이값 | "다시 시작" |
+| Systems | `Scripts/Systems/` · `Origami.Runtime.Systems` | `Materials`(시험판 `SpikeMaterials` 이식: "Legacy Shaders/Diffuse"·"Sprites/Default"), `MeshFactory`(상자·원기둥·구·캡슐 코드 메시) | 012 |
+| Folding (view) | `Scripts/Folding/` · `Origami.Runtime.Folding` | `FoldTable`: 테이블 위 종이 메시·끌기 입력·겹 수 고르기·미리보기(유령/들어 올림)·접힘/접었다 펴기/뒤집기 애니메이션·자국 선·자석 강조·가이드 표시·앉은 시점 카메라 궤도. `PaperMeshBuilder`/`OverlayBuilder`/`SphereMesh`(시험판 이식). `IFoldTableHost`(명령 연결 인터페이스), `PointerFrame` | 012 |
+| Book (view) | `Scripts/Book/` · `Origami.Runtime.Book` | `BookPanel`: IMGUI 두 쪽 펼침 그리기(목차 클릭·사기 버튼), `DiagramRaster`: Core 도해 데이터 → `Texture2D`(코드 래스터화, 캐시) | 013 |
+| Gameplay | `Scripts/Gameplay/` · `Origami.Runtime.Gameplay` | `OrigamiApp`(루트, `ScreenFlow` 단독 소유, 프레임 분배), `InputFrame`/`InputReader`(레거시 Input 읽기), `WorkshopView`(방·가구·판매대 진열·쓰레기통·창문), `CharacterView`, `CameraRig`(걷기 추적·앉기 전환), `FoldHostAdapter`(`IFoldTableHost` 구현) | 014 |
+| UI | `Scripts/UI/` · `Origami.Runtime.UI` | `OrigamiGui`(유일한 `OnGUI`: HUD·버튼·안내·토스트·덮개 화면·책 패널·커서 겹 표시 호출 순서), `KoreanFont`(**v1 유지**) | 014 (`KoreanFont`는 변경 없음) |
+| Bootstrap | `Scripts/Bootstrap.cs` · `Origami.Runtime` | 카메라·`[Bootstrap]` 루트 생성 (**v1 유지, 수정 없음**) | — |
+| Editor | `Editor/StudioBuild.cs` | 빈 씬 생성·Windows 빌드 (**유지**) | — |
 
-화면 전이·키 매핑의 정본은 INTERFACE_CONTRACTS.md C-020.
+## 2. 의존 방향 (순환 없음)
 
-### 입력 매핑 (요약)
+정본은 §1.1 표의 "의존" 열이다. 아래 그림은 요약이다.
 
-| 키 (레거시 Input, `GetKeyDown`) | `FlowKeys` | Folding | AbandonConfirm | Preview | Notice / Settlement | 그 외 |
-|---|---|---|---|---|---|---|
-| ↑ / W | `FoldUp` | `Fold(U)` | 무시 | 무시 | 무시 | 무시 |
-| ↓ / S | `FoldDown` | `Fold(D)` | 무시 | 무시 | 무시 | 무시 |
-| ← / A | `FoldLeft` | `Fold(L)` | 무시 | 무시 | 무시 | 무시 |
-| → / D | `FoldRight` | `Fold(R)` | 무시 | 무시 | 무시 | 무시 |
-| Space | `Flip` | `Fold(F)` | 무시 | 무시 | 무시 | 무시 |
-| H | `Hint` | `Hint()` | 무시 | 무시 | 무시 | 무시 |
-| Esc | `Escape` | `RequestAbandon()` | `CancelAbandon()` | `ClosePreview()` | 무시 | 무시 |
-| Enter / 키패드 Enter | `Enter` | 무시 | `ConfirmAbandon()` | `StartSelected()` | `Acknowledge()` | 무시 |
+```
+Core:   Geometry ◀─ Folding ◀─ Recognition ◀─ Catalog ◀─ Economy ◀─┐
+                      ▲  ▲          ▲            ▲  ▲               │
+                      │  └──────────┼── Tutorial ┘  │               │
+                      │             └──── Book ─────┘               │
+                      └──────────────────────────────────── Game ───┘ (Folding·Recognition·Catalog·Economy·Tutorial 모두 참조)
+                                                    Texts ──▶ Game, Book, …
+                                                    Screens ─▶ Game, Texts
+          Geometry ◀─ Room ─▶ Catalog (InteractTargets만)
 
-한 프레임에 여러 키가 눌리면 우선순위 `Escape > Enter > Hint > FoldUp > FoldDown > FoldLeft > FoldRight > Flip` 중 **가장 높은 키 하나만** 본다(그 키가 현재 화면에서 무시되면 그 프레임은 아무 일도 없음). 같은 프레임 Esc+Enter로 확인 없이 포기되는 일을 막는다.
+Runtime: UI(OrigamiGui) ─▶ Gameplay(OrigamiApp) ─▶ Folding view, Book view, Systems ─▶ Core
+         Folding view ─▶ Core.Folding/Geometry만 (Game/Screens 모름 — IFoldTableHost로 연결)
+         Book view    ─▶ Core.Book/Texts/Catalog만
+```
 
-## 6. 외부 의존 / 엔진 기능
+- 화살표 = "참조한다". 역방향 `using` 금지. Book은 Game을 모른다(보유 목록을 인자로 받음). Room은 Game을 모른다.
+- Runtime `Folding`은 `ScreenFlow`·`OrigamiGame`을 직접 부르지 않는다. 명령은 `IFoldTableHost`(C-191)를 통해서만 낸다.
+  그래서 012(접기 테이블)는 009만 끝나면 010/011과 **병렬로** 만들 수 있고, 테스트는 `FoldSession`을 감싼 가짜 host로 한다.
+- Core 전체는 한 어셈블리(`Origami.Core`)다. 폴더별 asmdef는 만들지 않는다(작은 게임, v1과 같음). 방향 규칙은 리뷰가 `using`으로 검사한다.
 
-| 의존 | 용도 | 상태 / 근거 |
+## 3. 구성도
+
+```
+ Unity 프레임 (OrigamiApp.Update)                                   Core (결정적, dotnet 테스트)
+ ┌──────────────────────────────────┐ InputFrame     ┌──────────────────────────────────────────────┐
+ │ InputReader.Read() (레거시 Input) │──────────────▶ │ OrigamiApp.ProcessFrame(frame, dt)            │
+ └──────────────────────────────────┘                │  1. 덮개/모드별 키 → ScreenFlow.ProcessKeys    │
+                                                     │  2. 걷기: RoomMotion.Step → CharacterView      │
+ ┌─────────────────────┐  IFoldTableHost(Fold/Crease)│  3. 앉음: FoldTable.ProcessFrame(pointer, dt)  │
+ │ FoldTable (앉음)     │◀──────────── FoldHostAdapter│  4. CameraRig.Tick(dt), 진열·창문 갱신          │
+ │  FoldGesture·DropSnap│──────────────────────────▶ └──────────────┬───────────────────────────────┘
+ │  PaperMeshBuilder    │                                            │ 명령 메서드
+ └─────────────────────┘                             ┌──────────────▼───────────────┐   ┌────────────────┐
+ ┌─────────────────────┐ GameSnapshot·Texts           │ ScreenFlow (Core.Screens)     │──▶│ OrigamiGame     │
+ │ OrigamiGui (OnGUI)   │◀────────────────────────────│  덮개·키 매핑·안내·메시지      │   │ (Core.Game)     │
+ │  HUD·버튼·덮개·책    │  버튼 → 같은 ScreenFlow 메서드│  LastSheetChange              │◀──│  Snapshot (불변) │
+ │  BookPanel·Diagram   │                              └───────────────────────────────┘   └──┬─────────────┘
+ └─────────────────────┘                                                                     │ 순수 함수
+                                       FoldPlanner·FoldSession·DropSnap·Recognizer·Pricing·EndingRules·BookPages·GameTexts
+```
+
+## 4. 소유와 생명주기
+
+- `OrigamiGame` 인스턴스는 런타임에 하나, `ScreenFlow`가 생성자에서 만들어 단독 소유한다(외부에는 `Snapshot`만). 런 재시작은 객체 재생성이 아니라 `NewRun()`.
+- `ScreenFlow`는 `OrigamiApp`이 `Awake`에서 만들어 앱 종료까지 소유한다. 다른 Runtime 코드는 `app.Flow`로만 접근한다.
+- 런타임 오브젝트: `"[Origami]"` GameObject(DontDestroyOnLoad) 하나에 `OrigamiApp`, `OrigamiGui`. 자식으로 `WorkshopView`(방), `CharacterView`, `FoldTable`(테이블 위 종이 루트), `BookPanel`.
+  `OrigamiApp`의 `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` 훅이 `EnsureInstance()`를 부른다(v1·시험판과 같은 패턴). `Bootstrap.cs`는 수정하지 않는다.
+- **Update는 `OrigamiApp` 하나만** 가진다. 자식 컴포넌트는 자체 `Update`가 없고 `OrigamiApp.ProcessFrame`이 정해진 순서로 부른다(순서 결정적, 테스트가 같은 경로를 탄다).
+  예외: `FoldTable`은 012 단독 테스트를 위해 `ProcessFrame(PointerFrame, dt)`를 공개하지만, 게임에서는 `OrigamiApp`만 그것을 부른다.
+- `OnGUI`는 `OrigamiGui` 하나만. 책·커서 표시·덮개는 그 안에서 정해진 순서로 `Draw…`를 호출한다.
+- 씬 전환 없음(단일 빈 씬). 메시·머티리얼·텍스처는 코드로 만들고 `OnDestroy`에서 파괴한다.
+
+## 5. 통신 방식 (이벤트 없음)
+
+- **명령-결과 + 폴링.** Core 타입은 C# event/콜백을 노출하지 않는다(v1 원칙 유지).
+  - Runtime → Core: `ScreenFlow` 메서드(키·버튼·끌기 놓기). 키와 버튼은 같은 메서드로 수렴한다.
+  - Core → Runtime: 명령은 `CommandResult`를 반환하고, Runtime은 매 프레임 `ScreenFlow.Snapshot`(불변, 명령이 수락될 때만 새 객체)을 읽는다.
+    변화 감지는 **참조 비교**(스냅샷·`PaperState`는 불변) 또는 일련번호(`ScreenFlow.Message.Serial`, `LastSheetChange.Serial`, `SettlementSerial`)로 한다.
+- 접기 명령은 **놓는 순간 Core에 적용**하고, 화면은 `FoldPlan`(접기 전 움직이는 조각·접은 뒤 조각)으로 0.4초 애니메이션만 한다(시험판의 "애니메이션 뒤 확정"과 다름 — 상태가 늘 Core와 같다).
+  애니메이션 중에는 새 끌기를 시작하지 않는다. `F` 뒤집기·`Undo` 등은 `LastSheetChange.Kind`를 보고 연출한다(뒤집기 0.6초, 나머지 즉시).
+- 시간: Core 규칙은 시간 인자를 받지 않는다(R-001). 유일한 예외는 표현용 순수 함수 `RoomMotion.Step(pos, move, dt)`(규칙 상태를 바꾸지 않음).
+  토스트 2초·카메라 전환 0.5초·애니메이션은 Runtime이 `dt`로 진행한다.
+
+## 6. 모드별 화면과 입력 (F-002, F-003, F-005, F-007, F-013)
+
+| Core 모드 (`WorkshopMode`) | 카메라 (`CameraRig`) | 입력 처리 | 화면 (`OrigamiGui`) |
+|---|---|---|---|
+| `Walking` | 캐릭터 기준 (0, 6.0, −5.5), 머리 (0, 0.8, 0)를 봄, 부드럽게 추적, 회전 없음 | WASD/방향키 이동(`RoomMotion`), E = `Interact(Interaction.Nearest)`, Esc = 일시정지 | HUD, "E: …" 안내, 걷기 안내(첫 앉기 전) |
+| `Seated` | 0.5초 동안 접기 시점으로 전환, 이후 오른쪽 끌기 궤도·휠 확대(끌지 않을 때) | 마우스 = `FoldTable`(끌기 중 Shift·Ctrl·휠·[ ]·Esc), 키 Space/Enter/X/Z·Backspace/R/F/B/G/Q, 책 펼침이면 ←/→ | HUD + 앉음 버튼, 책 펼침이면 왼쪽 45%에 `BookPanel`, 커서 옆 "겹: …" |
+| `Bookshelf` | 걷기 카메라 유지 | ←/→ 쪽, Esc/E/B 닫기, 목차 클릭·사기 버튼 | 전체 화면 `BookPanel` |
+| `Counter` | 걷기 카메라 | Esc/E 닫기 | 판매대 보기 패널(오늘 인기·예상가·합계) |
+| `SleepConfirm` | 걷기 카메라 | Enter = 예, Esc = 아니오 | 확인 창 |
+| `Ended` | 걷기 카메라 | Enter = 새로 시작 | 결과 화면 |
+| (덮개) 정산 | — | Enter/버튼 = 확인 | 정산 화면 (`Sleep(yes)` 직후, 종료 시 정산 → 결과) |
+| (덮개) 일시정지·새로 시작 확인 | — | Esc = 닫기, Enter = 확인 | 메뉴 |
+
+- 키 → 명령 매핑과 우선순위의 정본은 `ScreenFlow.ProcessKeys`(C-171). 한 프레임에 한 키만 처리한다(v1 A-4와 같은 이유).
+- 끄는 중(`FoldTable.IsDragging`)에는 `ScreenFlow` 키를 넘기지 않는다(Esc는 끌기 취소로 소비). 애니메이션 중에도 키 명령은 받는다(상태는 Core가 정함, 애니메이션은 즉시 끝냄).
+- 창 포커스를 잃으면(`Application.isFocused == false`) 이동 입력 0(F-002 엣지 케이스).
+
+## 7. 3D 표현 (Runtime)
+
+- 좌표: 방은 월드 (x, z) 미터(CONTENT §6), y 위. 종이 좌표 1 = 10cm → `FoldTable` 루트를 테이블 위 (2.5, 0.75, 1.6)에 두고 **균일 배율 0.1**, 종이 (x, y) → 로컬 (x, 겹 높이, y)(종이 +y = 앉은 사람에게서 먼 쪽 = 월드 +z).
+  시험판 메시 상수(겹 간격 0.0035 등)는 종이 단위 그대로 쓰고 배율이 줄인다.
+- 카메라 근평면: 걷기 0.1, 앉음 0.01(겹 간격 0.35mm의 z-fighting 방지 — 걷기 시점 8m 거리에서 깊이 정밀도 확보). `CameraRig`가 모드 전환 때 바꾼다. Bootstrap 카메라(직교)는 `CameraRig`가 원근으로 설정한다(Bootstrap 수정 없음).
+- 렌더 파이프라인: 내장(Built-in). 머티리얼은 `Materials`(시험판 셰이더 순서, 에셋 없음). **`GameObject.CreatePrimitive`·Collider·Rigidbody·Physics 쓰지 않음** — Origami 매니페스트에는 3D physics 모듈이 없다(2D 템플릿으로 생성). 메시는 `MeshFactory`, 충돌은 Core `RoomMotion`(상자 수학), 마우스 선택은 광선–평면 수학.
+- 조명: 방향광 1개(그림자 부드럽게) + 평면 주변광(시험판 값). 창문 빛은 머티리얼 색만 바꾼다(그날 쓴 종이 수 0~5).
+- 판매대 진열: `GameSnapshot.Display[i].Shape`(플레이어가 접은 상태)를 `PaperMeshBuilder`로 칸 i에 그림. 쓰레기통 종이 공 = min(실패 수, 10)개 구.
+
+## 8. 외부 의존 / 엔진 기능
+
+| 의존 | 용도 | 상태 |
 |---|---|---|
-| 레거시 Input Manager (`UnityEngine.Input.GetKeyDown`) | 키 입력 (`OrigamiController.ReadKeys`) | Sandbox에서 Unity CI PlayMode(batchmode) 예외 없음 확인. `com.unity.inputsystem` 없음, 추가하지 않음. `ProjectSettings` 변경 없음. |
-| IMGUI (`OnGUI`, `GUI.Label`, `GUI.Button`, `GUI.DrawTexture`) | 모든 화면 | UI Toolkit 기본값의 예외(에셋 필요 없음, 아래 결정 A-2). |
-| `Font.CreateDynamicFontFromOSFont` | 한국어 글꼴 | 에셋 없이 OS 글꼴 사용(결정 A-5). CI는 글리프 표시를 검증할 수 없음 → 사용자 플레이테스트. |
-| `Texture2D`(런타임 생성) | 작품 도형·종이 사각형 (`ModelIcons`) | 외부 이미지 없음(F-007 AC-07). |
+| 레거시 Input Manager (`Input.GetKey/GetKeyDown/GetMouseButton*/mousePosition/mouseScrollDelta`) | 모든 입력 (`InputReader`) | v1·시험판 CI PlayMode·Windows 빌드에서 동작 확인. `com.unity.inputsystem` 쓰지 않음 |
+| IMGUI (`com.unity.modules.imgui`, 이미 있음) | HUD·책·덮개 | v1 결정 A-2 유지(UI Toolkit은 패널 에셋 필요) |
+| 내장 셰이더 "Legacy Shaders/Diffuse", "Sprites/Default" | 종이·가구·오버레이 | 기본 Always Included 목록(시험판 Windows 빌드에서 사용자 확인) |
+| `Font.CreateDynamicFontFromOSFont` | 한글 (`KoreanFont`, v1 유지) | CI로는 글리프 검증 불가 → 사용자 플레이테스트 |
+| `Texture2D`(런타임 생성) | 책 도해 (`DiagramRaster`) | 외부 이미지 없음 |
 
-패키지 추가 없음.
+**패키지·ProjectSettings 변경 없음.** 근거: 3D 물리 모듈이 필요한 기능(CreatePrimitive의 Collider, Physics.Raycast)을 쓰지 않도록 규칙으로 막았다(§7, CODING_CONVENTION).
+만약 통합 CI에서 3D physics 모듈이 꼭 필요한 문제가 드러나면, 별도 architect 작업으로 `Unity/Packages/manifest.json`에 `"com.unity.modules.physics": "1.0.0"`을 추가한다(Fold3DSpike와 같은 구성, 검증 항목 unity-compile/unity-playmode/unity-build). 지금은 제안하지 않는다.
 
-## 7. 저장 데이터 전략
+## 9. 판정 계산 방법 결정 (R-011 "계산 방법은 architect 결정")
 
-- 이번 버전은 저장 데이터가 없다(저장/불러오기·최고 기록 범위 밖, GAME_DESIGN). 런은 항상 R-002 상태에서 시작.
-- 나중에 저장이 생기면 기본 방침은 JSON. 대상은 `OrigamiRun` 내부 상태(일차·돈·시도·완성 수·실패 수·누적 기록·오늘 작품·진행 중 접기). 스냅샷 타입은 이미 엔진 없는 불변 데이터라 직렬화 DTO의 원형으로 쓸 수 있다. 그때 architect 작업으로 계약을 추가한다.
+- **행 주사 적분**(C-110): 윤곽(볼록 조각들의 합집합)을 높이 h = 0.001마다 가로선 y = (k + 0.5)·h로 자르고, 각 선에서 조각 구간의 합집합 길이를 정확히 구해 h를 곱해 더한다.
+  교집합도 같은 행에서 두 구간 목록을 합쳐 구한다. 무게중심도 같은 적분. D4 대칭은 **꼭짓점 좌표를 정확히 변환**한 뒤 다시 주사한다.
+- 이유: x 방향은 정확, y 방향만 중점 적분이라 격자(0.004)보다 훨씬 정확하고 빠르다. 외부 다각형 연산 라이브러리 없이 50줄 안팎. 결정적(같은 입력 → 같은 비트).
+- 검증(architect 프로토타입, `balance_check.py`의 접기 엔진 위에서 이 방법을 Python으로 구현해 실행): h = 0.002 / 0.001 / 0.0005 결과가 서로 0.002 이내, `CONTENT_SPECS.md` §4 값과 모두 0.005 이내.
 
-## 8. 아키텍처 결정 (Orchestrator가 `Docs/DECISIONS.md`에 옮겨 적을 것)
+| 경우 | §4 (격자 0.004) | 행 주사 h = 0.001 |
+|---|---|---|
+| J-04 / J-05 / J-06 | 0.992 / 0.951 / 0.892 | 0.992 / 0.950 / 0.892 |
+| J-07 / J-08 / J-09 / J-10 | 0.804 / 0.783 / 0.728 / 0.693 | 0.799 / 0.784 / 0.729 / 0.694 |
+| J-11 / J-12 / J-14 / J-15 / J-18 | 0.677 / 0.477 / 0.714 / 0.648 / 0.782 | 0.677 / 0.477 / 0.717 / 0.647 / 0.783 |
+| J-01·J-02·J-03·J-13·J-16·J-17 | 1.000 (J-13 0.994~1.000) | 1.000 |
+| 작품끼리 최대 (tulip–dog) | 0.611 | 0.612 |
+| 강아지 턱 없이 (리뷰 W-6) | 0.849 | 0.848 — **경계값: 테스트 기대값으로 쓰지 않는다** |
+
+- 비용: 기준 5종 × 대칭 8개의 행 목록은 한 번만 계산해 `RecognitionCatalog`에 둔다. `Finish` 1회 = 플레이어 윤곽 1회 주사 + 40회 구간 병합(수 ms).
+
+## 10. v1 → v2 이전 계획
+
+원칙: v2 코드는 **v1과 다른 폴더·네임스페이스**에 새로 만든다(공존 중 이름 충돌·컴파일 깨짐 없음). v2 코드는 v1 네임스페이스를 `using`하지 않는다.
+v1은 v1 Unity 화면이 살아 있는 동안 컴파일되어야 하므로, **v1 화면을 대체하는 ORIGAMI-014에서 v1 Core·화면·테스트를 한꺼번에 지운다**.
+
+| v1 항목 | 처리 | v2 대체 | 삭제 시점 |
+|---|---|---|---|
+| `Core/Content/` (`ModelDefinition`, `OrigamiCatalog`, `FoldAction(s)`, `Grade`, `ModelIds`, `EndingIds`, `EndingDefinition`) | **교체** — 작품·순서·엔딩이 모두 바뀜. 패턴(코드 카탈로그, 읽기 전용 목록, 계약 테스트 대조)은 유지 | `Core/Catalog/`(009), `Grade` → `Core/Recognition/Grade`(009) | 014 |
+| `Core/Rules/Pricing` | **이식** — 공식 동일(R-015). 코드를 v2 카탈로그 기준으로 옮김 | `Core/Economy/Pricing`(010) | 014 |
+| `Core/Rules/CompletionCounts` | **이식** — 구조 동일(작품 × 3등급, 값 동등), v2 카탈로그 기준 | `Core/Economy/CompletionCounts`(010) | 014 |
+| `Core/Rules/EndingRules`, `RunEndReason` | **교체** — 엔딩 조건·순서 변경(R-018). enum은 같은 값으로 재정의 | `Core/Economy/`(010) | 014 |
+| `Core/Rules/RuleConstants` | **교체** — 수치 다수 변경 | `Core/Economy/RuleConstants`(010) + 모듈별 상수(C-103, C-106, C-110, C-180) | 014 |
+| `Core/Rules/Grading`, `Unlocking` | **삭제** — 벌점 등급·해금 사슬 없음 | `Recognition/Grading`(009), 책 구입(010) | 014 |
+| `Core/Run/` (`OrigamiRun`, 스냅샷·결과·거부 사유) | **교체** — 명령 체계가 다름. 거부 시 상태 불변·첫 사유 반환·불변 스냅샷 원칙 유지 | `Core/Game/`(010) | 014 |
+| `Core/Flow/` (`OrigamiFlow`, `FlowTexts`, `FlowKeys`, `FlowScreen`) | **교체** — 화면 흐름·문구가 다름. "화면 흐름·문구를 Core에" 원칙(v1 A-3) 유지 | `Core/Screens/`, `Core/Texts/`(011) | 014 |
+| `Core/GameInfo.cs` | **유지**, `Version` = "2.0.0" | — | 014에서 값만 변경 |
+| `Scripts/Bootstrap.cs`, `Editor/StudioBuild.cs`, asmdef 4개 | **유지**(수정 없음) | — | — |
+| `Scripts/UI/KoreanFont.cs` | **유지**(수정 없음, v2 GUI가 그대로 사용) | — | — |
+| `Scripts/Gameplay/OrigamiController.cs` | **교체** | `Scripts/Gameplay/OrigamiApp`(014) | 014 |
+| `Scripts/UI/OrigamiView.cs`, `ModelIcons.cs`, `OrigamiButton.cs`, `OrigamiButtons.cs` | **교체** | `Scripts/UI/OrigamiGui`(014), `Scripts/Book/`(013) | 014 |
+| `Tests/EditMode/Core/Contracts/`, `Flow/`, `Rules/`, `Run/` | **삭제**(v1 계약·동작 테스트) | v2 테스트 폴더(§12) | 014 |
+| `Tests/EditMode/Core/Qa/` v1 파일 6개(`FlowEndingPlaythroughQaTests`, `FlowFuzzQaTests`, `RunDifferentialQaTests`, `RunReferenceModel`, `ExtremeRunQaTests`, `CatalogSpecQaTests`) | **삭제** — 파일 이름으로만 지운다(같은 폴더의 v2 QA 테스트는 남김) | v2 QA 테스트 | 014 |
+| `Tests/EditMode/Core/GameInfoTests.cs`, `Tests/PlayMode/BootstrapTests.cs` | **유지** | — | — |
+| `Tests/PlayMode/Flow/` | **삭제** | `Tests/PlayMode/Workshop/`(014) | 014 |
+| Fold3DSpike Core `Folding/` (`Vec2`, `Paper`, `FoldPlanner`, `Guide`, `FoldSession`) | **복사·확장**해 Origami로 가져온다(게임은 자기 완결 — Origami는 Fold3DSpike를 참조하지 않는다). 시험판 폴더는 건드리지 않는다 | `Core/Geometry/Vec2`, `Core/Folding/*`(위 N겹·자국·Python 동등 분할 규칙으로 변경), `Core/Tutorial/StepScoring`(= `FoldScoring.Evaluate`) | 시험판은 그대로 둠 |
+| Fold3DSpike Scripts `PaperMeshBuilder`/`OverlayBuilder`/`SphereMesh`, `SpikeMaterials`, `FoldSpikeController` | **이식** — 네임스페이스만 바꾸고 기능 확장(자국 선, 겹 표시, 배율 0.1). `SpikeMaterials`의 CreatePrimitive 대체 경로는 빼고 "Standard" → unlit 순서만 남김 | `Scripts/Folding/`, `Scripts/Systems/Materials`(012) | 시험판은 그대로 둠 |
+
+- v1 DECISIONS의 A-1(코드 카탈로그), A-2(IMGUI), A-3(흐름·문구를 Core에), A-4(한 프레임 한 키), A-5(OS 한글 글꼴)는 **v2에서도 유효**하다. A-6·A-7(v1 화면 단축키·잠긴 작품)은 v1 화면과 함께 폐기.
+- 014 전까지 게임을 실행하면 v1 화면이 보인다(v2 Unity 부품은 자동 생성 훅이 없음). 014가 v1 훅을 지우고 v2 `OrigamiApp` 훅을 넣는다.
+
+## 11. 저장 데이터 전략
+
+- 페이즈 1은 저장/불러오기가 없다(GAME_DESIGN 범위 밖). 런은 항상 R-002 상태에서 시작.
+- 나중(페이즈 3)에 넣을 때의 방침은 `DATA_STRUCTURE.md` D-170: **JSON**, Core가 엔진 없는 DTO(`[Serializable]` 공개 필드)를 만들고 Runtime이 `JsonUtility`로 쓰고 읽는다.
+  테이블 위 종이는 조각 좌표가 아니라 **적용한 동작 목록(`FoldStep`)** 으로 저장하고 불러올 때 다시 적용한다(결정성 R-001, 작고 버전에 강함). 진열 작품의 모양도 동작 목록으로.
+
+## 12. 아키텍처 결정 (Orchestrator가 `Docs/DECISIONS.md`에 옮겨 적을 것)
 
 | ID | 결정 | 이유 |
 |---|---|---|
-| A-1 | 작품·인기표·엔딩은 **Core의 코드 카탈로그**(`Core/Content/OrigamiCatalog.cs`)로 정의하고 JSON(`Data/`)은 쓰지 않는다. | netstandard2.1에는 패키지 없이 쓸 JSON 파서가 없고 `JsonUtility`는 UnityEngine이다. 코드 정의면 dotnet 테스트가 Unity 없이 실제 데이터로 돈다. 데이터는 5행·7칸·5행으로 작다. 값은 카탈로그 계약 테스트가 CONTENT_SPECS와 대조한다. |
-| A-2 | UI는 **IMGUI**(`OnGUI`). UI Toolkit 기본값의 예외. | 에디터 없이 UI Toolkit 패널을 쓰려면 PanelSettings/테마 에셋이 필요. Sandbox에서 IMGUI가 CI·Windows 빌드 모두 동작함이 확인됨. |
-| A-3 | F-007 화면 상태 기계(`OrigamiFlow`)와 모든 표시 문자열(`FlowTexts`)을 **엔진 없는 Core.Flow**에 둔다. Runtime은 키 폴링과 그리기만. | F-007 수용 기준(Esc 확인 단계, 거부 문구, 정산·결과 표시)을 Unity CI 없이 dotnet으로 검증. PlayMode는 연결(키→Flow, Flow→화면 문자열)만 확인하면 됨. |
-| A-4 | 입력은 레거시 Input Manager, 키 하나/프레임(우선순위 표). | Sandbox 검증 결과. 동시 입력으로 확인 단계를 건너뛰지 않게. |
-| A-5 | 한국어 표시는 `Font.CreateDynamicFontFromOSFont(new[] {"Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "NanumGothic", "Arial"}, size)`로 만든 글꼴을 GUIStyle에 지정. | 에셋 없이 Windows(맑은 고딕)에서 한글 표시. 글꼴이 없으면 기본 글꼴로 떨어지며 CI로는 검증 불가 → 사용자 플레이테스트로 확인. |
-| A-6 | F-007에 명시되지 않은 키 편의 매핑: Preview에서 Enter=접기 시작, Esc=닫기 / Notice·Settlement에서 Enter=확인. 그 외 화면의 키는 무시. | 키보드만으로도 플레이 가능하게 하는 최소 확장. 방향키·Space·H는 F-007대로 접기 화면 밖에서 무효. 사용자가 원치 않으면 C-020 표만 바꾸면 됨. |
-| A-7 | 잠긴 작품 선택은 Core 명령 없이 Flow가 `Snapshot.IsUnlocked`로 막고 Locked 문구(해금 조건)를 보여 준다. 도안은 보여 주지 않는다. | F-007 "잠긴 작품은 도안을 보여 주지 않는다". 상태 불변. |
+| A2-1 | Core를 Geometry/Folding/Recognition/Catalog/Economy/Tutorial/Game/Book/Texts/Screens/Room 폴더로 나누고 한 어셈블리로 둔다. v2 폴더 이름은 v1(Content/Rules/Run/Flow)과 겹치지 않는다 | v1과 공존하는 동안 충돌 없이 단계적으로 대체 |
+| A2-2 | 접기 엔진은 `balance_check.py`의 알고리즘·상수·순서를 그대로 옮긴다(분할 퇴화 규칙, 겹 재배치, 이어짐·얹힘, 자국, 뒤집기, 자석 동점 규칙) | 기획 수치(J 값, 자석 결과, AC 넓이)를 그대로 재현 |
+| A2-3 | 판정 IoU = 행 주사 적분(h = 0.001), D4는 꼭짓점 변환, 기준 윤곽은 `RecognitionCatalog`가 한 번 계산 | 정확·빠름·결정적, 패키지 없음(§9) |
+| A2-4 | 접기는 놓는 순간 Core에 적용하고 화면은 그 결과를 애니메이션만 한다 | 표현과 규칙 상태가 어긋나지 않음, 테스트가 애니메이션을 기다리지 않음 |
+| A2-5 | 모든 시간 진행은 `OrigamiApp.ProcessFrame(InputFrame, dt)` 하나로. 자식 컴포넌트에 `Update` 없음. PlayMode 테스트는 `[Test]`에서 dt를 직접 넘김 | 프레임 시간과 무관한 결정적 PlayMode 테스트 |
+| A2-6 | 방 충돌·이동·상호작용 후보는 Core 순수 함수(`RoomMotion`, `Interaction`), Physics·Collider·CreatePrimitive 금지 | dotnet으로 F-002 수치 검증, 3D physics 모듈 없이 동작(패키지 변경 없음) |
+| A2-7 | `FoldTable`은 `IFoldTableHost`로만 명령을 낸다 | Unity 접기 테이블(012)을 Core 규칙(010/011)과 병렬 개발 |
+| A2-8 | 겹 수 고르기: 휠 위로(`mouseScrollDelta.y > 0`) 또는 `]` = +1(전체 → 위 1 → … → 위 M−1 → 전체), 휠 아래·`[` = −1. M ≤ 1이면 항상 전체 | F-005 "휠(또는 [ / ])" 방향 미정 → 결정 |
+| A2-9 | 튜토리얼 단계 점수의 "반대쪽 접기 허용"(시험판 `EitherSide`)은 종이비행기 1단계(가운데 세로 자국)와 6단계(반 접기)에만 둔다 | 두 단계는 좌우 어느 쪽을 접어도 같은 선 |
+| A2-10 | `SkipGuide` 거부 순서: RunEnded → WrongMode(앉음 아님) → NoGuide(종이 없음 포함) | R-008/R-019 미정 부분 |
+| A2-11 | 덮개(정산·일시정지·새로 시작 확인·결과)가 열려 있으면 `ScreenFlow`는 게임 명령을 Core에 보내지 않고 `WrongMode`로 거부한다 | 정산 화면 뒤에서 걷거나 접는 일 방지 |
+| A2-12 | 책 도해는 Runtime에서 `Texture2D`로 코드 래스터화(쪽·보유 상태별 캐시), 내용 데이터는 Core `BookPages` | IMGUI에서 다각형을 그릴 수단이 텍스처뿐, 도해 내용은 dotnet 검증 |
+| A2-13 | v1 Core·화면·테스트는 ORIGAMI-014(v2 화면 통합)에서 한꺼번에 지운다. `KoreanFont`, `Bootstrap`, `StudioBuild`, asmdef, `GameInfo`는 유지 | v1 화면이 v1 Core에 의존 — 대체하는 작업에서만 삭제 |
+| A2-14 | 카메라 근평면 걷기 0.1 / 앉음 0.01 | 0.35mm 겹 간격의 z-fighting 방지 |
 
-## 9. 구현 작업별 파일 소유 (제안, Orchestrator 확정)
+## 13. 구현 작업 분해 (제안, Orchestrator 확정)
 
-| 작업 | 담당 | file_scope | 소유 내용 |
-|---|---|---|---|
-| ORIGAMI-002 (이 작업) | architect | `Docs/tech/`, `Core/` 전체, `Tests/EditMode/Core/Contracts/` | 계약·골격·카탈로그 데이터·계약 테스트 |
-| Core 규칙 | developer | `Core/Rules/`, `Core/Run/`, `Tests/EditMode/Core/Rules/`, `Tests/EditMode/Core/Run/` | `Grading`·`Pricing`·`Unlocking`·`EndingRules`·`OrigamiRun` 본문 (F-001~F-006) |
-| Core 화면 흐름 | developer | `Core/Flow/`, `Tests/EditMode/Core/Flow/` | `OrigamiFlow`·`FlowTexts` 본문 (F-007 로직·문구) |
-| Unity 컨트롤러·뷰 | developer | `Scripts/Gameplay/`, `Scripts/UI/`, `Tests/PlayMode/Flow/` | `OrigamiController`, `OrigamiView`, `ModelIcons`, PlayMode 테스트 |
+경로는 `Games/Origami/Unity/Assets/Game/` 기준. 모든 작업의 `.meta`는 해당 폴더 범위에 포함. 공통 금지: `Scripts/Bootstrap.cs`, asmdef, `Editor/`, `Unity/Packages/`, `Unity/ProjectSettings/`, `Docs/`, 다른 작업의 폴더.
 
-- `Core/Content/`는 ORIGAMI-002 이후 architect 소유(계약). 문구 다듬기가 필요하면 content-designer 작업으로 `Core/Content/OrigamiCatalog.cs`의 문자열(DisplayName/Text)만 배정한다.
-- 공통으로 `Tests/EditMode/Core/Contracts/`는 구현 작업이 수정하지 않는다(계약 변경 시 architect).
-- `Scripts/Bootstrap.cs`, asmdef, `Packages/`, `ProjectSettings/`는 어느 구현 작업도 수정하지 않는다.
+| ID (제안) | 제목 | 담당 | file_scope | 의존 | FEATURE_SPECS AC | verify |
+|---|---|---|---|---|---|---|
+| ORIGAMI-009 | v2 Core 접기 엔진·자석·판정·카탈로그 | developer | `Core/Geometry/`, `Core/Folding/`, `Core/Recognition/`, `Core/Catalog/`, `Tests/EditMode/Core/Folding/`, `Tests/EditMode/Core/Recognition/`, `Tests/EditMode/Core/Catalog/` | ORIGAMI-008 | F-005 AC-01~06·AC-10~16(엔진 수준: `FoldSession`/`FoldPlanner`/`DropSnap`), F-005 AC-18의 Core 부분(`FoldGesture` 겹 수·"겹: 위 2 / 6" 값), F-009 AC-01~06, F-007 AC-01(`BookLayout`), CONTENT §1 표·§2 순서(선 끝점 ±1e-4, 자석 종류)·§4 작품끼리 표·§5 인기 표 | core-tests, review |
+| ORIGAMI-010 | v2 Core 공방 규칙·경제·튜토리얼 | developer | `Core/Economy/`, `Core/Tutorial/`, `Core/Game/`, `Tests/EditMode/Core/Economy/`, `Tests/EditMode/Core/Tutorial/`, `Tests/EditMode/Core/Game/` | ORIGAMI-009 | F-001 AC-01~09, F-003 AC-01~04, F-004 AC-01~06, F-005 AC-01~05·07~10(명령 수준), F-006 AC-01~08, F-007 AC-04~05, F-008 AC-01~02·04~05, F-010 AC-01~05, F-011 AC-01~06, F-012 AC-01~08 | core-tests, review |
+| ORIGAMI-011 | v2 Core 책 도해·문구·화면 흐름 | developer | `Core/Book/`, `Core/Texts/`, `Core/Screens/`, `Tests/EditMode/Core/Book/`, `Tests/EditMode/Core/Texts/`, `Tests/EditMode/Core/Screens/` | ORIGAMI-010 | F-007 AC-02~03, F-008 AC-03, F-013 AC-01~02, F-003 키 표(모드×키, Core), F-010 결과 문구(R-012), F-011 AC-07·F-012 AC-09의 문구 데이터, F-006 안내 문구·F-013 1회성 안내 상태 | core-tests, review |
+| ORIGAMI-012 | v2 Unity 접기 테이블 (종이 메시·끌기·겹 고르기·자석·애니메이션) | developer | `Scripts/Systems/`, `Scripts/Folding/`, `Tests/PlayMode/FoldTable/` | ORIGAMI-009 (010·011과 병렬 가능) | F-005 AC-17·AC-18, F-006 AC-09(가이드 표시: host가 가이드를 줄 때만), F-005 AC-19는 사용자 플레이테스트 기록 | unity-compile, unity-editmode, unity-playmode, review |
+| ORIGAMI-013 | v2 Unity 책 화면 (두 쪽 펼침·도해 텍스처·목차·사기) | developer | `Scripts/Book/`, `Tests/PlayMode/Book/` | ORIGAMI-011 (012와 병렬 가능) | F-007 AC-06의 책 그리기 부분, F-008 사기 버튼 연결(콜백), F-007 AC-07은 사용자 플레이테스트 기록 | unity-compile, unity-editmode, unity-playmode, review |
+| ORIGAMI-014 | v2 Unity 공방 통합 (방·캐릭터·카메라·HUD·덮개·판매대) + v1 삭제 | developer | `Core/Room/`, `Tests/EditMode/Core/Room/`, `Core/GameInfo.cs`, `Scripts/Gameplay/`, `Scripts/UI/`(`KoreanFont.cs`는 수정 금지), `Tests/PlayMode/Workshop/`; **삭제 전용**: `Core/Content/`, `Core/Rules/`, `Core/Run/`, `Core/Flow/`, `Tests/EditMode/Core/Contracts/`, `Tests/EditMode/Core/Flow/`, `Tests/EditMode/Core/Rules/`, `Tests/EditMode/Core/Run/`, `Tests/PlayMode/Flow/`, §10의 v1 Qa 파일 6개 | ORIGAMI-011, ORIGAMI-012, ORIGAMI-013 | F-002 AC-01~06(수치는 Core `RoomMotion` dotnet + PlayMode 연결), F-003 AC-05~07, F-007 AC-06, F-010 AC-06, F-011 AC-07, F-012 AC-09, F-013 AC-03, 전체 연결 스모크(1일 플레이: 앉기 → 튜토리얼 6단계 → 완성 → 잠 → 정산) | core-tests, unity-compile, unity-editmode, unity-playmode, unity-build, review |
+
+순서와 병렬:
+
+```
+008 ─▶ 009 ─┬─▶ 010 ─▶ 011 ─┬─▶ 013 ─┐
+            └─▶ 012 ────────┼────────┼─▶ 014
+                            └────────┘
+```
+
+- 009가 끝나면 010과 012를 병렬(worktree)로, 011이 끝나면 013을 012와 병렬로 돌릴 수 있다(file_scope가 겹치지 않고 012는 Core 규칙을 참조하지 않음 — A2-7).
+- 각 작업은 자기 폴더에만 쓴다. 다른 작업의 public 표면이 바뀌어야 하면 구현하지 말고 Orchestrator에 계약 변경을 요청한다(architect가 INTERFACE_CONTRACTS 갱신).
+- 테스트 작성 주의(리뷰 W-6, QA O-1): 강아지 턱 없이(0.849/0.848) 결과는 어떤 테스트도 단언하지 않는다. F-006 AC-04의 `Unfold`는 먼저 `Fold` 1회를 한 뒤 검사한다(빈 기록의 `Unfold`는 R-007대로 거부).
+- 콘텐츠 문구 다듬기(책 설명·엔딩 문구)가 필요하면 나중에 content-designer 작업으로 `Core/Catalog/` 문자열만 배정한다(이번 분해에는 넣지 않음).

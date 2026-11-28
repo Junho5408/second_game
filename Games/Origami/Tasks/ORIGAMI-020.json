@@ -1,0 +1,29 @@
+{
+  "acceptance_criteria": [
+    "C-193: CharacterView.Tick(float,float), WorkshopView.UpdateCutaway(Vector2), ProcessFrame의 보기 단계 순서 반영 (리뷰 ORIGAMI-019 W-1)",
+    "C-195·ARCHITECTURE §14.2: _PipelineSample/CasualMale 제거, Characters/Crafter 반영; §14.7: 가구 축별 ±40% 맞춤 규칙과 스키닝 메시 측정(바인드 포즈 메시 + Head_end 교차 확인) 기록",
+    "Art/CREDITS.md에서 삭제된 CasualMale 행 정리, ARCHITECTURE §2 BookTexts 문장(016 W-1), C-180 RoomMotion 600초 상한·NaN→0(014 W-3)",
+    "코드 변경 없음"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-019"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/",
+    "Games/Origami/Unity/Assets/Game/Art/CREDITS.md"
+  ],
+  "notes": [],
+  "priority": "low",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-020",
+  "title": "아트 적용 후 기술 문서 정리",
+  "verification": [
+    "review"
+  ]
+}

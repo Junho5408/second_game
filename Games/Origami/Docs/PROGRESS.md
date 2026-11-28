@@ -51,4 +51,9 @@
 |---|---|---|
 | ORIGAMI-017 3D 에셋 파이프라인 | architect | COMPLETED — 리뷰 1회 반려 후 통과, Unity CI 46090446550 (PlayMode 109/110 + OnGUI 1 미검증, 빌드 성공), LFS 제거 |
 | ORIGAMI-018 에셋 선정·가져오기 (CC0) | content-designer | COMPLETED — 21개, +2.1MB (전체 3.8MB), Unity CI 46093130343 가져오기 오류 0 |
-| ORIGAMI-019 화면 적용·애니메이션·조명 | developer | 진행 |
+| ORIGAMI-019 화면 적용·애니메이션·조명 | developer | COMPLETED — 리뷰 1회 반려(캐릭터 1.6cm) 후 통과, Unity CI 46096898759: EditMode 735/735, PlayMode 146/147 + OnGUI 1 미검증, 빌드 Origami-windows-build 34.9MB |
+| ORIGAMI-020 기술 문서 정리 | architect | 대기(비차단) |
+
+### 3D 에셋 빌드 (2026-11-28)
+- 빌드: Actions run 46096898759 → artifact `Origami-windows-build`
+- 사용자 플레이테스트 대기: 전체 분위기·색, 창 유리 투명도, 앉은 자세·발 뜸(약 0.2m), 문 근처 가림 처리, 걷기 발 미끄러짐 + 기존 항목(화면 그리기, 한글, 책만 보고 접기, 손맛)

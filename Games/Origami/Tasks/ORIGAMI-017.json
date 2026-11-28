@@ -22,12 +22,15 @@
     "Games/Origami/Unity/Assets/Game/Tests/PlayMode/AssetPipeline/"
   ],
   "notes": [
-    "Pipeline + samples committed; Unity CI pending. Orchestrator must run 'git lfs push origin claude/serene-fermat-4bwjlo' before git push (no LFS pre-push hook)."
+    "Pipeline + samples committed; Unity CI pending. Orchestrator must run 'git lfs push origin claude/serene-fermat-4bwjlo' before git push (no LFS pre-push hook).",
+    "review: CHANGES_REQUESTED (CI run 46089349441: material smoothness rule ineffective, PaperSwatch Texture2D null, build skipped) - Reports/review/ORIGAMI-017.md"
   ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "review": "fail"
+  },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "FIX_REQUIRED",
   "task_id": "ORIGAMI-017",
   "title": "3D 에셋 파이프라인 (외부 모델·텍스처·애니메이션 가져오기, 에디터 없이)",
   "verification": [

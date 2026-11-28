@@ -7,7 +7,7 @@
     "검증용 샘플: CC0 정적 모델 1개 + 애니메이션 있는 CC0 캐릭터 1개를 _PipelineSample에 넣고, PlayMode 테스트로 Resources에서 로드·메시/재질 존재·애니메이션 클립 재생(시간 진행 시 본 위치 변화)을 확인. Unity CI(unity (Origami)) 컴파일·PlayMode·Windows 빌드 통과"
   ],
   "agent": "architect",
-  "base_commit": null,
+  "base_commit": "7058d3f6b57f1f7c8f732ec06557788576ada7d7",
   "deliverables": [],
   "dependencies": [],
   "description": "",
@@ -25,7 +25,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-017",
   "title": "3D 에셋 파이프라인 (외부 모델·텍스처·애니메이션 가져오기, 에디터 없이)",
   "verification": [

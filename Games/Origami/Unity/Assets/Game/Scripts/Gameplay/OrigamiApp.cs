@@ -18,6 +18,9 @@ namespace Origami.Runtime.Gameplay
     /// overlay, (2) mode changes move the character (seat → chair, stand up → (2.5, 0.2) facing south, new day / new run →
     /// start position facing east), (3) walking without overlay → <c>RoomMotion.Step</c>, (4) <c>Table.ProcessFrame</c> (the pointer only while seated),
     /// (5) <c>CameraRig.Tick</c>, (6) <c>Workshop.Refresh</c> when the snapshot reference changed, then the GUI refresh.
+    /// ORIGAMI-019 adds view-only steps that do not touch Core: after (3) <c>Character.Tick(dt, speed)</c> (Legacy clips,
+    /// speed = metres walked this frame / dt) and <c>Workshop.UpdateCutaway</c> (door), after (5) the seated camera cut-away
+    /// of the character model.
     /// Tests call ProcessFrame directly with a fixed dt (A2-5).
     /// </para>
     /// </summary>
@@ -136,6 +139,7 @@ namespace Origami.Runtime.Gameplay
             SyncMode();
 
             // (3) walking.
+            float speed = 0f;
             if (flow.Snapshot.Mode == WorkshopMode.Walking && flow.Overlay == Overlay.None)
             {
                 var move = frame.Move;
@@ -146,13 +150,17 @@ namespace Origami.Runtime.Gameplay
                 float walked = (_position - before).magnitude;
                 if (move.sqrMagnitude > 1e-6f) _yaw = Mathf.Atan2(move.x, move.y) * Mathf.Rad2Deg;
                 _walkPhase = walked > 0f ? (_walkPhase + walked * PhasePerMetre) % (2f * Mathf.PI) : 0f;
+                speed = dt > 0f ? walked / dt : 0f;
             }
             _character.SetPose(_position, _yaw, flow.Snapshot.Mode == WorkshopMode.Seated, _walkPhase);
+            _character.Tick(dt, speed);
+            _workshop.UpdateCutaway(_position);
 
             // (4) table, (5) camera, (6) room.
             // Outside the seated mode the pointer is not passed on (no orbit/zoom of the seated view while walking).
             _table.ProcessFrame(flow.Snapshot.Mode == WorkshopMode.Seated ? frame.Pointer : new PointerFrame(), dt);
             _rig.Tick(dt);
+            _character.ApplyCameraCutaway(_rig.Position);
             RefreshWorkshop();
 
             View?.Refresh(dt);
@@ -165,6 +173,7 @@ namespace Origami.Runtime.Gameplay
             _position = xz;
             _yaw = yaw;
             _character.SetPose(_position, _yaw, Flow.Snapshot.Mode == WorkshopMode.Seated, 0f);
+            _workshop.UpdateCutaway(_position);
         }
 
         private void Update()

@@ -8,6 +8,8 @@ namespace Origami.Tests.PlayMode.AssetPipeline
     /// <summary>
     /// ORIGAMI-017: proves the code-only import pipeline (gen_meta minimal metas + Editor/ArtImportRules) with the CC0
     /// samples in Art/_PipelineSample/Resources/_PipelineSample/ (credits: Art/_PipelineSample/CREDITS.md).
+    /// ORIGAMI-019: the animated sample <c>_PipelineSample/CasualMale</c> was deleted (byte-identical duplicate, DECISIONS
+    /// 2026-11-28); the character checks now use the game's <c>Characters/Crafter</c> (the same file).
     /// Checks: load from Resources, mesh + material present, materials use the built-in "Standard" shader (matte),
     /// the animated character imports Legacy clips playable by the Animation component without an AnimatorController,
     /// and sampling a clip at two explicit times moves bones. Everything is synchronous (<c>[Test]</c>, explicit
@@ -16,10 +18,11 @@ namespace Origami.Tests.PlayMode.AssetPipeline
     public class AssetPipelineTests
     {
         private const string ChairKey = "_PipelineSample/Chair";
-        private const string CharacterKey = "_PipelineSample/CasualMale";
+        private const string CharacterKey = "Characters/Crafter";
         private const string TextureKey = "_PipelineSample/PaperSwatch";
         private const string SampleFolder = "Assets/Game/Art/_PipelineSample/Resources/_PipelineSample/";
         private const string TexturePath = SampleFolder + "PaperSwatch.png";
+        private const string CharacterFolder = "Assets/Game/Art/Characters/Resources/Characters/";
 
         // Values forced by Editor/ArtImportRules (Version 2). They differ from Unity's import defaults
         // (smoothness from FBX shininess, e.g. 0.31; aniso 1; max size 2048), so passing proves the rules ran.
@@ -56,7 +59,7 @@ namespace Origami.Tests.PlayMode.AssetPipeline
             return b;
         }
 
-        private static void AssertMatteStandard(Material[] materials, string what)
+        private static void AssertMatteStandard(Material[] materials, string what, string folder = SampleFolder)
         {
             Assert.That(materials.Length, Is.GreaterThan(0), what + ": no materials");
             foreach (var m in materials)
@@ -74,7 +77,7 @@ namespace Origami.Tests.PlayMode.AssetPipeline
 #if UNITY_EDITOR
                 // Embedded in the model (never extracted to new .mat assets).
                 var path = UnityEditor.AssetDatabase.GetAssetPath(m);
-                Assert.IsTrue(path.StartsWith(SampleFolder, System.StringComparison.Ordinal) && path.EndsWith(".fbx", System.StringComparison.Ordinal),
+                Assert.IsTrue(path.StartsWith(folder, System.StringComparison.Ordinal) && path.EndsWith(".fbx", System.StringComparison.Ordinal),
                     what + ": material should be a sub-asset of the model, was \"" + path + "\"");
 #endif
             }
@@ -94,7 +97,7 @@ namespace Origami.Tests.PlayMode.AssetPipeline
                 Assert.IsNotNull(r, "MeshFilter without MeshRenderer");
                 AssertMatteStandard(r.sharedMaterials, "chair");
             }
-            AssertModelImporterRules("Chair.fbx");
+            AssertModelImporterRules(SampleFolder + "Chair.fbx");
             var b = RendererBounds(go);
             Assert.That(b.size.x > 0f && b.size.y > 0f && b.size.z > 0f, "chair bounds are empty: " + b);
             TestContext.WriteLine($"Chair bounds size (m, file scale): {b.size}, center {b.center}");
@@ -111,12 +114,12 @@ namespace Origami.Tests.PlayMode.AssetPipeline
                 Assert.IsNotNull(s.sharedMesh, "SkinnedMeshRenderer without mesh");
                 Assert.That(s.sharedMesh.vertexCount, Is.GreaterThan(0));
                 Assert.That(s.bones.Length, Is.GreaterThan(0), "skinned mesh without bones");
-                AssertMatteStandard(s.sharedMaterials, "character");
+                AssertMatteStandard(s.sharedMaterials, "character", CharacterFolder);
             }
-            AssertModelImporterRules("CasualMale.fbx");
+            AssertModelImporterRules(CharacterFolder + "Crafter.fbx");
             var b = RendererBounds(go);
             Assert.That(b.size.y, Is.GreaterThan(0f), "character bounds are empty: " + b);
-            TestContext.WriteLine($"CasualMale bounds size (m, file scale): {b.size}, center {b.center}");
+            TestContext.WriteLine($"Crafter bounds size (m, file scale): {b.size}, center {b.center}");
         }
 
         [Test]
@@ -227,10 +230,10 @@ namespace Origami.Tests.PlayMode.AssetPipeline
 
         // ---- helpers ----
 
-        private static void AssertModelImporterRules(string file)
+        private static void AssertModelImporterRules(string path)
         {
 #if UNITY_EDITOR
-            var path = SampleFolder + file;
+            var file = System.IO.Path.GetFileName(path);
             var mi = UnityEditor.AssetImporter.GetAtPath(path) as UnityEditor.ModelImporter;
             Assert.IsNotNull(mi, "no ModelImporter for " + path);
             Assert.AreEqual(UnityEditor.ModelImporterAnimationType.Legacy, mi.animationType, file + " animationType");

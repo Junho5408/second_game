@@ -17,15 +17,17 @@
     "Games/Origami/Unity/Assets/Game/Resources/"
   ],
   "notes": [
-    "Sets Workshop(18 Kenney), Characters(Crafter), Surfaces(2 tex); table in Art/ASSETS.md; Window.fbx hand-extracted from wallWindow - check CI import first"
+    "Sets Workshop(18 Kenney), Characters(Crafter), Surfaces(2 tex); table in Art/ASSETS.md; Window.fbx hand-extracted from wallWindow - check CI import first",
+    "review APPROVED_WITH_WARNINGS: W-1 non-uniform Box fits vs ARCH 14.7 (decide before 019), W-2 photo textures optional/flat default; CI 46093130343 green, all assets import clean"
   ],
   "priority": "high",
   "result": {
     "art_added_bytes": "2145755",
-    "art_total_bytes": "3803936"
+    "art_total_bytes": "3803936",
+    "review": "pass"
   },
   "retry_count": 0,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-018",
   "title": "공방 3D 에셋 선정·가져오기 (방·가구·캐릭터, CC0)",
   "verification": [

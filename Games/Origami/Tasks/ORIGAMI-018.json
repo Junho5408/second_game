@@ -18,16 +18,21 @@
   ],
   "notes": [
     "Sets Workshop(18 Kenney), Characters(Crafter), Surfaces(2 tex); table in Art/ASSETS.md; Window.fbx hand-extracted from wallWindow - check CI import first",
-    "review APPROVED_WITH_WARNINGS: W-1 non-uniform Box fits vs ARCH 14.7 (decide before 019), W-2 photo textures optional/flat default; CI 46093130343 green, all assets import clean"
+    "review APPROVED_WITH_WARNINGS: W-1 non-uniform Box fits vs ARCH 14.7 (decide before 019), W-2 photo textures optional/flat default; CI 46093130343 green, all assets import clean",
+    "QA PASS 4/4, no bugs; CI 46093130343 green; recommend Resources key-load PlayMode test in 019"
   ],
   "priority": "high",
   "result": {
     "art_added_bytes": "2145755",
     "art_total_bytes": "3803936",
-    "review": "pass"
+    "qa": "pass",
+    "review": "pass",
+    "unity-compile": "pass",
+    "unity-editmode": "pass",
+    "unity-playmode": "pass"
   },
   "retry_count": 0,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-018",
   "title": "공방 3D 에셋 선정·가져오기 (방·가구·캐릭터, CC0)",
   "verification": [

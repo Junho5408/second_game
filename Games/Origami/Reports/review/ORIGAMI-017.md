@@ -110,3 +110,85 @@ LFS checkout worked (local file is a real 256×256 PNG, FBX imported with 11 tak
 | 3 | AssetPostprocessor fixes scale/material/shader/animation; shaders kept in build | **partly** — material rule ineffective (F-1), build unverified (F-3) |
 | 4 | Load rules, CC0 + CREDITS, size budget documented | met (§14.2, §14.8, CODING_CONVENTION; CC0 verified) |
 | 5 | Samples + PlayMode tests; CI compile/PlayMode/Windows build pass | **not met** — 2 PlayMode failures, build skipped (run 46089349441) |
+
+## Re-review (fix pass 1)
+
+Reviewed: fix commit `53548ba` (head `de6333c`, branch `claude/serene-fermat-4bwjlo`).
+**Verdict: APPROVED_WITH_WARNINGS**
+
+### CI evidence — `unity` run 46090446550 (push, head de6333c, conclusion success)
+
+| Job | Result |
+|---|---|
+| detect | success |
+| unity (Origami) (job 140809884082) | success. All steps passed: checkout (lfs: false), Unity tests, upload, **Windows build**, upload |
+| unity (Fold3DSpike) | success, test results + Windows build artifacts present |
+| unity (Sandbox) | success, test results + Windows build artifacts present |
+
+- Origami EditMode: 735 total / 735 passed / 0 failed.
+- Origami PlayMode: 110 total / 109 passed / 0 failed / 1 inconclusive. The inconclusive one is
+  `Workshop.WorkshopSmokeTests.OnGui_DrawsTheBookWithBookPanelDraw`, which was inconclusive before this task too (OnGUI checks moved to
+  user playtest, ORIGAMI-014 W-1). Unity's test runner returns exit code 2 because of it, but the workflow step accepts that, as in earlier runs.
+- `AssetPipeline` fixture: **7/7 passed** (Static model, Character load, Legacy clips/no Animator, clip-name prefix, ClipSampleAnimation
+  moves bones, Animation-component sampling moves bones, Texture load).
+- Windows build: log shows `Compiling shader "Standard"` (FORWARD, d3d11, 664 → 8 variants after built-in stripping) and
+  `Build Finished, Result: Success.` Artifact `Origami-windows-build` is 34,624,126 bytes.
+- Artifacts downloaded to `/tmp/claude-0/-home-user-second-game/636884ad-8c21-5cae-9861-9592d708d5ff/scratchpad/ci2/results/`
+  (editmode/playmode XML and logs). Job log is in `.../scratchpad/ci2/job.log`.
+
+### Local checks
+- `python3 -m pytest studio/tests -q`: 51 passed
+- `python3 studio/scripts/check_meta.py Games/Origami/Unity`: OK
+- `bash studio/scripts/verify_core.sh Origami`: 735 passed, PASS
+- `python3 studio/scripts/check_scope.py Origami ORIGAMI-017`: OK
+
+### Findings status
+
+- **F-1: resolved.** `ApplyMaterialRules` now runs in `OnPreprocessMaterialDescription` (with `GetPostprocessOrder() = 100`)
+  and again in `OnPostprocessModel` on the renderers' shared (embedded) materials. `Version` is now 2. The test asserts the exact values
+  Standard / `_Metallic` 0 / `_Glossiness` 0.15, and requires both properties to exist (an absent property no longer passes silently).
+  The CI output shows every material at `shader Standard, _Metallic 0, _Glossiness 0.15, _GlossMapScale 0.15`: Shirt, Skin, Pants,
+  Belt, Face and Hair on CasualMale, and wood on Chair. Before the fix the value was 0.31, so the rule demonstrably ran.
+  `ApplyMaterialRules` is idempotent and null-safe, and it keeps colour and main texture when it switches shader.
+- **F-2: resolved.** `Resources.Load<Texture2D>("_PipelineSample/PaperSwatch")` now returns the texture. CI output:
+  `256x256, mips 9, wrap Repeat, filter Bilinear, aniso 2, format DXT1`. The test now also checks the `TextureImporter` settings
+  (Default, Texture2D, maxTextureSize 1024, aniso 2).
+  Root cause: **not isolated.** Two changes landed together: explicit `textureShape`/`spriteImportMode`/`npotScale`/`alphaSource` and
+  the samples changing from LFS pointers to plain blobs. Because the test passed, the diagnostic branch never ran, so it cannot say
+  which change mattered. This does not block. The importer settings are now pinned and asserted, and the diagnostics remain to explain
+  any future regression (see W-3).
+- **F-3: resolved.** The Windows build step succeeded and the artifact exists. "Standard" is compiled into the build from the
+  embedded materials, without using Always Included. This confirms the shader strategy.
+- **W-1: resolved.** The new assertions only pass if the rules ran: smoothness 0.15 (FBX-derived default was 0.31), anisoLevel 2
+  (Unity default 1), maxTextureSize 1024 (default 2048). `AssertModelImporterRules` checks Legacy, ImportViaMaterialDescription,
+  InPrefab, no collider, and no cameras or lights.
+- **LFS removal: done correctly.**
+  - `.gitattributes`: the 7 `filter=lfs` lines are replaced by `binary` lines for png/jpg/jpeg/tga/psd/fbx/obj/wav/mp3/ogg.
+    `git check-attr` on PaperSwatch.png gives `binary: set`, `text/diff/merge: unset`.
+  - The samples are real blobs: CasualMale.fbx is 1,612,396 B (`Kaydara FBX Binary`), Chair.fbx is 25,338 B (ASCII `; FBX 7.3.0`),
+    and PaperSwatch.png is 20,447 B (`\x89PNG`). `git lfs ls-files` is empty, and no tracked png/fbx/jpg/wav/ogg/mp3 blob in the repo
+    starts with an LFS pointer header. `.meta` files and GUIDs are unchanged.
+  - `unity.yml`: the only changed line is `lfs: true` → `lfs: false`. The other games' jobs (Fold3DSpike, Sandbox) pass in the same run,
+    so nothing regressed.
+  - Docs are updated consistently: ARCHITECTURE §12 table, A2-18, §14.4, §14.8; CODING_CONVENTION; INTERFACE_CONTRACTS §(asset contract).
+    They match DECISIONS 2026-11-28 ("Git LFS를 쓰지 않는다").
+
+### Remaining warnings (non-blocking)
+
+- **W-2** (from the first review): no change.
+- **W-3** `Tests/PlayMode/AssetPipeline/AssetPipelineTests.cs` `TextureDiagnostics()`. The F-2 root cause is not recorded.
+  Impact: a future texture-load failure in ORIGAMI-018/019 would start from zero. Recommendation: no code change. Keep the
+  diagnostics. If a texture ever fails to load again, read the `[AssetPipelineTests] PaperSwatch diagnostics` block in playmode.log first.
+- **W-4** (note for ORIGAMI-019): the CasualMale sample is about 329 units tall at file scale, against 4.7 for Chair (cm vs m
+  export units). This was expected under §14.7 (runtime fits to `Renderer.bounds`), but it shows that bounds fitting is mandatory,
+  not optional, for character kits.
+
+### Acceptance criteria (updated)
+
+| # | Status |
+|---|---|
+| 1 | met |
+| 2 | met |
+| 3 | met: scale, material (exact values proven in CI), shader in build (build log), Legacy animation |
+| 4 | met: docs updated for no-LFS storage |
+| 5 | met: run 46090446550 — compile OK, PlayMode AssetPipeline 7/7, Windows build success |

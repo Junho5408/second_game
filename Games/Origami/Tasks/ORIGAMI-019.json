@@ -12,7 +12,7 @@
     "_PipelineSample/CasualMale.fbx 삭제 후 AssetPipeline 테스트는 Characters/Crafter 사용(다른 샘플 Chair/PaperSwatch는 유지 가능)"
   ],
   "agent": "developer",
-  "base_commit": null,
+  "base_commit": "fbd6de75406cda2739e1e4710a8e6bcbdd731c9f",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-018"
@@ -29,7 +29,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-019",
   "title": "공방 화면에 3D 에셋 적용 (모델 교체·캐릭터 애니메이션·조명)",
   "verification": [

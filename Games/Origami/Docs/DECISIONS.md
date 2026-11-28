@@ -41,3 +41,4 @@
 | 2026-11-27 | 배치 모드 CI는 OnGUI를 그리지 않으므로 `OnGui_DrawsTheBookWithBookPanelDraw`의 Inconclusive는 실패가 아니라 미검증으로 본다. "실제 화면에서 HUD·버튼·책·대화상자가 오류 없이 그려진다"는 사용자 플레이테스트 항목으로 넘긴다 | 리뷰 ORIGAMI-014 W-1, 대안 없음 | Orchestrator |
 | 2026-11-28 | **사용자 요청**: 3D 맵·캐릭터를 무료 에셋으로 교체해 그럴듯하게. 결정: CC0(출처 표기 의무 없음, 재배포 자유) 에셋만 사용, 한 가지 일관된 "아늑한 로우폴리" 스타일, 내장 렌더 파이프라인 유지, 저장소 추가 용량 30MB 이하, 출처는 Art/CREDITS.md에 기록. 게임 규칙·충돌 상자는 그대로(모델을 Core 상자 크기에 맞춤) | 라이선스 위험 최소화, 에디터 없이 CI로 검증 가능 | 사용자 + Orchestrator |
 | 2026-11-28 | 작업 순서: ORIGAMI-017(파이프라인+CI 검증 샘플) → 018(에셋 선정·가져오기) → 019(화면 적용). 에셋 사이트 중 kenney.nl·github.com 직접 접근은 차단됨, itch.io·opengameart·polyhaven·ambientcg·jsdelivr는 접근 가능 | 네트워크 확인 결과 | Orchestrator |
+| 2026-11-28 | Git LFS를 쓰지 않는다: 아트 바이너리(fbx/obj/png/jpg/tga 등)는 일반 git으로 저장. `.gitattributes`의 LFS 규칙 제거, 기존 LFS 샘플 3개는 일반 파일로 다시 커밋. 대신 파일당 5MB, 게임당 아트 30MB 예산 유지 | 리뷰 ORIGAMI-017: CI 실행마다 전체 LFS 다운로드 → 무료 대역폭 초과 위험, 수동 `git lfs push` 단계 제거 | Orchestrator |

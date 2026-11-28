@@ -1,0 +1,32 @@
+{
+  "acceptance_criteria": [
+    "한 가지 일관된 스타일(아늑한 로우폴리)의 CC0 에셋으로: 방(바닥·벽·창·문), 테이블·의자, 책장, 판매대, 침대, 조명/소품 몇 개, 사람 캐릭터 1명(대기·걷기 애니메이션, 가능하면 앉기)",
+    "DATA_STRUCTURE의 가구 상자 크기·위치(Core RoomLayout)에 맞도록 각 모델의 목표 크기·피벗을 표로 정리(코드에서 맞출 배율 포함)",
+    "Art/CREDITS.md: 에셋마다 이름·제작자·출처 URL·라이선스(CC0)·받은 날짜, 원본 압축 파일은 저장소에 넣지 않음. 전체 추가 용량 30MB 이하",
+    "ORIGAMI-017 파이프라인 규칙 준수(.meta, 폴더 규칙, Resources 경로), check_meta OK, Unity CI 컴파일·EditMode·PlayMode 통과(기존 테스트 유지)"
+  ],
+  "agent": "content-designer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-017"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Art/",
+    "Games/Origami/Unity/Assets/Game/Resources/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-018",
+  "title": "공방 3D 에셋 선정·가져오기 (방·가구·캐릭터, CC0)",
+  "verification": [
+    "review",
+    "unity-compile",
+    "unity-editmode",
+    "unity-playmode"
+  ]
+}

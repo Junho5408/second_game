@@ -1,0 +1,36 @@
+{
+  "acceptance_criteria": [
+    "WorkshopView: 코드로 만든 상자 가구를 ORIGAMI-018 모델로 교체(위치·크기는 Core RoomLayout과 일치, 충돌·상호작용 동작 변화 없음), 모델을 못 불러오면 기존 코드 메시로 대체",
+    "CharacterView: 캐릭터 모델 + 대기/걷기 애니메이션(이동 속도에 따라 전환), 이동 방향으로 회전; 앉기 애니메이션이 있으면 테이블에서 사용",
+    "조명·분위기: 방향광+주변광/그림자 설정으로 아늑한 실내 느낌(내장 렌더 파이프라인, 새 패키지 없음), 접기 테이블 종이가 잘 보일 것",
+    "기존 PlayMode 테스트(Workshop·FoldTable·Book) 모두 유지·통과, 모델 로드·애니메이션 전환 테스트 추가(프레임 타이밍 비의존)",
+    "Unity CI 컴파일·EditMode·PlayMode·Windows 빌드 통과"
+  ],
+  "agent": "developer",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [
+    "ORIGAMI-018"
+  ],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Unity/Assets/Game/Scripts/Gameplay/",
+    "Games/Origami/Unity/Assets/Game/Scripts/Systems/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Workshop/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "BACKLOG",
+  "task_id": "ORIGAMI-019",
+  "title": "공방 화면에 3D 에셋 적용 (모델 교체·캐릭터 애니메이션·조명)",
+  "verification": [
+    "review",
+    "core-tests",
+    "unity-compile",
+    "unity-editmode",
+    "unity-playmode",
+    "unity-build"
+  ]
+}

@@ -39,3 +39,5 @@
 | 2026-11-27 | 대화상자 문구(명세에 없는 부분): 일시정지 "일시정지"/"Esc = 계속, Enter = 새로 시작", 새 게임 확인 "새로 시작할까요?" 예/아니오, 잠자기 확인 제목 "잠자기 확인", 정산 버튼 "다음 날"(끝나면 "결과 보기"), 결과 "새로 시작", 판매대·책장 "닫기" — Runtime WorkshopTexts | ORIGAMI-014 구현, 가장 짧은 문구 | Orchestrator |
 | 2026-11-27 | 잘못된 끌기(접기 실패)를 놓으면 FoldTexts.ErrorMessage를 2초 알림으로 표시. 걷는 중에는 포인터 입력을 접기 테이블에 넘기지 않음 | ORIGAMI-014 구현 | Orchestrator |
 | 2026-11-27 | 배치 모드 CI는 OnGUI를 그리지 않으므로 `OnGui_DrawsTheBookWithBookPanelDraw`의 Inconclusive는 실패가 아니라 미검증으로 본다. "실제 화면에서 HUD·버튼·책·대화상자가 오류 없이 그려진다"는 사용자 플레이테스트 항목으로 넘긴다 | 리뷰 ORIGAMI-014 W-1, 대안 없음 | Orchestrator |
+| 2026-11-28 | **사용자 요청**: 3D 맵·캐릭터를 무료 에셋으로 교체해 그럴듯하게. 결정: CC0(출처 표기 의무 없음, 재배포 자유) 에셋만 사용, 한 가지 일관된 "아늑한 로우폴리" 스타일, 내장 렌더 파이프라인 유지, 저장소 추가 용량 30MB 이하, 출처는 Art/CREDITS.md에 기록. 게임 규칙·충돌 상자는 그대로(모델을 Core 상자 크기에 맞춤) | 라이선스 위험 최소화, 에디터 없이 CI로 검증 가능 | 사용자 + Orchestrator |
+| 2026-11-28 | 작업 순서: ORIGAMI-017(파이프라인+CI 검증 샘플) → 018(에셋 선정·가져오기) → 019(화면 적용). 에셋 사이트 중 kenney.nl·github.com 직접 접근은 차단됨, itch.io·opengameart·polyhaven·ambientcg·jsdelivr는 접근 가능 | 네트워크 확인 결과 | Orchestrator |

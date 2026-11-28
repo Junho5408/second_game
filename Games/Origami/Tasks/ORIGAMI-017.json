@@ -1,0 +1,37 @@
+{
+  "acceptance_criteria": [
+    "형식 결정: Unity 기본 가져오기로 되는 형식(FBX/OBJ + PNG) 우선, 새 패키지(glTFast 등)는 꼭 필요할 때만 근거와 함께. 렌더 파이프라인은 현재(내장) 유지",
+    "gen_meta.py: .fbx/.obj → ModelImporter, .png/.jpg/.tga → TextureImporter 메타 생성(또는 Unity가 기본값으로 채우는 최소 메타), studio/tests 테스트 추가, pytest 통과",
+    "Editor/ AssetPostprocessor로 가져오기 설정을 코드로 고정(크기 배율, 재질 추출/셰이더, 애니메이션 방식 — AnimatorController 없이 런타임에 재생 가능한 방법: Legacy Animation 또는 Playables), 빌드에 쓰는 셰이더가 빠지지 않게 처리",
+    "런타임 로드 방식(Resources 경로 규칙 등)과 라이선스 규칙(CC0만, Art/CREDITS.md에 출처·라이선스 기록), 저장소 크기 예산을 ARCHITECTURE/CODING_CONVENTION에 기록",
+    "검증용 샘플: CC0 정적 모델 1개 + 애니메이션 있는 CC0 캐릭터 1개를 _PipelineSample에 넣고, PlayMode 테스트로 Resources에서 로드·메시/재질 존재·애니메이션 클립 재생(시간 진행 시 본 위치 변화)을 확인. Unity CI(unity (Origami)) 컴파일·PlayMode·Windows 빌드 통과"
+  ],
+  "agent": "architect",
+  "base_commit": null,
+  "deliverables": [],
+  "dependencies": [],
+  "description": "",
+  "file_scope": [
+    "Games/Origami/Docs/tech/",
+    "Games/Origami/Unity/Assets/Game/Editor/",
+    "studio/scripts/gen_meta.py",
+    "studio/scripts/meta_common.py",
+    "studio/tests/test_meta.py",
+    "Games/Origami/Unity/Assets/Game/Art/_PipelineSample/",
+    "Games/Origami/Unity/Assets/Game/Resources/_PipelineSample/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/AssetPipeline/"
+  ],
+  "notes": [],
+  "priority": "high",
+  "result": {},
+  "retry_count": 0,
+  "status": "ASSIGNED",
+  "task_id": "ORIGAMI-017",
+  "title": "3D 에셋 파이프라인 (외부 모델·텍스처·애니메이션 가져오기, 에디터 없이)",
+  "verification": [
+    "review",
+    "unity-compile",
+    "unity-playmode",
+    "unity-build"
+  ]
+}

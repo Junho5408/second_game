@@ -16,11 +16,16 @@
     "Games/Origami/Unity/Assets/Game/Art/",
     "Games/Origami/Unity/Assets/Game/Resources/"
   ],
-  "notes": [],
+  "notes": [
+    "Sets Workshop(18 Kenney), Characters(Crafter), Surfaces(2 tex); table in Art/ASSETS.md; Window.fbx hand-extracted from wallWindow - check CI import first"
+  ],
   "priority": "high",
-  "result": {},
+  "result": {
+    "art_added_bytes": "2145755",
+    "art_total_bytes": "3803936"
+  },
   "retry_count": 0,
-  "status": "IN_PROGRESS",
+  "status": "REVIEW",
   "task_id": "ORIGAMI-018",
   "title": "공방 3D 에셋 선정·가져오기 (방·가구·캐릭터, CC0)",
   "verification": [

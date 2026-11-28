@@ -27,15 +27,16 @@
   ],
   "notes": [
     "Unity-side only; local check: dotnet stub harness compiles all Runtime + PlayMode Workshop/FoldTable/AssetPipeline tests (101/108 pass on stubs; 7 need real assets). Unity CI pending.",
-    "review: CHANGES_REQUESTED. F-1 Crafter fitted from SMR bounds (x100 vs skeleton) -> drawn ~1.6 cm; CI run 46095821852 PlayMode 1 failed, build skipped. See Reports/review/ORIGAMI-019.md"
+    "review: CHANGES_REQUESTED. F-1 Crafter fitted from SMR bounds (x100 vs skeleton) -> drawn ~1.6 cm; CI run 46095821852 PlayMode 1 failed, build skipped. See Reports/review/ORIGAMI-019.md",
+    "fix pass 1: F-1 캐릭터 크기(스키닝 경계), 테스트 강화"
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
     "review": "fail"
   },
-  "retry_count": 0,
-  "status": "FIX_REQUIRED",
+  "retry_count": 1,
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-019",
   "title": "공방 화면에 3D 에셋 적용 (모델 교체·캐릭터 애니메이션·조명)",
   "verification": [

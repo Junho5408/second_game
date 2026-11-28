@@ -42,3 +42,6 @@
 | 2026-11-28 | **사용자 요청**: 3D 맵·캐릭터를 무료 에셋으로 교체해 그럴듯하게. 결정: CC0(출처 표기 의무 없음, 재배포 자유) 에셋만 사용, 한 가지 일관된 "아늑한 로우폴리" 스타일, 내장 렌더 파이프라인 유지, 저장소 추가 용량 30MB 이하, 출처는 Art/CREDITS.md에 기록. 게임 규칙·충돌 상자는 그대로(모델을 Core 상자 크기에 맞춤) | 라이선스 위험 최소화, 에디터 없이 CI로 검증 가능 | 사용자 + Orchestrator |
 | 2026-11-28 | 작업 순서: ORIGAMI-017(파이프라인+CI 검증 샘플) → 018(에셋 선정·가져오기) → 019(화면 적용). 에셋 사이트 중 kenney.nl·github.com 직접 접근은 차단됨, itch.io·opengameart·polyhaven·ambientcg·jsdelivr는 접근 가능 | 네트워크 확인 결과 | Orchestrator |
 | 2026-11-28 | Git LFS를 쓰지 않는다: 아트 바이너리(fbx/obj/png/jpg/tga 등)는 일반 git으로 저장. `.gitattributes`의 LFS 규칙 제거, 기존 LFS 샘플 3개는 일반 파일로 다시 커밋. 대신 파일당 5MB, 게임당 아트 30MB 예산 유지 | 리뷰 ORIGAMI-017: CI 실행마다 전체 LFS 다운로드 → 무료 대역폭 초과 위험, 수동 `git lfs push` 단계 제거 | Orchestrator |
+| 2026-11-28 | 모델 맞춤 배율: Core 상자를 대신하는 가구(테이블·의자·책장·판매대·침대)는 작업 높이(테이블 윗면 0.75, 판매대 1.0)를 지키기 위해 축별 배율 허용, 단 축별 편차 ±40% 이내(넘으면 균등 배율 + 위치 보정). 소품·휴지통·문·창문·캐릭터는 균등 배율. ARCHITECTURE §14.7은 다음 문서 정리 때 갱신 | 리뷰 ORIGAMI-018 W-1 | Orchestrator |
+| 2026-11-28 | 바닥·벽은 기본 단색(가구와 같은 평면 색 스타일). ambientCG 사진 질감은 쓰지 않거나 강하게 색을 입혀 쓰고, 플레이테스트에서 최종 결정 | 리뷰 ORIGAMI-018 W-2, 스타일 통일 | Orchestrator |
+| 2026-11-28 | `_PipelineSample/CasualMale.fbx`(Crafter와 동일 1.6MB)는 019에서 삭제하고 파이프라인 테스트는 Characters/Crafter를 쓰게 바꾼다(빌드 중복 제거) | 리뷰 ORIGAMI-018 | Orchestrator |

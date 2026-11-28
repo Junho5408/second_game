@@ -4,7 +4,12 @@
     "CharacterView: 캐릭터 모델 + 대기/걷기 애니메이션(이동 속도에 따라 전환), 이동 방향으로 회전; 앉기 애니메이션이 있으면 테이블에서 사용",
     "조명·분위기: 방향광+주변광/그림자 설정으로 아늑한 실내 느낌(내장 렌더 파이프라인, 새 패키지 없음), 접기 테이블 종이가 잘 보일 것",
     "기존 PlayMode 테스트(Workshop·FoldTable·Book) 모두 유지·통과, 모델 로드·애니메이션 전환 테스트 추가(프레임 타이밍 비의존)",
-    "Unity CI 컴파일·EditMode·PlayMode·Windows 빌드 통과"
+    "Unity CI 컴파일·EditMode·PlayMode·Windows 빌드 통과",
+    "Art/ASSETS.md의 배치·맞춤 정보를 따르고, DECISIONS 2026-11-28 배율 규칙(가구 축별 ±40%, 그 외 균등)을 지킴. 캐릭터 앞 방향·키는 실행 시 Renderer.bounds로 재서 맞춤",
+    "문(2.08m)과 낮은 남쪽 벽(0.5m), 앉기 끝 자세와 의자 좌석(0.48m) 정렬, 창문 유리 색(MaterialPropertyBlock)을 처리하고 결정을 Gameplay README에 기록",
+    "바닥·벽은 기본 단색(DECISIONS 2026-11-28)",
+    "PlayMode 테스트: ASSETS.md의 Resource 키 21개가 모두 로드되고 Crafter에 Idle/Walk/SitDown/StandUp 클립이 있음(QA 18 권고)",
+    "_PipelineSample/CasualMale.fbx 삭제 후 AssetPipeline 테스트는 Characters/Crafter 사용(다른 샘플 Chair/PaperSwatch는 유지 가능)"
   ],
   "agent": "developer",
   "base_commit": null,
@@ -16,7 +21,9 @@
   "file_scope": [
     "Games/Origami/Unity/Assets/Game/Scripts/Gameplay/",
     "Games/Origami/Unity/Assets/Game/Scripts/Systems/",
-    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Workshop/"
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/Workshop/",
+    "Games/Origami/Unity/Assets/Game/Tests/PlayMode/AssetPipeline/",
+    "Games/Origami/Unity/Assets/Game/Art/_PipelineSample/"
   ],
   "notes": [],
   "priority": "high",

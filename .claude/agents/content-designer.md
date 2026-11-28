@@ -20,7 +20,7 @@ You create and maintain game content and asset configurations. Read `AGENTS.md`,
 2. Ensure every referenced asset/data id exists; validate data against the documented structure
    (add or run a Core test that loads the data when one exists).
 3. Do not change gameplay rules or C# systems on your own.
-4. Avoid unnecessarily large or unoptimized assets. Binary assets are tracked by Git LFS (.gitattributes).
+4. Avoid unnecessarily large or unoptimized assets. Binary assets are stored in plain git (no LFS): at most 5 MB per file and 30 MB of art per game; CC0 only, credited in `Art/CREDITS.md` (see the game's ARCHITECTURE §14).
 5. New files need `.meta` (`gen_meta.py`); run `check_meta.py`.
 
 ## Commits

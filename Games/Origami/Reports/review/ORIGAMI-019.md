@@ -73,3 +73,72 @@ The existing suites still pass in CI: Workshop (Mode, Movement, Screens, Smoke),
 
 ## Required for re-review
 F-1 fixed and the tests hardened. Then a green `unity` run containing `unity (Origami)`: compile, EditMode, PlayMode with 0 failures, and the Windows build with its artifact size recorded.
+
+## Re-review (fix pass 1)
+
+- Reviewer: code-reviewer, 2026-11-28
+- Fix commit `5aab520` (+ `ddcf6d0` status), head `ddcf6d0`
+- **Result: APPROVED_WITH_WARNINGS**: F-1 is fixed and verified in real Unity. W-1 (doc task) and W-2 (glass playtest) stay open. They are non-blocking.
+
+### Verification evidence
+
+| Command / source | Result |
+|---|---|
+| `python3 studio/scripts/check_scope.py Origami ORIGAMI-019` | `OK` |
+| `bash studio/scripts/verify_core.sh Origami` | PASS, 735/735 |
+| `python3 studio/scripts/check_meta.py Games/Origami/Unity` | `OK` |
+| CI `unity` run 46096898759 (push, head `ddcf6d0`, job `unity (Origami)` 140830250495) | **success**. Compile OK, 0 `error CS`/`warning CS` lines in the job log. EditMode 735/735 passed. PlayMode 147 tests: 146 passed, 0 failed, 1 inconclusive. The inconclusive one is the known `WorkshopSmokeTests.OnGui_DrawsTheBookWithBookPanelDraw` ("OnGUI was not called"). The Windows build reports `Build succeeded` |
+| Build artifact `Origami-windows-build` | 34,885,393 B zip, against 35,132,574 B for 018 (run 46093130343): **−247,181 B** compressed. In the Unity build report, the uncompressed size went from 88.9 MB to 88.0 MB: Meshes 1.5 MB → 891.2 kB and Animations 586.7 kB → 293.4 kB. That is the removed duplicate CasualMale. The uncompressed saving is ≈ −0.9 MB of processed assets, not the −1.6 MB of the raw FBX file. This is consistent, and W-3 is closed |
+| Evidence files | `/tmp/claude-0/-home-user-second-game/636884ad-8c21-5cae-9861-9592d708d5ff/scratchpad/ci5/` (`art/Origami-test-results/*`, `job.log`, `artifacts.json`) |
+
+### F-1: measured in CI (`WorkshopArtTests` log)
+
+`Crafter native height 3.325 (mesh), head_end 2.757, scale 0.48119, front yaw 0 (measured True), walk clip ground speed 0.84 m/s, idle hips (0.000, 0.431, 0.025), sit hips (0.000, 0.274, -0.202), sit offset (0.000, 0.306, 0.152)`
+`seated hips (2.500, 0.580, 0.750)`
+
+| Check | Value | Verdict |
+|---|---|---|
+| Scale | 0.481. The test requires 0.3–0.7 | ok, matches ASSETS.md (≈ 0.49) |
+| Standing Head_end | 2.757 × 0.481 ≈ **1.33 m**. The test requires 1.1–1.6; the top of the hair is at 1.6 | ok |
+| Height source / mesh-to-head ratio | `mesh`, 3.325 / 2.757 = 1.21. The range is 1.0–1.5, so the head-bone fallback did not trigger | ok |
+| Idle hips | 0.431 m, 27 % of the height | plausible for the big-head chibi proportions; see below |
+| Walk ground speed | **0.84 m/s**, measured. It is not the 1.5 default, and the test asserts it differs from the default | ok |
+| Seated hips | y 0.580 = seat 0.48 + `HipAboveSeat` 0.1. x 2.5, z 0.75 = chair centre − `SeatBack` | ok |
+| Sit offset | (0, +0.306, +0.152). \|y\| ≤ 0.35 and the horizontal 0.152 ≤ 0.3, so the limits are not hit | ok |
+| Toes-east assert | it now runs past the head assert, and the test passed | ok |
+| `updateWhenOffscreen` | asserted true for every SMR | ok |
+
+The `Lighting_…PaperOutsideTheSeatedShadow` test now passes with a real-size seated character, so it is no longer passing trivially.
+
+### Code review of the fix
+
+- **`ModelFit.TryWorldBounds`, skinned branch** (`sharedMesh.bounds` × `smr.transform.localToWorldMatrix`):
+  - This is correct for the bind pose. Unity's importer builds `bindposes[i] = bone.worldToLocal × smr.localToWorld`, so with the bones at rest the skinned vertex is `smr.localToWorld × v`.
+  - Rotation or scale on the bones themselves therefore does not enter the measurement.
+  - Rotation or scale on the SMR node is in the matrix. `TransformBounds` takes all 8 corners, so a rotated node gives a conservative AABB, which is fine.
+  - Limitation: it measures the bind pose, not the current animated pose, and it ignores blend shapes. For a standing height this is close enough, and it is backed by the Head_end cross-check, which is the right safety net. The CI ratio of 1.21 shows that both agree.
+  - Furniture has no SMRs, so it is unaffected. The furniture fit tests still pass.
+- **`CharacterView.CheckHeightAgainstHead`:**
+  - It runs after `Pose(Idle, 0)` and rescales the wrapper about its origin. The origin is anchored at the feet, so the feet stay put.
+  - It then recomputes the front, stride and seat measurements, in order and after the rescale. This is correct.
+  - Minor: the cross-check only uses `Head_end`. If a model has only `Head`, the check is silently skipped, although `_head` falls back to `Head` for the test/shadow line. This is acceptable for the single Crafter model and needs no action.
+- **Constants:**
+  - `MaxSitLift/Drop` 0.35 and `MaxSitShift` 0.3: the measured correction of 0.306 / 0.152 is inside these limits with a small margin. If a future clip needs more, the correction is clamped and the pose is used as is, as documented in the README.
+  - `HeadEndToTop` 1.19 matches the 1.21 measured in CI.
+  - `MinTopToHead/MaxTopToHead` 1.0–1.5 is a reasonable plausibility band.
+- **Test note (minor, no action):** the `NativeHeight / HeadNativeHeight` in-range assert always holds, because the fallback forces a ratio of 1.19. The real guards against a degenerate scale are the asserts on the scale, Head_end, hips, ground speed and sit offset, and these are sufficient.
+- **W-4:** `CharacterClips.WalkLength` replaces the direct `anim[ClipWalk]`, and `RenderSettings` is written only when a value differs. Resolved. The `ambientIntensity = 1` write was dropped, which keeps the project default of 1, so there is no behaviour change.
+
+### Developer's notes
+
+- **Idle hips 0.3–1.0 m:** the justification holds. The Crafter is a stylised big-head model: the hips are at 0.90 of 3.33 units in the FBX bind pose, which is 27 %. My earlier suggested range of [0.6, 1.0] assumed realistic proportions. The measured 0.431 m fits the model, and a lower bound of 0.3 still rejects the degenerate 0.004 case.
+- **Feet hanging under the table:**
+  - This is acceptable. The hips sit correctly on the 0.48 m seat. With short legs (the SitDown end pose has the hips 0.27 m above the feet at scale), the feet float ≈ 0.2 m above the floor under the table.
+  - This is hidden in the seated view and only visible from the walk camera's angle while seated. It is already on the README playtest list ("앉은 자세가 의자와 맞는지").
+  - **W-5 (playtest):** if it is visible in play, a later art task could lower the seat for the character or add a footrest. No code change is needed now.
+
+### Open (non-blocking)
+
+- **W-1:** INTERFACE_CONTRACTS C-193/C-195 and ARCHITECTURE §14.2/§14.7 still need an architect doc task.
+- **W-2:** glass transparency, playtest.
+- **W-5:** floating feet while seated, playtest.

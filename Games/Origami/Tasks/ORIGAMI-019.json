@@ -29,15 +29,16 @@
     "Unity-side only; local check: dotnet stub harness compiles all Runtime + PlayMode Workshop/FoldTable/AssetPipeline tests (101/108 pass on stubs; 7 need real assets). Unity CI pending.",
     "review: CHANGES_REQUESTED. F-1 Crafter fitted from SMR bounds (x100 vs skeleton) -> drawn ~1.6 cm; CI run 46095821852 PlayMode 1 failed, build skipped. See Reports/review/ORIGAMI-019.md",
     "fix pass 1: F-1 캐릭터 크기(스키닝 경계), 테스트 강화",
-    "Fix 1 (F-1): skinned bounds from sharedMesh.bounds x transform + Head_end cross-check; tests hardened. Expected from FBX curves: scale ~0.48, Head_end ~1.33 m, idle hips ~0.43 m, SitDown end hips 0.57 units -> sit offset ~+0.31 m. Unity CI pending."
+    "Fix 1 (F-1): skinned bounds from sharedMesh.bounds x transform + Head_end cross-check; tests hardened. Expected from FBX curves: scale ~0.48, Head_end ~1.33 m, idle hips ~0.43 m, SitDown end hips 0.57 units -> sit offset ~+0.31 m. Unity CI pending.",
+    "re-review fix 1: APPROVED_WITH_WARNINGS. CI unity run 46096898759 green (PlayMode 146/147 + known OnGUI inconclusive, build ok 34,885,393 B). Crafter scale 0.481, Head_end 1.33 m, seated hips 0.580. Open W-1 doc task, W-2/W-5 playtest."
   ],
   "priority": "high",
   "result": {
     "core-tests": "pass",
-    "review": "fail"
+    "review": "pass"
   },
   "retry_count": 1,
-  "status": "REVIEW",
+  "status": "QA",
   "task_id": "ORIGAMI-019",
   "title": "공방 화면에 3D 에셋 적용 (모델 교체·캐릭터 애니메이션·조명)",
   "verification": [

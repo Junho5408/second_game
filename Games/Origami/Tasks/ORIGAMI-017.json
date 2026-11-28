@@ -28,14 +28,19 @@
     "review: CHANGES_REQUESTED (CI run 46089349441: material smoothness rule ineffective, PaperSwatch Texture2D null, build skipped) - Reports/review/ORIGAMI-017.md",
     "fix pass 1: F-1 재질 규칙, F-2 텍스처 Resources 로드, LFS 제거(DECISIONS 2026-11-28), CI 재검증",
     "fix pass 1: F-1 material rules via OnPreprocessMaterialDescription(order 100)+OnPostprocessModel, smoothness fixed 0.15; F-2 textures forced Default/Texture2D/no sprite + diagnostics in test; W-1 rule-only assertions; LFS removed (plain blobs, lfs: false). Unity CI re-run needed.",
-    "re-review fix pass 1: APPROVED_WITH_WARNINGS (CI run 46090446550 all jobs success; AssetPipeline 7/7, Windows build OK) - Reports/review/ORIGAMI-017.md"
+    "re-review fix pass 1: APPROVED_WITH_WARNINGS (CI run 46090446550 all jobs success; AssetPipeline 7/7, Windows build OK) - Reports/review/ORIGAMI-017.md",
+    "qa: PASS (CI run 46090446550 unity (Origami): EditMode 735/735, PlayMode 109/110 + 1 known inconclusive, AssetPipeline 7/7, Windows build OK) - Reports/qa/ORIGAMI-017.md, Reports/build/ORIGAMI-017.md"
   ],
   "priority": "high",
   "result": {
-    "review": "pass"
+    "qa": "pass",
+    "review": "pass",
+    "unity-build": "pass",
+    "unity-compile": "pass",
+    "unity-playmode": "pass"
   },
   "retry_count": 1,
-  "status": "QA",
+  "status": "COMPLETED",
   "task_id": "ORIGAMI-017",
   "title": "3D 에셋 파이프라인 (외부 모델·텍스처·애니메이션 가져오기, 에디터 없이)",
   "verification": [

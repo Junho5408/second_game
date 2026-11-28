@@ -6,7 +6,7 @@
     "ORIGAMI-017 파이프라인 규칙 준수(.meta, 폴더 규칙, Resources 경로), check_meta OK, Unity CI 컴파일·EditMode·PlayMode 통과(기존 테스트 유지)"
   ],
   "agent": "content-designer",
-  "base_commit": null,
+  "base_commit": "678e264f9301cd80cb0b265162438f0a412386e1",
   "deliverables": [],
   "dependencies": [
     "ORIGAMI-017"
@@ -20,7 +20,7 @@
   "priority": "high",
   "result": {},
   "retry_count": 0,
-  "status": "ASSIGNED",
+  "status": "IN_PROGRESS",
   "task_id": "ORIGAMI-018",
   "title": "공방 3D 에셋 선정·가져오기 (방·가구·캐릭터, CC0)",
   "verification": [

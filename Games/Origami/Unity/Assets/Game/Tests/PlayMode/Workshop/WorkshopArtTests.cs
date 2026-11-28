@@ -235,16 +235,26 @@ namespace Origami.Tests.PlayMode.Workshop
             var c = _rig.App.Character;
             Assert.IsTrue(c.UsesModel, "Characters/Crafter loaded");
             Assert.IsNotNull(c.Animation);
-            TestContext.WriteLine($"Crafter native height {c.NativeHeight:F2}, scale {c.ModelScale:F5}, front yaw {c.FrontYaw} " +
+            TestContext.WriteLine($"Crafter native height {c.NativeHeight:F3} ({c.HeightSource}), head_end {c.HeadNativeHeight:F3}, scale {c.ModelScale:F5}, front yaw {c.FrontYaw} " +
                 $"(measured {c.FrontMeasured}), walk clip ground speed {c.ClipGroundSpeed:F2} m/s, idle hips {c.IdleHips.ToString("F3")}, " +
                 $"sit hips {c.SitHips.ToString("F3")}, sit offset {c.SitOffset.ToString("F3")}");
             Assert.AreEqual((float)RoomLayout.CharacterHeight, c.NativeHeight * c.ModelScale, 1e-3f);
             Assert.AreEqual(0f, Mathf.Repeat(c.FrontYaw, 90f), 1e-3f, "front snapped to 90°");
+            // Review ORIGAMI-019 F-1: a degenerate scale (0.00487 from the 100x imported localBounds) must not pass again.
+            // Crafter.fbx: mesh 3.33 units tall, Head_end 2.77, so the scale is ~0.48 and the mesh top / Head_end ratio ~1.2.
+            Assert.That(c.ModelScale, Is.InRange(0.3f, 0.7f), "scale of a ~3.3-unit model fitted to 1.6 m");
+            Assert.That(c.NativeHeight / c.HeadNativeHeight, Is.InRange(CharacterView.MinTopToHead, CharacterView.MaxTopToHead), "mesh top vs head bone");
+            // Stylised big-head proportions: the hips are at ~27 % of the height (FBX bind pose 0.90 of 3.33 units), so ~0.43 m.
+            Assert.That(c.IdleHips.y, Is.InRange(0.3f, 1.0f), "standing hips height");
+            Assert.That(c.ClipGroundSpeed, Is.InRange(0.3f, 3.0f), "walk ground speed measured from the foot travel");
+            Assert.AreNotEqual(CharacterClips.DefaultClipGroundSpeed, c.ClipGroundSpeed, "measured, not the default");
+            foreach (var smr in c.Model.GetComponentsInChildren<SkinnedMeshRenderer>())
+                Assert.IsTrue(smr.updateWhenOffscreen, "bounds recomputed from the pose (imported localBounds are 100x)");
 
             _rig.Idle(0.1f);
             var head = c.HeadBoneTransform;
             Assert.IsNotNull(head, "Head_end / Head bone");
-            Assert.That(head.position.y, Is.InRange(1.3f, 1.75f), "standing head height of a 1.6 m character");
+            Assert.That(head.position.y, Is.InRange(1.1f, 1.6f), "standing Head_end of a 1.6 m character (top of the hair 1.6)");
 
             // Facing: the character looks east at the start (yaw 90); the toes point east.
             var foot = FindBone(c.Model.transform, "Foot.L");
@@ -322,6 +332,7 @@ namespace Origami.Tests.PlayMode.Workshop
             var hips = c.HipsBoneTransform;
             Assert.IsNotNull(hips, "Hips bone");
             TestContext.WriteLine($"seated hips {hips.position.ToString("F3")}, sit offset {c.SitOffset.ToString("F3")}, raw sit hips {c.SitHips.ToString("F3")}");
+            Assert.That(Mathf.Abs(c.SitOffset.y), Is.LessThanOrEqualTo(0.35f), "the sit correction is an adjustment, not a lift");
             Assert.AreEqual(WorkshopView.ChairSeatHeight + CharacterView.HipAboveSeat, hips.position.y, 0.03f, "hips rest on the 0.48 m seat");
             var chair = RoomLayout.ChairPosition;
             Assert.AreEqual((float)chair.X, hips.position.x, 0.05f);

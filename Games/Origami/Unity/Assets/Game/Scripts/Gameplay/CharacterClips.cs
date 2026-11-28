@@ -60,6 +60,9 @@ namespace Origami.Runtime.Gameplay
 
         public bool HasSit => _sit != null;
 
+        /// <summary>Length (s) of the Walk clip found by <see cref="Find"/> (0 without one).</summary>
+        public float WalkLength => _walk != null ? _walk.length : 0f;
+
         /// <summary>Ground speed (m/s) of the Walk clip at rate 1 (measured by <see cref="CharacterView"/>, default 1.5).</summary>
         public float ClipGroundSpeed { get; set; }
 

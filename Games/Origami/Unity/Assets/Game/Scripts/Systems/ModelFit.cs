@@ -191,8 +191,11 @@ namespace Origami.Runtime.Systems
         /// <summary>
         /// Combined world bounds of every renderer under <paramref name="root"/> (inactive children included). Mesh renderers
         /// are measured from <c>MeshFilter.sharedMesh.bounds</c> and the current transform matrix (the same AABB Unity
-        /// computes, without depending on when the renderer refreshes its bounds); skinned meshes use <c>Renderer.bounds</c>.
-        /// False if there is no renderer with a mesh.
+        /// computes, without depending on when the renderer refreshes its bounds). Skinned meshes are measured the same way,
+        /// from <c>sharedMesh.bounds</c> (bind-pose vertices) and the SkinnedMeshRenderer transform — the bind pose by definition
+        /// maps mesh space through that transform. <c>SkinnedMeshRenderer.bounds</c> is NOT used: it comes from the imported
+        /// <c>localBounds</c>, which for the Quaternius FBX (×100 Lcl Scaling, cm file units) are 100× the drawn character
+        /// (review ORIGAMI-019 F-1: 328.7 units vs a 3.3-unit mesh). False if there is no renderer with a mesh.
         /// </summary>
         public static bool TryWorldBounds(GameObject root, out Bounds bounds)
         {
@@ -211,7 +214,7 @@ namespace Origami.Runtime.Systems
                 else if (r is SkinnedMeshRenderer smr)
                 {
                     if (smr.sharedMesh == null) continue;
-                    rb = r.bounds;
+                    rb = TransformBounds(smr.sharedMesh.bounds, smr.transform.localToWorldMatrix);
                 }
                 else
                 {

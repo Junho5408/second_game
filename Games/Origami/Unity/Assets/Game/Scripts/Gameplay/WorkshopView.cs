@@ -289,11 +289,11 @@ namespace Origami.Runtime.Gameplay
             sun.shadowBias = 0.04f;
             sun.shadowNormalBias = 0.4f;
             Sun = sun;
-            RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = AmbientSky;
-            RenderSettings.ambientEquatorColor = AmbientEquator;
-            RenderSettings.ambientGroundColor = AmbientGround;
-            RenderSettings.ambientIntensity = 1f;
+            // Global state: only written when it differs (review ORIGAMI-019 W-4; several views in tests share it).
+            if (RenderSettings.ambientMode != AmbientMode.Trilight) RenderSettings.ambientMode = AmbientMode.Trilight;
+            if (RenderSettings.ambientSkyColor != AmbientSky) RenderSettings.ambientSkyColor = AmbientSky;
+            if (RenderSettings.ambientEquatorColor != AmbientEquator) RenderSettings.ambientEquatorColor = AmbientEquator;
+            if (RenderSettings.ambientGroundColor != AmbientGround) RenderSettings.ambientGroundColor = AmbientGround;
         }
 
         // ---------------------------------------------------------------- furniture models

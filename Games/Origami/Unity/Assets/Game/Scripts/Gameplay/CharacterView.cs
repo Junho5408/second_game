@@ -28,7 +28,13 @@ namespace Origami.Runtime.Gameplay
         internal const float HipAboveSeat = 0.1f, SeatBack = 0.05f;
 
         /// <summary>Limits of the sit correction (a pose that needs more is used as is, documented in the README).</summary>
-        private const float MaxSitLift = 0.8f, MaxSitDrop = 0.6f, MaxSitShift = 0.45f;
+        private const float MaxSitLift = 0.35f, MaxSitDrop = 0.35f, MaxSitShift = 0.3f;
+
+        /// <summary>
+        /// Plausible range of (mesh top ÷ Head_end height) in the Idle pose. Outside it the mesh measurement is not trusted and
+        /// the height comes from the head bone × <see cref="HeadEndToTop"/> (Crafter.fbx: mesh top 3.307 / Head_end 2.77 units).
+        /// </summary>
+        internal const float MinTopToHead = 1.0f, MaxTopToHead = 1.5f, HeadEndToTop = 1.19f;
 
         /// <summary>While seated, the model only casts shadows when the camera is closer than this to the hips–head line.</summary>
         internal const float CameraClearance = 0.3f;
@@ -86,6 +92,11 @@ namespace Origami.Runtime.Gameplay
         internal float NativeHeight { get; private set; }
 
         internal float ModelScale { get; private set; }
+
+        /// <summary>Head_end height in the Idle pose at scale 1 (file units), and where the height came from ("mesh" / "head bone").</summary>
+        internal float HeadNativeHeight { get; private set; }
+
+        internal string HeightSource { get; private set; }
 
         /// <summary>Correction (view-local, metres) applied to the model at the end of SitDown so the hips rest on the seat.</summary>
         internal Vector3 SitOffset { get; private set; }
@@ -197,11 +208,13 @@ namespace Origami.Runtime.Gameplay
             _model = model;
             ModelScale = model.transform.localScale.y;
             NativeHeight = ModelScale > 0f ? (float)RoomLayout.CharacterHeight / ModelScale : 0f;
+            HeightSource = "mesh";
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 r.shadowCastingMode = ShadowCastingMode.On;
                 r.receiveShadows = true;
-                if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = false;
+                // The imported localBounds are 100x too large (F-1); one character, so let Unity recompute them from the pose.
+                if (r is SkinnedMeshRenderer smr) smr.updateWhenOffscreen = true;
                 _renderers.Add(r);
             }
             _hips = FindBone(model.transform, HipsBone);
@@ -210,6 +223,7 @@ namespace Origami.Runtime.Gameplay
 
             _clips = CharacterClips.Create(model.GetComponentInChildren<Animation>(true));
             if (_clips != null) _clips.Pose(ArtKeys.ClipIdle, 0f);
+            CheckHeightAgainstHead(model.transform);
 
             MeasureFront(model.transform);
             if (_clips != null)
@@ -219,6 +233,24 @@ namespace Origami.Runtime.Gameplay
                 _clips.Pose(ArtKeys.ClipIdle, 0f);
             }
             return true;
+        }
+
+        /// <summary>
+        /// Cross-check of the bounds-based height with the posed skeleton (Idle t = 0): the mesh top must be 1.0–1.5× the
+        /// Head_end height. Otherwise (degenerate bounds) the native height = Head_end height × <see cref="HeadEndToTop"/>.
+        /// </summary>
+        private void CheckHeightAgainstHead(Transform model)
+        {
+            var head = FindBone(model, HeadEndBone);
+            if (head == null || !(ModelScale > 0f)) return;
+            HeadNativeHeight = transform.InverseTransformPoint(head.position).y / ModelScale;
+            if (!(HeadNativeHeight > 1e-4f)) return;
+            float ratio = NativeHeight / HeadNativeHeight;
+            if (ratio >= MinTopToHead && ratio <= MaxTopToHead) return;
+            NativeHeight = HeadNativeHeight * HeadEndToTop;
+            ModelScale = (float)RoomLayout.CharacterHeight / NativeHeight;
+            model.localScale = Vector3.one * ModelScale;
+            HeightSource = "head bone";
         }
 
         /// <summary>Front = mean foot → toe direction of the current (Idle) pose, in the model's frame, snapped to 90°.</summary>
@@ -257,9 +289,7 @@ namespace Origami.Runtime.Gameplay
                 min = Mathf.Min(min, z);
                 max = Mathf.Max(max, z);
             }
-            var anim = _clips.Animation;
-            var walk = anim != null ? anim[ArtKeys.ClipWalk] : null;
-            length = walk != null ? walk.length : 0f;
+            length = _clips.WalkLength;
             float travel = max - min;
             if (length > 0f && travel > 0.05f) _clips.ClipGroundSpeed = 2f * travel / length;
         }

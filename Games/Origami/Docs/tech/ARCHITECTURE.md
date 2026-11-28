@@ -3,6 +3,7 @@
 > 담당: architect · 기준 태스크: ORIGAMI-008 (v2 기술 설계) · 이전 판: ORIGAMI-002 (v1, 방향키 접기 — **대체됨**)
 > 기준 명세: `Docs/design/` v2 (GAME_RULES R-001~R-021, FEATURE_SPECS F-001~F-013, CONTENT_SPECS, `balance_check.py`).
 > 시그니처·동작의 정본은 `INTERFACE_CONTRACTS.md`(C-1xx), 데이터 정의는 `DATA_STRUCTURE.md`(D-1xx), 규칙은 `CODING_CONVENTION.md`.
+> 외부 3D 에셋 파이프라인: §14 (ORIGAMI-017).
 > 기준 구현: 승인된 시험판 `Games/Fold3DSpike/` (Core `Folding/`, Scripts `FoldSpikeController`·`PaperMeshBuilder`·`SpikeMaterials`).
 
 ## 0. 요약
@@ -46,7 +47,7 @@
 | Gameplay | `Scripts/Gameplay/` · `Origami.Runtime.Gameplay` | `OrigamiApp`(루트, `ScreenFlow` 단독 소유, 프레임 분배), `InputFrame`/`InputReader`(레거시 Input 읽기), `WorkshopView`(방·가구·판매대 진열·쓰레기통·창문), `CharacterView`, `CameraRig`(걷기 추적·앉기 전환), `FoldHostAdapter`(`IFoldTableHost` 구현) | 014 |
 | UI | `Scripts/UI/` · `Origami.Runtime.UI` | `OrigamiGui`(유일한 `OnGUI`: HUD·버튼·안내·토스트·덮개 화면·책 패널·커서 겹 표시 호출 순서), `KoreanFont`(**v1 유지**) | 014 (`KoreanFont`는 변경 없음) |
 | Bootstrap | `Scripts/Bootstrap.cs` · `Origami.Runtime` | 카메라·`[Bootstrap]` 루트 생성 (**v1 유지, 수정 없음**) | — |
-| Editor | `Editor/StudioBuild.cs` | 빈 씬 생성·Windows 빌드 (**유지**) | — |
+| Editor | `Editor/StudioBuild.cs`, `Editor/ArtImportRules.cs` | 빈 씬 생성·Windows 빌드 (**유지**). 외부 모델·텍스처 가져오기 설정을 코드로 고정(`AssetPostprocessor`, §14) | — / 017 |
 
 ## 2. 의존 방향 (순환 없음)
 
@@ -140,7 +141,7 @@ Runtime: UI(OrigamiGui) ─▶ Gameplay(OrigamiApp) ─▶ Folding view, Book vi
 - 좌표: 방은 월드 (x, z) 미터(CONTENT §6), y 위. 종이 좌표 1 = 10cm → `FoldTable` 루트를 테이블 위 (2.5, 0.75, 1.6)에 두고 **균일 배율 0.1**, 종이 (x, y) → 로컬 (x, 겹 높이, y)(종이 +y = 앉은 사람에게서 먼 쪽 = 월드 +z).
   시험판 메시 상수(겹 간격 0.0035 등)는 종이 단위 그대로 쓰고 배율이 줄인다.
 - 카메라 근평면: 걷기 0.1, 앉음 0.01(겹 간격 0.35mm의 z-fighting 방지 — 걷기 시점 8m 거리에서 깊이 정밀도 확보). `CameraRig`가 모드 전환 때 바꾼다. Bootstrap 카메라(직교)는 `CameraRig`가 원근으로 설정한다(Bootstrap 수정 없음).
-- 렌더 파이프라인: 내장(Built-in). 머티리얼은 `Materials`(시험판 셰이더 순서, 에셋 없음). **`GameObject.CreatePrimitive`·Collider·Rigidbody·Physics 쓰지 않음** — Origami 매니페스트에는 3D physics 모듈이 없다(2D 템플릿으로 생성). 메시는 `MeshFactory`, 충돌은 Core `RoomMotion`(상자 수학), 마우스 선택은 광선–평면 수학.
+- 렌더 파이프라인: 내장(Built-in). 코드로 만드는 머티리얼은 `Materials`(시험판 셰이더 순서). 외부 모델은 모델 안에 묻힌 "Standard" 머티리얼을 그대로 쓴다(§14). **`GameObject.CreatePrimitive`·Collider·Rigidbody·Physics 쓰지 않음** — Origami 매니페스트에는 3D physics 모듈이 없다(2D 템플릿으로 생성). 메시는 `MeshFactory`, 충돌은 Core `RoomMotion`(상자 수학), 마우스 선택은 광선–평면 수학.
 - 조명: 방향광 1개(그림자 부드럽게) + 평면 주변광(시험판 값). 창문 빛은 머티리얼 색만 바꾼다(그날 쓴 종이 수 0~5).
 - 판매대 진열: `GameSnapshot.Display[i].Shape`(플레이어가 접은 상태)를 `PaperMeshBuilder`로 칸 i에 그림. 쓰레기통 종이 공 = min(실패 수, 10)개 구.
 
@@ -153,6 +154,10 @@ Runtime: UI(OrigamiGui) ─▶ Gameplay(OrigamiApp) ─▶ Folding view, Book vi
 | 내장 셰이더 "Legacy Shaders/Diffuse", "Sprites/Default" | 종이·가구·오버레이 | 기본 Always Included 목록(시험판 Windows 빌드에서 사용자 확인) |
 | `Font.CreateDynamicFontFromOSFont` | 한글 (`KoreanFont`, v1 유지) | CI로는 글리프 검증 불가 → 사용자 플레이테스트 |
 | `Texture2D`(런타임 생성) | 책 도해 (`DiagramRaster`) | 외부 이미지 없음 |
+| Unity 기본 모델·텍스처 가져오기(FBX/OBJ, PNG/JPG) + `AssetPostprocessor` | 외부 CC0 방·가구·캐릭터 (§14) | 패키지 없음. 017 샘플로 CI PlayMode 검증 |
+| 레거시 `Animation` 컴포넌트 (`com.unity.modules.animation`, 이미 있음) | 캐릭터 애니메이션 (§14.6) | AnimatorController 에셋 없음 |
+| 내장 셰이더 "Standard" | 가져온 모델의 머티리얼 | 모델 머티리얼이 참조하므로 빌드에 포함(쓰는 변형만). Always Included에 넣지 않음(§14.5) |
+| Git LFS (`.gitattributes`: `*.fbx`, `*.png`, `*.jpg` …) | 바이너리 에셋 저장 | 푸시 전에 `git lfs push` 필요(§14.8). CI 체크아웃은 `lfs: true` |
 
 **패키지·ProjectSettings 변경 없음.** 근거: 3D 물리 모듈이 필요한 기능(CreatePrimitive의 Collider, Physics.Raycast)을 쓰지 않도록 규칙으로 막았다(§7, CODING_CONVENTION).
 만약 통합 CI에서 3D physics 모듈이 꼭 필요한 문제가 드러나면, 별도 architect 작업으로 `Unity/Packages/manifest.json`에 `"com.unity.modules.physics": "1.0.0"`을 추가한다(Fold3DSpike와 같은 구성, 검증 항목 unity-compile/unity-playmode/unity-build). 지금은 제안하지 않는다.
@@ -229,6 +234,11 @@ v1은 v1 Unity 화면이 살아 있는 동안 컴파일되어야 하므로, **v1
 | A2-12 | 책 도해는 Runtime에서 `Texture2D`로 코드 래스터화(쪽·보유 상태별 캐시), 내용 데이터는 Core `BookPages` | IMGUI에서 다각형을 그릴 수단이 텍스처뿐, 도해 내용은 dotnet 검증 |
 | A2-13 | v1 Core·화면·테스트는 ORIGAMI-014(v2 화면 통합)에서 한꺼번에 지운다. `KoreanFont`, `Bootstrap`, `StudioBuild`, asmdef, `GameInfo`는 유지 | v1 화면이 v1 Core에 의존 — 대체하는 작업에서만 삭제 |
 | A2-14 | 카메라 근평면 걷기 0.1 / 앉음 0.01 | 0.35mm 겹 간격의 z-fighting 방지 |
+| A2-15 | 외부 3D 에셋은 FBX(애니메이션 포함)·OBJ(정적) + PNG/JPG만. glTF/GLB(glTFast 패키지 필요)·.blend(Blender 필요)는 쓰지 않는다. 내장 렌더 파이프라인 유지 | Unity 기본 가져오기만으로 CI에서 검증 가능, 패키지 추가 없음 (§14.1) |
+| A2-16 | `.meta`는 GUID만 가진 최소 메타(gen_meta.py), 가져오기 설정은 `Editor/ArtImportRules.cs`(`AssetPostprocessor`)가 매 가져오기마다 강제 | 에디터 없이 설정을 코드 리뷰로 관리, Unity 버전별 메타 형식에 의존하지 않음 (§14.3·14.4) |
+| A2-17 | 애니메이션은 Legacy(`Animation` 컴포넌트). 재생은 `AnimationState.speed = 0` + `time`을 `dt`로 진행 + `Animation.Sample()` | AnimatorController 에셋 불필요, A2-5(프레임 시간과 무관한 결정적 진행) 유지. Playables는 그래프 생명주기 코드가 더 많아 기각 (§14.6) |
+| A2-18 | 머티리얼은 모델 안에 묻어 두고(추출 금지) "Standard"·metallic 0·smoothness ≤ 0.2로 통일. 런타임은 모델 셰이더를 `Shader.Find`하지 않는다 | 추출된 .mat은 CI에서 새 GUID로 생겨 커밋되지 않음. 한 가지 무광 스타일 (§14.4·14.5) |
+| A2-19 | 로드 경로 = `Art/<Set>/Resources/<Set>/<Name>.<ext>` → `Resources.Load("<Set>/<Name>")`. 크기는 런타임이 렌더러 경계로 Core 상자에 맞춘다 | 세트 단위로 출처·크기·삭제 관리, 키 충돌 없음. 원본 배율이 키트마다 달라도 게임 규칙 수치(Core) 불변 (§14.2·14.7) |
 
 ## 13. 구현 작업 분해 (제안, Orchestrator 확정)
 
@@ -255,3 +265,108 @@ v1은 v1 Unity 화면이 살아 있는 동안 컴파일되어야 하므로, **v1
 - 각 작업은 자기 폴더에만 쓴다. 다른 작업의 public 표면이 바뀌어야 하면 구현하지 말고 Orchestrator에 계약 변경을 요청한다(architect가 INTERFACE_CONTRACTS 갱신).
 - 테스트 작성 주의(리뷰 W-6, QA O-1): 강아지 턱 없이(0.849/0.848) 결과는 어떤 테스트도 단언하지 않는다. F-006 AC-04의 `Unfold`는 먼저 `Fold` 1회를 한 뒤 검사한다(빈 기록의 `Unfold`는 R-007대로 거부).
 - 콘텐츠 문구 다듬기(책 설명·엔딩 문구)가 필요하면 나중에 content-designer 작업으로 `Core/Catalog/` 문자열만 배정한다(이번 분해에는 넣지 않음).
+
+## 14. 외부 3D 에셋 파이프라인 (ORIGAMI-017)
+
+목표: 아무도 Unity 에디터를 열지 않는 상태에서 CC0 모델·텍스처·애니메이션을 저장소에 넣고, CI(GameCI, Unity 6000.3.29f1)의 가져오기 결과가
+항상 같게 한다. 규칙은 `CODING_CONVENTION.md` "아트 에셋"에 요약한다. 결정 A2-15~A2-19(§12).
+
+### 14.1 형식
+
+| 종류 | 허용 형식 | 비고 |
+|---|---|---|
+| 모델(정적) | `.fbx`(바이너리·ASCII), `.obj`(+`.mtl`) | Kenney·Quaternius 키트가 FBX/OBJ를 같이 준다. FBX 우선(재질 색 포함) |
+| 모델(애니메이션) | `.fbx` 한 파일에 메시+뼈대+클립(take) | 같은 FBX 안의 클립만 쓴다(Legacy는 다른 뼈대로 옮기기(retarget) 불가) |
+| 텍스처 | `.png`(기본), `.jpg` | 1024 px 이하로 가져옴(§14.4). 손으로 줄여 넣을 때는 256~1024 |
+| 금지 | `.glb/.gltf`(glTFast 패키지 필요), `.blend`(CI에 Blender 없음), `.max/.ma/.mb` | 원본이 glTF뿐이면 다른 에셋을 고른다. 꼭 필요하면 패키지 도입은 별도 architect 작업 |
+
+렌더 파이프라인은 내장(Built-in) 그대로. 새 패키지·ProjectSettings 변경 없음.
+
+### 14.2 폴더와 Resources 키
+
+```
+Assets/Game/Art/<Set>/                       세트 하나 = 출처 하나(키트 하나). content-designer 소유
+  CREDITS.md                                 (선택) 세트별 출처 — 게임 전체 목록은 Art/CREDITS.md
+  Resources/<Set>/<Name>.fbx|.png            런타임이 읽는 파일만. 빌드에 전부 들어감
+```
+
+- 런타임 로드 키 = `"<Set>/<Name>"`(확장자 없음): `Resources.Load<GameObject>("Room/Chair")`, `Resources.Load<Texture2D>("Room/Floor")`.
+  세트 이름을 키 앞에 붙이므로 Resources 폴더가 여러 개여도 키가 겹치지 않는다. `<Set>`·`<Name>`은 PascalCase ASCII(공백·`|` 없음).
+- `Resources/` 밖(`Art/<Set>/` 바로 아래)에 둔 파일은 빌드에 안 들어간다 — 원본 라이선스 문서·미사용 원본은 저장소에 넣지 않는 것이 원칙(크기 예산), 넣더라도 `Resources/` 밖.
+- 키 문자열은 Runtime 한 곳(예: `Scripts/Systems/ArtKeys.cs`, ORIGAMI-019 developer 소유)에 상수로 둔다. 다른 코드에 리터럴 키를 쓰지 않는다.
+- 샘플: `Art/_PipelineSample/Resources/_PipelineSample/{Chair.fbx, CasualMale.fbx, PaperSwatch.png}` (017, 출처 `Art/_PipelineSample/CREDITS.md`).
+  샘플도 빌드에 들어간다(≈1.6 MB). 실제 에셋이 들어온 뒤 지울지는 ORIGAMI-019가 정한다(지우면 `Tests/PlayMode/AssetPipeline/`도 같이 — 그 전까지 이 테스트가 파이프라인 회귀 검사).
+
+### 14.3 .meta
+
+- `gen_meta.py`는 모델(`.fbx .obj .dae .3ds .dxf`)·텍스처(`.png .jpg .jpeg .tga .psd .tif .tiff .bmp .gif .exr .hdr`)·오디오(`.wav .ogg .mp3 .aif .aiff`)·글꼴(`.ttf .otf`)에
+  **GUID만 있는 최소 메타**(`fileFormatVersion: 2` + `guid:`)를 쓴다. Unity는 확장자로 가져오기 도구(ModelImporter/TextureImporter/…)를 고르고 기본값을 채운다.
+  (DefaultImporter 메타를 쓰면 모델·텍스처로 가져와지지 않는다 — 017 이전 gen_meta의 문제.)
+- CI의 Unity가 메타를 기본값으로 다시 쓰는 것은 정상이다(작업 공간 안에서만, GUID 유지, 커밋되지 않음). 설정의 정본은 메타가 아니라 `ArtImportRules`다.
+- 기존 메타는 절대 고치지 않는다. 같은 에셋을 다시 넣을 때도 기존 `.meta`를 그대로 둔다(GUID 유지).
+
+### 14.4 가져오기 설정 — `Editor/ArtImportRules.cs` (`AssetPostprocessor`, `Assets/Game/` 아래 전부)
+
+| 대상 | 설정 | 이유 |
+|---|---|---|
+| 모델 | `useFileScale = true`, `globalScale = 1` | 파일 단위 → 미터. 최종 크기는 런타임 맞춤(§14.7) |
+| 모델 | 카메라·조명·가시성 가져오지 않음, `addCollider = false`, `isReadable = false`, 메시 압축 끔 | 3D physics 모듈 없음(§7), 메모리 |
+| 모델 | `materialImportMode = ImportViaMaterialDescription`, `materialLocation = InPrefab` | 머티리얼을 모델의 하위 에셋으로 묻음. 추출하면 CI에서 새 `.mat`+새 GUID가 생기고 커밋되지 않는다 |
+| 모델 | `animationType = Legacy`, `importAnimation = true` | `Animation` 컴포넌트가 모델 루트에 붙고 클립을 바로 재생. AnimatorController 에셋 불필요 |
+| 클립 | 이름의 `"…|"` 접두사 제거(`CharacterArmature|Walk` → `Walk`). 이름이 겹치면 원래 이름 유지. `clipAnimations`를 직접 정한 모델은 건드리지 않음 | 키트마다 다른 뼈대 이름과 무관하게 `"Walk"`로 찾음 |
+| 머티리얼 (모델 가져오기에서 생긴 것) | 셰이더 "Standard"(없으면 "Legacy Shaders/Diffuse"), 색·주 텍스처 유지, `_Metallic` 0, `_Glossiness` ≤ 0.2 | 한 가지 무광 "아늑한 로우폴리" 모습 |
+| 텍스처 | Default 형식(파일 이름이 `_Normal`/`_NormalGL`/`_nrm`로 끝나면 NormalMap), sRGB, 밉맵, 최대 1024, 압축, Bilinear, Repeat | 빌드·메모리 예산, 타일링 바닥·벽 |
+
+- 규칙을 바꾸면 `ArtImportRules.Version`을 올린다(Unity가 해당 에셋을 다시 가져옴).
+- 가져오기 설정을 메타에 손으로 쓰지 않는다. 특정 에셋만 다른 설정이 필요하면 `ArtImportRules`에 경로 규칙을 추가하는 architect 작업으로 한다.
+
+### 14.5 셰이더와 빌드
+
+- 모델 머티리얼은 "Standard"를 참조한다. Resources 폴더의 모델이 빌드에 들어가므로 Standard도 **그 머티리얼이 쓰는 변형만** 들어간다.
+  Always Included Shaders에 Standard를 넣지 않는다(모든 변형을 컴파일해 CI 빌드 시간·크기가 크게 는다). ProjectSettings 변경 없음.
+- 그래서 런타임은 모델 셰이더를 `Shader.Find("Standard")`로 찾지 않는다. 색을 바꿀 때는 `MaterialPropertyBlock`(`_Color`)을 쓰고,
+  새 머티리얼이 꼭 필요하면 `new Material(renderer.sharedMaterial)`(복사, 만든 쪽이 `OnDestroy`에서 파괴).
+  코드로 만드는 종이·오버레이 머티리얼은 지금처럼 `Materials.Lit/Unlit`(Always Included인 "Legacy Shaders/Diffuse"·"Sprites/Default").
+- 셰이더 변형 자동 제거(Automatic)는 빌드 씬(빈 씬)을 기준으로 한다. **`RenderSettings.fog`를 켜지 않는다**(안개 변형이 제거되어 빌드에서만 다르게 보임). 실시간 방향광·그림자 변형은 남는다.
+
+### 14.6 애니메이션 (Legacy)
+
+- 모델 루트의 `Animation` 컴포넌트, 클립 이름은 짧은 이름(`Idle`, `Walk`, `SitDown`, `StandUp`, … — 키트의 take 이름).
+- **재생은 `OrigamiApp.ProcessFrame` 경로에서 결정적으로**(A2-5): 생성 시 `anim.playAutomatically = false; anim.Stop();`, 재생할 상태는
+  `state.enabled = true; state.weight = 1; state.speed = 0;` 그리고 `Tick(dt)`마다 `state.time += dt`(반복 클립은 `state.length`로 나머지) → `anim.Sample()`.
+  엔진이 매 프레임 같은 시간으로 평가하므로 이중 진행이 없다. 두 클립 섞기는 두 상태의 `weight`를 코드로 보간한다.
+  테스트는 `state.time`을 정해 `Sample()` 한 뒤 뼈 Transform을 읽는다(017 `AssetPipelineTests`).
+- `AnimationClip.SampleAnimation(go, t)`도 같은 결과를 준다(단순 포즈 지정용).
+- Humanoid/Generic + Animator는 쓰지 않는다(AnimatorController 에셋이 필요하고 에디터 없이 만들기 어렵다). Playables(`AnimationClipPlayable`)는 Generic 클립에서
+  가능하지만 그래프 생성·파괴 코드가 늘고 이점이 없어 기각.
+
+### 14.7 런타임 로드·크기 맞춤·소유
+
+- `var prefab = Resources.Load<GameObject>(key); var go = Object.Instantiate(prefab, parent);` — 로드한 프리팹·공유 머티리얼·메시는 절대 수정·파괴하지 않는다
+  (에디터에서는 에셋 자체가 바뀐다). 인스턴스는 만든 컴포넌트가 `OnDestroy`에서 `Destroy`.
+- 키트마다 원본 배율·원점이 다르다(예: Kenney 의자는 원점이 모서리, 크기 2×4.7×2 단위). 그래서 **런타임이 렌더러 경계로 맞춘다**:
+  단위 변환 없이 놓은 뒤 `Renderer.bounds`를 합쳐, Core 상자(`RoomLayout`)의 가로·깊이(또는 캐릭터는 키)에 맞는 균일 배율을 구하고, 바닥 가운데를 상자 바닥 가운데에 맞춘다.
+  모양 그대로의 충돌·상호작용은 계속 Core 상자 수학(A2-6) — 모델은 보이는 것만 바꾼다. 맞춤 도우미는 019(developer)가 `Scripts/Systems/`에 만든다.
+- 모델에는 Collider가 없다(`addCollider = false`). 캐릭터 방향: 키트의 앞쪽이 +z가 아니면 맞춤 도우미가 회전 보정 상수를 둔다(세트별 상수, ArtKeys 옆).
+
+### 14.8 라이선스·출처·크기·LFS
+
+- **CC0만.** 출처 페이지에서 라이선스를 확인한다(페이지의 라이선스 표시 또는 같이 받은 License.txt). CC-BY·CC-BY-SA·"무료"·라이선스 불명은 쓰지 않는다.
+- `Art/CREDITS.md`(content-designer)에 파일마다 한 줄: 저장소 파일, 원본 파일·팩 이름, 작성자, 출처 페이지 URL, 라이선스, 받은 경로(URL), 바이트 크기, 바꾼 점.
+- **예산**: 저장소에 더하는 아트 합계 ≤ 30 MB(DECISIONS 2026-11-28). 파일 하나 ≤ 5 MB, 텍스처 ≤ 1024 px, 캐릭터 FBX ≤ 3 MB 권장.
+  확인: `git lfs ls-files -s -I 'Games/Origami/Unity/Assets/Game/Art/**'`(LFS 파일별 크기) + LFS가 아닌 파일은 `git ls-files -z 'Games/Origami/Unity/Assets/Game/Art/*' | xargs -0 du -cb | tail -1`(작업 트리에 LFS 포인터만 있으면 포인터 크기로 셈).
+- 바이너리는 Git LFS(`.gitattributes`의 `*.fbx *.png *.jpg *.psd *.wav *.mp3 *.ogg`)로 저장된다. 이 작업 환경에는 LFS pre-push 훅이 없으므로
+  **Orchestrator는 `git push` 전에 `git lfs push origin <branch>`** 로 LFS 객체를 올린다(안 올리면 CI의 `lfs: true` 체크아웃이 실패). 확인: `git lfs ls-files`.
+  `.obj`·`.tga`는 LFS 대상이 아니다 → 1 MB 넘는 OBJ/TGA는 쓰지 말고 FBX/PNG로 넣는다.
+- 받는 경로(2026-11 확인): kenney.nl·github.com 직접 접근은 막힘. opengameart.org(Kenney·Quaternius 팩 다수, `sites/default/files/<zip>` 직접 받기),
+  ambientcg.com(`/get?file=<Id>_1K-JPG.zip`, API `api/v2/full_json`), polyhaven(api.polyhaven.com), cdn.jsdelivr.net(공개 GitHub 저장소·npm 파일)은 됨.
+
+### 14.9 검증 범위
+
+| 무엇 | 어떻게 |
+|---|---|
+| gen_meta 최소 메타, 기존 메타 불변 | `python3 -m pytest studio/tests -q` |
+| 모델·텍스처가 Resources에서 로드되고 메시·머티리얼(Standard, 무광, 묻힌 하위 에셋)이 있음 | CI PlayMode `Tests/PlayMode/AssetPipeline/` |
+| Legacy 클립 존재·짧은 이름·두 시간에서 뼈가 움직임(`Animation.Sample`, `SampleAnimation`) | 같은 테스트 |
+| Windows 빌드에 Standard가 들어감 | CI `unity-build` 성공(빌드는 셰이더 누락으로 실패하지 않으므로, 보이는 모습은 사용자 플레이테스트로 확인) |
+| 보기 좋음·스타일 일관성 | 사용자 플레이테스트(019) |

@@ -1022,6 +1022,21 @@ public sealed class OrigamiGui : MonoBehaviour
 
 ---
 
+## C-195 아트 에셋 파이프라인 (Editor `Origami.EditorTools.ArtImportRules`, ORIGAMI-017) — ARCHITECTURE §14
+
+코드 API가 아니라 **가져온 결과에 대한 약속**이다. Runtime(019)과 테스트는 이것에만 기대고 `ArtImportRules`를 참조하지 않는다(Editor 전용 어셈블리).
+
+| 약속 | 내용 |
+|---|---|
+| 로드 | `Resources.Load<GameObject>("<Set>/<Name>")` = 모델 프리팹(루트 GameObject, 자식에 `MeshFilter`+`MeshRenderer` 또는 `SkinnedMeshRenderer`). `Resources.Load<Texture2D>("<Set>/<Name>")` = 텍스처(밉맵, Repeat, ≤ 1024 px) |
+| 머티리얼 | 모든 슬롯이 모델의 하위 에셋, 셰이더 "Standard", `_Metallic` 0, `_Glossiness` ≤ 0.2. 색은 원본 파일의 확산색 |
+| 크기·원점 | 파일 단위 → 미터 그대로(배율 1). 원점·크기는 키트마다 다름 → 호출자가 `Renderer.bounds`로 맞춘다 |
+| 물리 | Collider 없음, 카메라·조명 없음 |
+| 애니메이션 | 애니메이션이 있는 모델은 루트에 `Animation`(Legacy), `Animator` 없음. 클립은 `clip.legacy == true`, 이름은 take 이름의 마지막 `|` 뒤(`"Walk"`, `"Idle"`). 재생 방법은 ARCHITECTURE §14.6 |
+| 샘플 키 | `_PipelineSample/Chair`(정적), `_PipelineSample/CasualMale`(애니메이션: Idle, Walk, SitDown, StandUp, PickUp, Punch, Defeat, RecieveHit, Shoot_OneHanded, Victory, Walk_Carry), `_PipelineSample/PaperSwatch`(256×256 텍스처) |
+
+검증: `Tests/PlayMode/AssetPipeline/AssetPipelineTests`(CI).
+
 ## 변경 이력
 
 | 날짜 | 작업 | 내용 |
@@ -1029,3 +1044,4 @@ public sealed class OrigamiGui : MonoBehaviour
 | 2026-11-27 | ORIGAMI-002 | v1 계약 C-001~C-031 |
 | 2026-11-27 | ORIGAMI-008 | v2 계약 C-101~C-194로 전면 교체. v1 계약은 폐기(코드는 ORIGAMI-014에서 삭제) |
 | 2026-11-27 | ORIGAMI-016 | 구현에 맞춘 문서 보완(코드·시그니처 변경 없음): C-150 NaN·무한대 좌표 → InvalidFold(NothingToFold); C-170 NoSheet 무음, 정산·판매대·결과 줄 형식과 "★n" 표기; C-191 `PaperMeshBuilder.Build`는 `IReadOnlyList<Facet>`; C-192 의존·`BookTexts` |
+| 2026-11-28 | ORIGAMI-017 | C-195 아트 에셋 파이프라인(가져온 결과의 약속: Resources 키, 머티리얼, Legacy 클립 이름). 기존 계약 변경 없음 |

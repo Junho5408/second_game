@@ -1,6 +1,6 @@
 # Origami 코딩 규칙 (v2)
 
-> 담당: architect · 갱신 ORIGAMI-008 (v1: ORIGAMI-002). v1 규칙 중 그대로 유효한 것은 그대로 두고 v2 모듈·수치 규칙을 더했다.
+> 담당: architect · 갱신 ORIGAMI-008 (v1: ORIGAMI-002), ORIGAMI-017(아트 에셋 규칙). v1 규칙 중 그대로 유효한 것은 그대로 두고 v2 모듈·수치 규칙을 더했다.
 
 ## Core (Assets/Game/Core)
 
@@ -58,7 +58,7 @@
 - **OnGUI는 `OrigamiGui` 하나.** 다른 UI 컴포넌트는 `Draw(Rect)`만 공개한다.
 - 입력: 레거시 Input Manager만(`Input.GetKey/GetKeyDown/GetMouseButton*/mousePosition/mouseScrollDelta`), 읽는 곳은 `InputReader` 한 곳. `com.unity.inputsystem` 쓰지 않음. 읽기(`Read`)와 처리(`ProcessFrame(InputFrame, dt)`)를 분리해 테스트는 처리만 호출한다.
 - **`GameObject.CreatePrimitive`, Collider, Rigidbody, `Physics.*` 금지**(3D physics 모듈 없음, ARCHITECTURE §7). 메시는 `MeshFactory`/`PaperMeshBuilder`, 선택은 광선–평면 수학, 충돌은 Core `RoomMotion`.
-- 머티리얼은 `Materials.Lit/Unlit`만(셰이더 이름을 다른 곳에 쓰지 않음). 만든 `Mesh`/`Material`/`Texture2D`는 만든 컴포넌트가 `OnDestroy`에서 `Destroy`.
+- 코드로 만드는 머티리얼은 `Materials.Lit/Unlit`만(셰이더 이름을 다른 곳에 쓰지 않음). 가져온 모델은 묻힌 머티리얼을 그대로 쓴다(아래 "아트 에셋"). 만든 `Mesh`/`Material`/`Texture2D`/인스턴스는 만든 컴포넌트가 `OnDestroy`에서 `Destroy`.
 - 씬·프리팹 YAML 금지. 루트는 `[RuntimeInitializeOnLoadMethod(AfterSceneLoad)]` 훅 + `OrigamiApp.EnsureInstance()`. `Bootstrap.cs`·asmdef 수정 금지.
 - Unity 객체 null 검사는 `!= null`(가짜 null 주의). public 프로퍼티는 진짜 null로 정규화.
 - 로그(`Debug.LogError`/`LogException`)를 정상 경로에서 내지 않는다(PlayMode 테스트가 실패함 — v1 리뷰 W-5). 대체 경로(글꼴·셰이더 없음)는 조용히 기본값으로.
@@ -73,13 +73,26 @@
 
 ## PlayMode 테스트 (Assets/Game/Tests/PlayMode)
 
-- 폴더: `FoldTable/`(012), `Book/`(013), `Workshop/`(014). `BootstrapTests.cs`는 유지.
+- 폴더: `FoldTable/`(012), `Book/`(013), `Workshop/`(014), `AssetPipeline/`(017, 가져오기 파이프라인 회귀 검사). `BootstrapTests.cs`는 유지. 모두 `Origami.Tests.PlayMode` asmdef 하나(하위 폴더 자동 포함).
 - **프레임 시간과 무관하게**: `[Test]`에서 컴포넌트를 만들고 `ProcessFrame(frame, dt)`를 정해진 dt로 직접 부른다(예: 이동 1초 = 0.02 × 50). `yield return null` 대기 수·실제 시간에 기대는 단언 금지.
   `[UnityTest]`는 자동 생성 훅 확인 등 꼭 필요할 때만.
 - 마우스·키는 `PointerFrame`/`InputFrame`을 직접 만들어 넣는다(배치 모드에는 실제 입력이 없음). 종이 위 점은 `PaperPoint`를 직접 지정한다.
 - 애니메이션은 `FinishAnimationNow()` 또는 충분한 dt로 끝낸 뒤 상태를 확인한다. Core 상태는 놓는 순간 바뀐다(A2-4).
 - 테스트에서 만든 GameObject·메시·텍스처는 TearDown에서 파괴. 런타임 싱글턴(`OrigamiApp.Instance`)과 독립된 인스턴스를 만들어 쓴다.
 - 시각 확인이 필요한 AC(조작감, 한글 표시, 책을 보고 접기)는 사용자 플레이테스트 항목으로 보고서에 남기고 테스트로 대신하지 않는다.
+
+## 아트 에셋 (Assets/Game/Art, ARCHITECTURE §14)
+
+- **CC0만.** 출처 페이지에서 라이선스를 직접 확인하고, `Art/CREDITS.md`에 파일마다 저장소 파일·원본·작성자·출처 URL·라이선스·받은 URL·바이트 크기·바꾼 점을 적는다. 확인 못 한 에셋은 넣지 않는다.
+- 스타일: 한 가지 "아늑한 로우폴리"(단색·팔레트 머티리얼 위주). 키트를 섞을 때는 같은 작가 계열을 우선한다.
+- 형식: FBX(애니메이션 포함)·OBJ(정적) + PNG/JPG. glTF/GLB·.blend 금지(A2-15).
+- 위치·키: `Art/<Set>/Resources/<Set>/<Name>.<ext>` → `Resources.Load<T>("<Set>/<Name>")`. 이름은 PascalCase ASCII. 빌드에 쓰는 파일만 `Resources/` 아래에 둔다. 키 상수는 Runtime 한 곳.
+- 예산: 아트 합계 ≤ 30 MB, 파일 ≤ 5 MB(권장: 캐릭터 FBX ≤ 3 MB), 텍스처 ≤ 1024 px(가져오기에서도 1024로 제한). 큰 원본은 줄여서 넣고 CREDITS에 "바꾼 점"으로 적는다.
+- 메타: `gen_meta.py`(모델·텍스처는 GUID만 있는 최소 메타). 가져오기 설정을 메타에 손으로 쓰지 않는다 — 정본은 `Editor/ArtImportRules.cs`. 규칙을 바꾸면 `ArtImportRules.Version`을 올린다.
+- 머티리얼: 모델 안에 묻힘(추출 금지), "Standard"·metallic 0·smoothness ≤ 0.2. 런타임은 `Shader.Find`로 모델 셰이더를 찾지 않는다. 색은 `MaterialPropertyBlock`, 새 머티리얼이 필요하면 `new Material(sharedMaterial)` 복사 후 `OnDestroy`에서 파괴. 로드한 프리팹·공유 머티리얼·메시는 수정·파괴 금지. `RenderSettings.fog` 금지(§14.5).
+- 크기: 원본 배율에 기대지 않는다. 런타임이 합친 `Renderer.bounds`로 Core 상자(`RoomLayout`)에 균일 배율·바닥 가운데 정렬. 충돌·상호작용은 계속 Core 상자 수학. Collider 없음.
+- 애니메이션: Legacy `Animation`. `playAutomatically = false`, 상태 `speed = 0`, `Tick(dt)`에서 `state.time` 진행 후 `anim.Sample()`(A2-17). 클립은 짧은 이름(`"Walk"`, `"Idle"`)으로 찾는다. Animator·AnimatorController·Playables 쓰지 않음.
+- LFS: `.fbx`·`.png`·`.jpg`는 Git LFS. 커밋 후 `git lfs ls-files`로 포인터 저장을 확인하고, 푸시 전 `git lfs push origin <branch>`(Orchestrator). 1 MB 넘는 `.obj`/`.tga`(LFS 아님)는 넣지 않는다.
 
 ## 공통
 

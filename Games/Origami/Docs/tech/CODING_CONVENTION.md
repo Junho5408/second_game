@@ -89,10 +89,11 @@
 - 위치·키: `Art/<Set>/Resources/<Set>/<Name>.<ext>` → `Resources.Load<T>("<Set>/<Name>")`. 이름은 PascalCase ASCII. 빌드에 쓰는 파일만 `Resources/` 아래에 둔다. 키 상수는 Runtime 한 곳.
 - 예산: 아트 합계 ≤ 30 MB, 파일 ≤ 5 MB(권장: 캐릭터 FBX ≤ 3 MB), 텍스처 ≤ 1024 px(가져오기에서도 1024로 제한). 큰 원본은 줄여서 넣고 CREDITS에 "바꾼 점"으로 적는다.
 - 메타: `gen_meta.py`(모델·텍스처는 GUID만 있는 최소 메타). 가져오기 설정을 메타에 손으로 쓰지 않는다 — 정본은 `Editor/ArtImportRules.cs`. 규칙을 바꾸면 `ArtImportRules.Version`을 올린다.
-- 머티리얼: 모델 안에 묻힘(추출 금지), "Standard"·metallic 0·smoothness ≤ 0.2. 런타임은 `Shader.Find`로 모델 셰이더를 찾지 않는다. 색은 `MaterialPropertyBlock`, 새 머티리얼이 필요하면 `new Material(sharedMaterial)` 복사 후 `OnDestroy`에서 파괴. 로드한 프리팹·공유 머티리얼·메시는 수정·파괴 금지. `RenderSettings.fog` 금지(§14.5).
+- 텍스처: 항상 Default 형식(노멀맵 이름 규칙 제외)·Texture2D·Sprite 아님 — 2D UI용 스프라이트는 Art가 아니라 코드/UI Toolkit으로 만든다. 그대로 `Resources.Load<Texture2D>`.
+- 머티리얼: 모델 안에 묻힘(추출 금지), "Standard"·metallic 0·smoothness 0.15 고정(`ArtImportRules`, `OnPreprocessMaterialDescription` + `OnPostprocessModel`). 런타임은 `Shader.Find`로 모델 셰이더를 찾지 않는다. 색은 `MaterialPropertyBlock`, 새 머티리얼이 필요하면 `new Material(sharedMaterial)` 복사 후 `OnDestroy`에서 파괴. 로드한 프리팹·공유 머티리얼·메시는 수정·파괴 금지. `RenderSettings.fog` 금지(§14.5).
 - 크기: 원본 배율에 기대지 않는다. 런타임이 합친 `Renderer.bounds`로 Core 상자(`RoomLayout`)에 균일 배율·바닥 가운데 정렬. 충돌·상호작용은 계속 Core 상자 수학. Collider 없음.
 - 애니메이션: Legacy `Animation`. `playAutomatically = false`, 상태 `speed = 0`, `Tick(dt)`에서 `state.time` 진행 후 `anim.Sample()`(A2-17). 클립은 짧은 이름(`"Walk"`, `"Idle"`)으로 찾는다. Animator·AnimatorController·Playables 쓰지 않음.
-- LFS: `.fbx`·`.png`·`.jpg`는 Git LFS. 커밋 후 `git lfs ls-files`로 포인터 저장을 확인하고, 푸시 전 `git lfs push origin <branch>`(Orchestrator). 1 MB 넘는 `.obj`/`.tga`(LFS 아님)는 넣지 않는다.
+- 저장: **Git LFS 쓰지 않음** — 일반 git 블롭(`.gitattributes`에서 `binary`). 파일당 ≤ 5 MB, 게임당 아트 ≤ 30 MB를 커밋 전에 `du -b`로 확인. `git lfs ls-files`는 비어 있어야 한다(DECISIONS 2026-11-28).
 
 ## 공통
 

@@ -157,7 +157,7 @@ Runtime: UI(OrigamiGui) ─▶ Gameplay(OrigamiApp) ─▶ Folding view, Book vi
 | Unity 기본 모델·텍스처 가져오기(FBX/OBJ, PNG/JPG) + `AssetPostprocessor` | 외부 CC0 방·가구·캐릭터 (§14) | 패키지 없음. 017 샘플로 CI PlayMode 검증 |
 | 레거시 `Animation` 컴포넌트 (`com.unity.modules.animation`, 이미 있음) | 캐릭터 애니메이션 (§14.6) | AnimatorController 에셋 없음 |
 | 내장 셰이더 "Standard" | 가져온 모델의 머티리얼 | 모델 머티리얼이 참조하므로 빌드에 포함(쓰는 변형만). Always Included에 넣지 않음(§14.5) |
-| Git LFS (`.gitattributes`: `*.fbx`, `*.png`, `*.jpg` …) | 바이너리 에셋 저장 | 푸시 전에 `git lfs push` 필요(§14.8). CI 체크아웃은 `lfs: true` |
+| 일반 git (Git LFS 쓰지 않음, `.gitattributes`의 `*.fbx *.png … binary`) | 바이너리 에셋 저장 | 줄 끝 변환 없음. CI 체크아웃 `lfs: false`. 크기 예산으로 저장소 크기 관리(§14.8, DECISIONS 2026-11-28) |
 
 **패키지·ProjectSettings 변경 없음.** 근거: 3D 물리 모듈이 필요한 기능(CreatePrimitive의 Collider, Physics.Raycast)을 쓰지 않도록 규칙으로 막았다(§7, CODING_CONVENTION).
 만약 통합 CI에서 3D physics 모듈이 꼭 필요한 문제가 드러나면, 별도 architect 작업으로 `Unity/Packages/manifest.json`에 `"com.unity.modules.physics": "1.0.0"`을 추가한다(Fold3DSpike와 같은 구성, 검증 항목 unity-compile/unity-playmode/unity-build). 지금은 제안하지 않는다.
@@ -237,7 +237,7 @@ v1은 v1 Unity 화면이 살아 있는 동안 컴파일되어야 하므로, **v1
 | A2-15 | 외부 3D 에셋은 FBX(애니메이션 포함)·OBJ(정적) + PNG/JPG만. glTF/GLB(glTFast 패키지 필요)·.blend(Blender 필요)는 쓰지 않는다. 내장 렌더 파이프라인 유지 | Unity 기본 가져오기만으로 CI에서 검증 가능, 패키지 추가 없음 (§14.1) |
 | A2-16 | `.meta`는 GUID만 가진 최소 메타(gen_meta.py), 가져오기 설정은 `Editor/ArtImportRules.cs`(`AssetPostprocessor`)가 매 가져오기마다 강제 | 에디터 없이 설정을 코드 리뷰로 관리, Unity 버전별 메타 형식에 의존하지 않음 (§14.3·14.4) |
 | A2-17 | 애니메이션은 Legacy(`Animation` 컴포넌트). 재생은 `AnimationState.speed = 0` + `time`을 `dt`로 진행 + `Animation.Sample()` | AnimatorController 에셋 불필요, A2-5(프레임 시간과 무관한 결정적 진행) 유지. Playables는 그래프 생명주기 코드가 더 많아 기각 (§14.6) |
-| A2-18 | 머티리얼은 모델 안에 묻어 두고(추출 금지) "Standard"·metallic 0·smoothness ≤ 0.2로 통일. 런타임은 모델 셰이더를 `Shader.Find`하지 않는다 | 추출된 .mat은 CI에서 새 GUID로 생겨 커밋되지 않음. 한 가지 무광 스타일 (§14.4·14.5) |
+| A2-18 | 머티리얼은 모델 안에 묻어 두고(추출 금지) "Standard"·metallic 0·smoothness 0.15(고정)로 통일. 런타임은 모델 셰이더를 `Shader.Find`하지 않는다 | 추출된 .mat은 CI에서 새 GUID로 생겨 커밋되지 않음. 한 가지 무광 스타일 (§14.4·14.5) |
 | A2-19 | 로드 경로 = `Art/<Set>/Resources/<Set>/<Name>.<ext>` → `Resources.Load("<Set>/<Name>")`. 크기는 런타임이 렌더러 경계로 Core 상자에 맞춘다 | 세트 단위로 출처·크기·삭제 관리, 키 충돌 없음. 원본 배율이 키트마다 달라도 게임 규칙 수치(Core) 불변 (§14.2·14.7) |
 
 ## 13. 구현 작업 분해 (제안, Orchestrator 확정)
@@ -314,8 +314,8 @@ Assets/Game/Art/<Set>/                       세트 하나 = 출처 하나(키�
 | 모델 | `materialImportMode = ImportViaMaterialDescription`, `materialLocation = InPrefab` | 머티리얼을 모델의 하위 에셋으로 묻음. 추출하면 CI에서 새 `.mat`+새 GUID가 생기고 커밋되지 않는다 |
 | 모델 | `animationType = Legacy`, `importAnimation = true` | `Animation` 컴포넌트가 모델 루트에 붙고 클립을 바로 재생. AnimatorController 에셋 불필요 |
 | 클립 | 이름의 `"…|"` 접두사 제거(`CharacterArmature|Walk` → `Walk`). 이름이 겹치면 원래 이름 유지. `clipAnimations`를 직접 정한 모델은 건드리지 않음 | 키트마다 다른 뼈대 이름과 무관하게 `"Walk"`로 찾음 |
-| 머티리얼 (모델 가져오기에서 생긴 것) | 셰이더 "Standard"(없으면 "Legacy Shaders/Diffuse"), 색·주 텍스처 유지, `_Metallic` 0, `_Glossiness` ≤ 0.2 | 한 가지 무광 "아늑한 로우폴리" 모습 |
-| 텍스처 | Default 형식(파일 이름이 `_Normal`/`_NormalGL`/`_nrm`로 끝나면 NormalMap), sRGB, 밉맵, 최대 1024, 압축, Bilinear, Repeat | 빌드·메모리 예산, 타일링 바닥·벽 |
+| 머티리얼 (모델 가져오기에서 생긴 것) | 셰이더 "Standard"(없으면 "Legacy Shaders/Diffuse"), 색·주 텍스처 유지, `_Metallic` 0, `_Glossiness`·`_GlossMapScale` = 0.15(`ArtImportRules.Smoothness`, 고정값). `OnPreprocessMaterialDescription`에서 적용하고 `GetPostprocessOrder() = 100`으로 Unity 내장 설명 전처리기(FBX shininess → `_Glossiness`, 예: 0.31) **뒤에** 실행, `OnPostprocessModel`에서 묻힌 머티리얼에 한 번 더 적용. `OnPostprocessMaterial`은 ImportViaMaterialDescription에 효과가 없어 쓰지 않는다(017 리뷰 F-1) | 한 가지 무광 "아늑한 로우폴리" 모습. 고정값이라 테스트가 규칙 실행을 구별 |
+| 텍스처 | 항상 Default 형식(파일 이름이 `_Normal`/`_NormalGL`/`_nrm`로 끝나면 NormalMap), `textureShape = Texture2D`, `spriteImportMode = None`(프로젝트 기본 동작 모드·2D 템플릿과 무관), sRGB, 밉맵, 최대 1024, 압축, Bilinear, Repeat, `anisoLevel = 2`(`ArtImportRules.AnisoLevel`, Unity 기본 1 → 테스트 표식) | 빌드·메모리 예산, 타일링 바닥·벽 |
 
 - 규칙을 바꾸면 `ArtImportRules.Version`을 올린다(Unity가 해당 에셋을 다시 가져옴).
 - 가져오기 설정을 메타에 손으로 쓰지 않는다. 특정 에셋만 다른 설정이 필요하면 `ArtImportRules`에 경로 규칙을 추가하는 architect 작업으로 한다.
@@ -349,15 +349,16 @@ Assets/Game/Art/<Set>/                       세트 하나 = 출처 하나(키�
   모양 그대로의 충돌·상호작용은 계속 Core 상자 수학(A2-6) — 모델은 보이는 것만 바꾼다. 맞춤 도우미는 019(developer)가 `Scripts/Systems/`에 만든다.
 - 모델에는 Collider가 없다(`addCollider = false`). 캐릭터 방향: 키트의 앞쪽이 +z가 아니면 맞춤 도우미가 회전 보정 상수를 둔다(세트별 상수, ArtKeys 옆).
 
-### 14.8 라이선스·출처·크기·LFS
+### 14.8 라이선스·출처·크기·저장 방식(일반 git)
 
 - **CC0만.** 출처 페이지에서 라이선스를 확인한다(페이지의 라이선스 표시 또는 같이 받은 License.txt). CC-BY·CC-BY-SA·"무료"·라이선스 불명은 쓰지 않는다.
 - `Art/CREDITS.md`(content-designer)에 파일마다 한 줄: 저장소 파일, 원본 파일·팩 이름, 작성자, 출처 페이지 URL, 라이선스, 받은 경로(URL), 바이트 크기, 바꾼 점.
 - **예산**: 저장소에 더하는 아트 합계 ≤ 30 MB(DECISIONS 2026-11-28). 파일 하나 ≤ 5 MB, 텍스처 ≤ 1024 px, 캐릭터 FBX ≤ 3 MB 권장.
-  확인: `git lfs ls-files -s -I 'Games/Origami/Unity/Assets/Game/Art/**'`(LFS 파일별 크기) + LFS가 아닌 파일은 `git ls-files -z 'Games/Origami/Unity/Assets/Game/Art/*' | xargs -0 du -cb | tail -1`(작업 트리에 LFS 포인터만 있으면 포인터 크기로 셈).
-- 바이너리는 Git LFS(`.gitattributes`의 `*.fbx *.png *.jpg *.psd *.wav *.mp3 *.ogg`)로 저장된다. 이 작업 환경에는 LFS pre-push 훅이 없으므로
-  **Orchestrator는 `git push` 전에 `git lfs push origin <branch>`** 로 LFS 객체를 올린다(안 올리면 CI의 `lfs: true` 체크아웃이 실패). 확인: `git lfs ls-files`.
-  `.obj`·`.tga`는 LFS 대상이 아니다 → 1 MB 넘는 OBJ/TGA는 쓰지 말고 FBX/PNG로 넣는다.
+  확인: `git ls-files -z 'Games/Origami/Unity/Assets/Game/Art/*' | xargs -0 du -cb | tail -1`(아트 합계), 파일별은 `du -b`.
+- **Git LFS를 쓰지 않는다**(DECISIONS 2026-11-28): 아트·오디오 바이너리는 일반 git 블롭으로 커밋한다. `.gitattributes`는 `*.png *.jpg *.jpeg *.tga *.psd *.fbx *.obj *.wav *.mp3 *.ogg`를
+  `binary`로 둔다(줄 끝 변환·텍스트 diff 없음 — ASCII FBX도 그대로). CI 체크아웃은 `lfs: false`. 푸시 전 별도 단계 없음.
+  이유: `lfs: true` 체크아웃은 실행마다 저장소의 모든 LFS 객체를 받아 무료 LFS 대역폭을 곧 넘는다. 대신 위 예산(파일당 5 MB, 게임당 30 MB)을 지켜 저장소 크기를 묶는다.
+  확인: `git lfs ls-files`가 비어 있고 `git cat-file -p HEAD:<path> | head -c 100`이 LFS 포인터(`version https://git-lfs…`)가 아니어야 한다.
 - 받는 경로(2026-11 확인): kenney.nl·github.com 직접 접근은 막힘. opengameart.org(Kenney·Quaternius 팩 다수, `sites/default/files/<zip>` 직접 받기),
   ambientcg.com(`/get?file=<Id>_1K-JPG.zip`, API `api/v2/full_json`), polyhaven(api.polyhaven.com), cdn.jsdelivr.net(공개 GitHub 저장소·npm 파일)은 됨.
 

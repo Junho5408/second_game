@@ -19,6 +19,13 @@ namespace Origami.Tests.PlayMode.AssetPipeline
         private const string CharacterKey = "_PipelineSample/CasualMale";
         private const string TextureKey = "_PipelineSample/PaperSwatch";
         private const string SampleFolder = "Assets/Game/Art/_PipelineSample/Resources/_PipelineSample/";
+        private const string TexturePath = SampleFolder + "PaperSwatch.png";
+
+        // Values forced by Editor/ArtImportRules (Version 2). They differ from Unity's import defaults
+        // (smoothness from FBX shininess, e.g. 0.31; aniso 1; max size 2048), so passing proves the rules ran.
+        private const float RuleSmoothness = 0.15f;
+        private const int RuleAnisoLevel = 2;
+        private const int RuleMaxTextureSize = 1024;
 
         private readonly List<Object> _spawned = new List<Object>();
 
@@ -57,8 +64,13 @@ namespace Origami.Tests.PlayMode.AssetPipeline
                 Assert.IsNotNull(m, what + ": null material slot");
                 Assert.IsNotNull(m.shader, what + ": material without shader");
                 Assert.AreEqual("Standard", m.shader.name, what + ": ArtImportRules should set the built-in Standard shader");
-                if (m.HasProperty("_Metallic")) Assert.AreEqual(0f, m.GetFloat("_Metallic"), 1e-4f, what + " metallic");
-                if (m.HasProperty("_Glossiness")) Assert.That(m.GetFloat("_Glossiness"), Is.LessThanOrEqualTo(0.2f + 1e-4f), what + " smoothness");
+                TestContext.WriteLine($"{what} material '{m.name}': shader {m.shader.name}, " +
+                    $"_Metallic {(m.HasProperty("_Metallic") ? m.GetFloat("_Metallic") : float.NaN)}, " +
+                    $"_Glossiness {(m.HasProperty("_Glossiness") ? m.GetFloat("_Glossiness") : float.NaN)}, " +
+                    $"_GlossMapScale {(m.HasProperty("_GlossMapScale") ? m.GetFloat("_GlossMapScale") : float.NaN)}");
+                Assert.IsTrue(m.HasProperty("_Metallic") && m.HasProperty("_Glossiness"), what + ": Standard material without _Metallic/_Glossiness");
+                Assert.AreEqual(0f, m.GetFloat("_Metallic"), 1e-4f, what + " metallic");
+                Assert.AreEqual(RuleSmoothness, m.GetFloat("_Glossiness"), 1e-4f, what + " smoothness (ArtImportRules sets exactly " + RuleSmoothness + ")");
 #if UNITY_EDITOR
                 // Embedded in the model (never extracted to new .mat assets).
                 var path = UnityEditor.AssetDatabase.GetAssetPath(m);
@@ -82,6 +94,7 @@ namespace Origami.Tests.PlayMode.AssetPipeline
                 Assert.IsNotNull(r, "MeshFilter without MeshRenderer");
                 AssertMatteStandard(r.sharedMaterials, "chair");
             }
+            AssertModelImporterRules("Chair.fbx");
             var b = RendererBounds(go);
             Assert.That(b.size.x > 0f && b.size.y > 0f && b.size.z > 0f, "chair bounds are empty: " + b);
             TestContext.WriteLine($"Chair bounds size (m, file scale): {b.size}, center {b.center}");
@@ -100,6 +113,7 @@ namespace Origami.Tests.PlayMode.AssetPipeline
                 Assert.That(s.bones.Length, Is.GreaterThan(0), "skinned mesh without bones");
                 AssertMatteStandard(s.sharedMaterials, "character");
             }
+            AssertModelImporterRules("CasualMale.fbx");
             var b = RendererBounds(go);
             Assert.That(b.size.y, Is.GreaterThan(0f), "character bounds are empty: " + b);
             TestContext.WriteLine($"CasualMale bounds size (m, file scale): {b.size}, center {b.center}");
@@ -184,14 +198,89 @@ namespace Origami.Tests.PlayMode.AssetPipeline
         public void Texture_LoadsFromResources_AsTexture2D()
         {
             var tex = Resources.Load<Texture2D>(TextureKey);
-            Assert.IsNotNull(tex, $"Resources.Load<Texture2D>(\"{TextureKey}\") returned null — PNG not imported as a texture?");
+            if (tex == null)
+            {
+                // ORIGAMI-017 F-2: CI run 46089349441 returned null here although TextureImporter imported the PNG.
+                // Print everything that can explain it before failing, so the next CI run settles the cause.
+                var diag = TextureDiagnostics();
+                Debug.LogWarning("[AssetPipelineTests] PaperSwatch diagnostics:\n" + diag);
+                TestContext.WriteLine(diag);
+                Assert.Fail($"Resources.Load<Texture2D>(\"{TextureKey}\") returned null.\n{diag}");
+            }
+            TestContext.WriteLine($"PaperSwatch: {tex.width}x{tex.height}, mips {tex.mipmapCount}, wrap {tex.wrapMode}, " +
+                $"filter {tex.filterMode}, aniso {tex.anisoLevel}, format {tex.format}");
             Assert.AreEqual(256, tex.width);
             Assert.AreEqual(256, tex.height);
             Assert.That(tex.mipmapCount, Is.GreaterThan(1), "ArtImportRules enables mipmaps");
             Assert.AreEqual(TextureWrapMode.Repeat, tex.wrapMode);
+            Assert.AreEqual(FilterMode.Bilinear, tex.filterMode);
+            Assert.AreEqual(RuleAnisoLevel, tex.anisoLevel, "ArtImportRules sets anisoLevel (Unity default 1)");
+#if UNITY_EDITOR
+            var ti = UnityEditor.AssetImporter.GetAtPath(TexturePath) as UnityEditor.TextureImporter;
+            Assert.IsNotNull(ti, "no TextureImporter for " + TexturePath);
+            Assert.AreEqual(UnityEditor.TextureImporterType.Default, ti.textureType);
+            Assert.AreEqual(UnityEditor.TextureImporterShape.Texture2D, ti.textureShape);
+            Assert.AreEqual(RuleMaxTextureSize, ti.maxTextureSize, "ArtImportRules caps textures at 1024 (Unity default 2048)");
+            Assert.AreEqual(RuleAnisoLevel, ti.anisoLevel);
+#endif
         }
 
         // ---- helpers ----
+
+        private static void AssertModelImporterRules(string file)
+        {
+#if UNITY_EDITOR
+            var path = SampleFolder + file;
+            var mi = UnityEditor.AssetImporter.GetAtPath(path) as UnityEditor.ModelImporter;
+            Assert.IsNotNull(mi, "no ModelImporter for " + path);
+            Assert.AreEqual(UnityEditor.ModelImporterAnimationType.Legacy, mi.animationType, file + " animationType");
+            Assert.AreEqual(UnityEditor.ModelImporterMaterialImportMode.ImportViaMaterialDescription, mi.materialImportMode, file + " materialImportMode");
+            Assert.AreEqual(UnityEditor.ModelImporterMaterialLocation.InPrefab, mi.materialLocation, file + " materialLocation");
+            Assert.IsFalse(mi.addCollider, file + " addCollider");
+            Assert.IsFalse(mi.importCameras || mi.importLights, file + " cameras/lights");
+#endif
+        }
+
+        private static string TextureDiagnostics()
+        {
+            var sb = new System.Text.StringBuilder();
+            var untyped = Resources.Load(TextureKey);
+            sb.AppendLine($"Resources.Load(\"{TextureKey}\") = {Describe(untyped)}");
+            sb.AppendLine($"Resources.Load<Texture>(...) = {Describe(Resources.Load<Texture>(TextureKey))}");
+            sb.AppendLine($"Resources.Load<Sprite>(...) = {Describe(Resources.Load<Sprite>(TextureKey))}");
+            var all = Resources.LoadAll("_PipelineSample");
+            sb.AppendLine($"Resources.LoadAll(\"_PipelineSample\"): {all.Length} objects: " +
+                string.Join(", ", all.Select(Describe)));
+#if UNITY_EDITOR
+            var full = System.IO.Path.GetFullPath(TexturePath);
+            if (System.IO.File.Exists(full))
+            {
+                var bytes = System.IO.File.ReadAllBytes(full);
+                var head = System.Text.Encoding.ASCII.GetString(bytes, 0, System.Math.Min(48, bytes.Length))
+                    .Replace("\r", "\\r").Replace("\n", "\\n");
+                sb.AppendLine($"file {full}: {bytes.Length} bytes, head \"{head}\"");
+            }
+            else
+            {
+                sb.AppendLine($"file {full}: MISSING");
+            }
+            var importer = UnityEditor.AssetImporter.GetAtPath(TexturePath);
+            sb.AppendLine($"importer: {(importer == null ? "null" : importer.GetType().FullName)}");
+            if (importer is UnityEditor.TextureImporter ti)
+            {
+                sb.AppendLine($"  textureType {ti.textureType}, shape {ti.textureShape}, spriteMode {ti.spriteImportMode}, " +
+                    $"maxSize {ti.maxTextureSize}, aniso {ti.anisoLevel}, mips {ti.mipmapEnabled}, compression {ti.textureCompression}");
+            }
+            sb.AppendLine($"main asset type: {UnityEditor.AssetDatabase.GetMainAssetTypeAtPath(TexturePath)}");
+            var subs = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(TexturePath);
+            sb.AppendLine($"LoadAllAssetsAtPath: {subs.Length} objects: " + string.Join(", ", subs.Select(Describe)));
+            sb.AppendLine($"defaultBehaviorMode: {UnityEditor.EditorSettings.defaultBehaviorMode}");
+            sb.AppendLine($"Application.isPlaying {Application.isPlaying}, graphics {SystemInfo.graphicsDeviceType}");
+#endif
+            return sb.ToString();
+        }
+
+        private static string Describe(Object o) => o == null ? "null" : $"{o.GetType().Name} '{o.name}'";
 
         private static List<string> ClipNames(Animation anim)
         {

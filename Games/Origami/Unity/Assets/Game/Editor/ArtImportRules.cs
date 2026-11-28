@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.AssetImporters;
 using UnityEngine;
 
 namespace Origami.EditorTools
@@ -15,10 +16,15 @@ namespace Origami.EditorTools
     /// materials embedded in the model (never extracted — extracted .mat files would be new, uncommitted assets
     /// with random GUIDs in CI); <b>Legacy</b> animation type so clips play with the <c>Animation</c> component and
     /// no AnimatorController asset; clip names lose the "Armature|" prefix of Blender exports.</item>
-    /// <item>Materials created by a model import: built-in "Standard" shader, metallic 0, smoothness ≤ 0.2
-    /// (one matte, cozy look for every kit).</item>
-    /// <item>Textures: colour textures sRGB + mipmaps, max 1024 px, normal-compressed; files ending in
-    /// "_Normal"/"_NormalGL"/"_nrm" import as normal maps.</item>
+    /// <item>Materials created by a model import (ImportViaMaterialDescription): built-in "Standard" shader,
+    /// metallic 0, smoothness fixed to <see cref="Smoothness"/> (also <c>_GlossMapScale</c>) — one matte, cozy look
+    /// for every kit. Applied in <c>OnPreprocessMaterialDescription</c> with <see cref="Order"/> after Unity's built-in
+    /// description preprocessors (which derive <c>_Glossiness</c> from FBX shininess, e.g. 0.31), and again on the
+    /// embedded materials in <c>OnPostprocessModel</c>. <c>OnPostprocessMaterial</c> is not used: it did not affect
+    /// description-imported materials (ORIGAMI-017 review F-1, CI run 46089349441).</item>
+    /// <item>Textures: always TextureType Default (or NormalMap for "_Normal"/"_NormalGL"/"_nrm"), Texture2D shape,
+    /// no sprite mode — independent of the project's default behaviour mode / 2D template; sRGB + mipmaps,
+    /// max 1024 px, normal-compressed, Bilinear, Repeat, aniso <see cref="AnisoLevel"/>.</item>
     /// </list>
     /// Shaders: the build includes "Standard" because the embedded materials of models in a Resources folder
     /// reference it (only the variants those materials use). It is deliberately not added to Always Included
@@ -31,18 +37,27 @@ namespace Origami.EditorTools
         public const string Root = "Assets/Game/";
 
         /// <summary>Postprocessor version (see class remarks).</summary>
-        public const uint Version = 1;
+        public const uint Version = 2;
+
+        /// <summary>Runs after Unity's built-in material description preprocessors (negative/small orders).</summary>
+        public const int Order = 100;
 
         /// <summary>Largest texture size kept in the build (repository/build size budget).</summary>
         public const int MaxTextureSize = 1024;
 
-        /// <summary>Upper bound of the Standard smoothness for imported materials.</summary>
-        public const float MaxSmoothness = 0.2f;
+        /// <summary>Standard smoothness (<c>_Glossiness</c>, <c>_GlossMapScale</c>) of every imported material.
+        /// A fixed value, not a clamp, so tests can tell that the rule ran.</summary>
+        public const float Smoothness = 0.15f;
+
+        /// <summary>Anisotropic filtering level of imported textures (Unity default is 1; tests use it as a marker).</summary>
+        public const int AnisoLevel = 2;
 
         private const string StandardShader = "Standard";
         private const string FallbackShader = "Legacy Shaders/Diffuse";
 
         public override uint GetVersion() => Version;
+
+        public override int GetPostprocessOrder() => Order;
 
         private bool Applies => assetPath.StartsWith(Root, System.StringComparison.Ordinal);
 
@@ -91,25 +106,40 @@ namespace Origami.EditorTools
             mi.clipAnimations = clips;
         }
 
-        private void OnPostprocessMaterial(Material material)
+        private void OnPreprocessMaterialDescription(MaterialDescription description, Material material, AnimationClip[] materialAnimation)
         {
-            if (!Applies || material == null) return;
+            if (!Applies) return;
+            ApplyMaterialRules(material);
+        }
+
+        private void OnPostprocessModel(GameObject root)
+        {
+            if (!Applies || root == null) return;
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                foreach (var m in r.sharedMaterials) ApplyMaterialRules(m);
+            }
+        }
+
+        /// <summary>Standard shader, colour/main texture kept, metallic 0, fixed smoothness. Idempotent.</summary>
+        public static void ApplyMaterialRules(Material material)
+        {
+            if (material == null) return;
             var shader = Shader.Find(StandardShader);
             if (shader == null) shader = Shader.Find(FallbackShader);
             if (shader != null && material.shader != shader)
             {
                 // Keep the colour (and main texture) chosen by the model file when switching shaders.
-                var color = material.HasProperty("_Color") ? material.color : Color.white;
-                var tex = material.HasProperty("_MainTex") ? material.mainTexture : null;
+                var hasShader = material.shader != null;
+                var color = hasShader && material.HasProperty("_Color") ? material.color : Color.white;
+                var tex = hasShader && material.HasProperty("_MainTex") ? material.mainTexture : null;
                 material.shader = shader;
-                material.color = color;
+                if (material.HasProperty("_Color")) material.color = color;
                 if (tex != null) material.mainTexture = tex;
             }
             if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", 0f);
-            if (material.HasProperty("_Glossiness"))
-            {
-                material.SetFloat("_Glossiness", Mathf.Min(material.GetFloat("_Glossiness"), MaxSmoothness));
-            }
+            if (material.HasProperty("_Glossiness")) material.SetFloat("_Glossiness", Smoothness);
+            if (material.HasProperty("_GlossMapScale")) material.SetFloat("_GlossMapScale", Smoothness);
         }
 
         private void OnPreprocessTexture()
@@ -119,7 +149,13 @@ namespace Origami.EditorTools
             if (ti == null) return;
 
             var normal = IsNormalMapPath(assetPath);
+            // Explicit type/shape/sprite mode: never depend on the project's default behaviour mode (2D → Sprite).
             ti.textureType = normal ? TextureImporterType.NormalMap : TextureImporterType.Default;
+            ti.textureShape = TextureImporterShape.Texture2D;
+            ti.spriteImportMode = SpriteImportMode.None;
+            ti.npotScale = TextureImporterNPOTScale.ToNearest;
+            ti.alphaSource = TextureImporterAlphaSource.FromInput;
+            ti.alphaIsTransparency = false;
             ti.sRGBTexture = !normal;
             ti.mipmapEnabled = true;
             ti.isReadable = false;
@@ -127,6 +163,7 @@ namespace Origami.EditorTools
             ti.textureCompression = TextureImporterCompression.Compressed;
             ti.filterMode = FilterMode.Bilinear;
             ti.wrapMode = TextureWrapMode.Repeat;
+            ti.anisoLevel = AnisoLevel;
         }
 
         /// <summary>"CharacterArmature|Walk" → "Walk" (text after the last '|'); other names unchanged.</summary>

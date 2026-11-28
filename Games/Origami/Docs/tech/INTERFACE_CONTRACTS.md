@@ -1028,8 +1028,8 @@ public sealed class OrigamiGui : MonoBehaviour
 
 | 약속 | 내용 |
 |---|---|
-| 로드 | `Resources.Load<GameObject>("<Set>/<Name>")` = 모델 프리팹(루트 GameObject, 자식에 `MeshFilter`+`MeshRenderer` 또는 `SkinnedMeshRenderer`). `Resources.Load<Texture2D>("<Set>/<Name>")` = 텍스처(밉맵, Repeat, ≤ 1024 px) |
-| 머티리얼 | 모든 슬롯이 모델의 하위 에셋, 셰이더 "Standard", `_Metallic` 0, `_Glossiness` ≤ 0.2. 색은 원본 파일의 확산색 |
+| 로드 | `Resources.Load<GameObject>("<Set>/<Name>")` = 모델 프리팹(루트 GameObject, 자식에 `MeshFilter`+`MeshRenderer` 또는 `SkinnedMeshRenderer`). `Resources.Load<Texture2D>("<Set>/<Name>")` = 텍스처(Default 형식·Sprite 아님, 밉맵, Repeat, Bilinear, aniso 2, ≤ 1024 px) |
+| 머티리얼 | 모든 슬롯이 모델의 하위 에셋, 셰이더 "Standard", `_Metallic` 0, `_Glossiness` = 0.15(`ArtImportRules.Smoothness`). 색은 원본 파일의 확산색 |
 | 크기·원점 | 파일 단위 → 미터 그대로(배율 1). 원점·크기는 키트마다 다름 → 호출자가 `Renderer.bounds`로 맞춘다 |
 | 물리 | Collider 없음, 카메라·조명 없음 |
 | 애니메이션 | 애니메이션이 있는 모델은 루트에 `Animation`(Legacy), `Animator` 없음. 클립은 `clip.legacy == true`, 이름은 take 이름의 마지막 `|` 뒤(`"Walk"`, `"Idle"`). 재생 방법은 ARCHITECTURE §14.6 |
